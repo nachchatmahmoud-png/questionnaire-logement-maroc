@@ -5,6 +5,11 @@
   const interactiveChannelsText =
     "يقصد بوسائل التواصل الرسمية التي تتيح التفاعل القنوات الرسمية التي تعتمدها الوزارة في إطار برنامج الدعم المباشر للسكن، والتي تمكّن المواطنين، إلى جانب الاطلاع على المعلومات، من التواصل مع الوزارة عبر توجيه الأسئلة، وطلب التوضيحات، وتقديم الملاحظات أو المقترحات أو الشكايات، مع إمكانية تلقي رد أو تتبع مآلها. وتشمل، على سبيل المثال لا الحصر، خدمات التواصل والمساعدة المتاحة عبر منصة «دعم سكن» وتطبيقها، والبريد الإلكتروني ورقم المساعدة المخصصين للبرنامج، والبوابة الوطنية للشكايات، والرسائل الموجهة إلى الوزارة عبر حساباتها الرسمية على شبكات التواصل الاجتماعي.";
 
+  const oldSectionThreeTitle =
+    "استعمال وسائل التواصل الرسمية التي تتيح التفاعل مع الوزارة";
+  const newSectionThreeTitle =
+    "إمكانات التفاعل عبر وسائل التواصل الرسمية للوزارة";
+
   const sectionThreeStatements = new Map([
     [
       "تتيح وسائل التواصل الرسمية التي تتيح التفاعل مع الوزارة للمواطنين توجيه استفساراتهم إلى الوزارة بشأن البرنامج",
@@ -39,6 +44,20 @@
       "بصفة عامة، أقيّم جودة تواصل الوزارة بشأن البرنامج تقييمًا إيجابيًا",
     ],
   ]);
+
+  function replaceSectionThreeTitle() {
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    let node;
+
+    while ((node = walker.nextNode())) {
+      if (node.nodeValue?.includes(oldSectionThreeTitle)) {
+        node.nodeValue = node.nodeValue.replace(
+          oldSectionThreeTitle,
+          newSectionThreeTitle,
+        );
+      }
+    }
+  }
 
   function replaceSectionThreeStatements() {
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
@@ -84,6 +103,7 @@
   }
 
   function applyPatches() {
+    replaceSectionThreeTitle();
     replaceSectionThreeStatements();
     replaceClarifications();
   }
