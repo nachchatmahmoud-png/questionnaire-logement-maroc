@@ -5,32 +5,64 @@
   const interactiveChannelsText =
     "يقصد بوسائل التواصل الرسمية التي تتيح التفاعل القنوات الرسمية التي تعتمدها الوزارة في إطار برنامج الدعم المباشر للسكن، والتي تمكّن المواطنين، إلى جانب الاطلاع على المعلومات، من التواصل مع الوزارة عبر توجيه الأسئلة، وطلب التوضيحات، وتقديم الملاحظات أو المقترحات أو الشكايات، مع إمكانية تلقي رد أو تتبع مآلها. وتشمل، على سبيل المثال لا الحصر، خدمات التواصل والمساعدة المتاحة عبر منصة «دعم سكن» وتطبيقها، والبريد الإلكتروني ورقم المساعدة المخصصين للبرنامج، والبوابة الوطنية للشكايات، والرسائل الموجهة إلى الوزارة عبر حساباتها الرسمية على شبكات التواصل الاجتماعي.";
 
-  const originalStatement =
-    "تُمكّن القنوات الرسمية للتواصل مع الوزارة المواطنين من توجيه استفساراتهم بشأن برنامج الدعم المباشر للسكن.";
+  const sectionThreeStatements = new Map([
+    [
+      "تتيح وسائل التواصل الرسمية التي تتيح التفاعل مع الوزارة للمواطنين توجيه استفساراتهم إلى الوزارة بشأن البرنامج",
+      "تتيح القنوات الرسمية للتواصل مع الوزارة للمواطنين توجيه استفساراتهم بشأن البرنامج",
+    ],
+    [
+      "تتيح هذه الوسائل للمواطنين طلب توضيحات إضافية حول المعلومات المتعلقة بالبرنامج",
+      "تتيح هذه القنوات للمواطنين طلب توضيحات إضافية بشأن المعلومات والإجراءات المتعلقة بالبرنامج",
+    ],
+    [
+      "تتيح هذه الوسائل للمواطنين مواصلة التواصل مع الوزارة عند الحاجة إلى معلومات إضافية",
+      "تتيح هذه القنوات للمواطنين متابعة التواصل مع الوزارة عند الحاجة إلى معلومات أو توضيحات إضافية",
+    ],
+    [
+      "تتيح وسائل التواصل الرسمية التي تتيح التفاعل مع الوزارة للمواطنين تقديم ملاحظاتهم بشأن البرنامج",
+      "تتيح القنوات الرسمية للتواصل مع الوزارة للمواطنين إبداء ملاحظاتهم بشأن البرنامج",
+    ],
+    [
+      "تتيح هذه الوسائل للمواطنين تقديم مقترحات لتحسين البرنامج أو التواصل المرتبط به",
+      "تتيح هذه القنوات للمواطنين تقديم مقترحات لتحسين البرنامج أو طرق التواصل بشأنه",
+    ],
+    [
+      "تتيح هذه الوسائل للمواطنين التعبير عن الصعوبات أو الشكايات التي يواجهونها بشأن البرنامج",
+      "تتيح هذه القنوات للمواطنين عرض الصعوبات التي يواجهونها أو تقديم شكاياتهم بشأن البرنامج",
+    ],
+    [
+      "بصفة عامة، أرى أن وسائل التواصل الرسمية تتيح للمواطنين التفاعل مع الوزارة بشأن البرنامج",
+      "بصفة عامة، أرى أن القنوات الرسمية للتواصل مع الوزارة تتيح للمواطنين التفاعل معها بشأن البرنامج",
+    ],
+    [
+      "بصفة عامة، أقيّم جودة تواصل الوزارة حول البرنامج تقييمًا إيجابيًا",
+      "بصفة عامة، أرى أن تواصل الوزارة بشأن البرنامج يتسم بالجودة",
+    ],
+  ]);
 
-  const improvedStatement =
-    "تتيح القنوات الرسمية للتواصل مع الوزارة للمواطنين إمكانية توجيه استفساراتهم وطلب التوضيحات بشأن برنامج الدعم المباشر للسكن.";
-
-  function replaceStatement() {
+  function replaceSectionThreeStatements() {
     const walker = document.createTreeWalker(
       document.body,
       NodeFilter.SHOW_TEXT,
     );
 
-    let replaced = false;
+    let replacedCount = 0;
     let node;
 
     while ((node = walker.nextNode())) {
-      if (node.nodeValue?.trim() === originalStatement) {
-        node.nodeValue = node.nodeValue.replace(
-          originalStatement,
-          improvedStatement,
-        );
-        replaced = true;
+      const value = node.nodeValue;
+      if (!value) continue;
+
+      for (const [original, improved] of sectionThreeStatements) {
+        if (value.includes(original)) {
+          node.nodeValue = value.replace(original, improved);
+          replacedCount += 1;
+          break;
+        }
       }
     }
 
-    return replaced;
+    return replacedCount === sectionThreeStatements.size;
   }
 
   function replaceClarifications() {
@@ -57,9 +89,9 @@
   }
 
   function applyPatches() {
-    const statementUpdated = replaceStatement();
+    const statementsUpdated = replaceSectionThreeStatements();
     const clarificationsUpdated = replaceClarifications();
-    return statementUpdated && clarificationsUpdated;
+    return statementsUpdated && clarificationsUpdated;
   }
 
   if (applyPatches()) return;
