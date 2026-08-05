@@ -42,7 +42,6 @@
 
   function replaceSectionThreeStatements() {
     const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
-    let replacedCount = 0;
     let node;
 
     while ((node = walker.nextNode())) {
@@ -51,13 +50,10 @@
       for (const [original, improved] of sectionThreeStatements) {
         if (node.nodeValue.includes(original)) {
           node.nodeValue = node.nodeValue.replace(original, improved);
-          replacedCount += 1;
           break;
         }
       }
     }
-
-    return replacedCount === sectionThreeStatements.size;
   }
 
   function replaceClarifications() {
@@ -65,35 +61,35 @@
       (element) => element.querySelector("summary")?.textContent.trim() === "توضيحات",
     );
 
-    if (!details) return false;
+    if (!details) return;
 
     const paragraphs = details.querySelectorAll(".definition-list > p");
-    if (paragraphs.length < 3) return false;
+    if (paragraphs.length < 3) return;
 
-    paragraphs[1].innerHTML = "";
-    const officialTitle = document.createElement("strong");
-    officialTitle.textContent = "وسائل التواصل الرسمية للوزارة:";
-    paragraphs[1].append(officialTitle, ` ${officialChannelsText}`);
+    const officialExpected = `وسائل التواصل الرسمية للوزارة: ${officialChannelsText}`;
+    if (paragraphs[1].textContent.trim() !== officialExpected) {
+      paragraphs[1].innerHTML = "";
+      const officialTitle = document.createElement("strong");
+      officialTitle.textContent = "وسائل التواصل الرسمية للوزارة:";
+      paragraphs[1].append(officialTitle, ` ${officialChannelsText}`);
+    }
 
-    paragraphs[2].innerHTML = "";
-    const interactiveTitle = document.createElement("strong");
-    interactiveTitle.textContent = "وسائل التواصل الرسمية التي تتيح التفاعل:";
-    paragraphs[2].append(interactiveTitle, ` ${interactiveChannelsText}`);
-
-    return true;
+    const interactiveExpected = `وسائل التواصل الرسمية التي تتيح التفاعل: ${interactiveChannelsText}`;
+    if (paragraphs[2].textContent.trim() !== interactiveExpected) {
+      paragraphs[2].innerHTML = "";
+      const interactiveTitle = document.createElement("strong");
+      interactiveTitle.textContent = "وسائل التواصل الرسمية التي تتيح التفاعل:";
+      paragraphs[2].append(interactiveTitle, ` ${interactiveChannelsText}`);
+    }
   }
 
   function applyPatches() {
-    const statementsUpdated = replaceSectionThreeStatements();
-    const clarificationsUpdated = replaceClarifications();
-    return statementsUpdated && clarificationsUpdated;
+    replaceSectionThreeStatements();
+    replaceClarifications();
   }
 
-  if (applyPatches()) return;
+  applyPatches();
 
-  const observer = new MutationObserver(() => {
-    if (applyPatches()) observer.disconnect();
-  });
-
+  const observer = new MutationObserver(applyPatches);
   observer.observe(document.documentElement, { childList: true, subtree: true });
 })();
