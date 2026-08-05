@@ -8,7 +8,7 @@
   const oldSectionThreeTitle =
     "استعمال وسائل التواصل الرسمية التي تتيح التفاعل مع الوزارة";
   const newSectionThreeTitle =
-    "إمكانات التفاعل عبر وسائل التواصل الرسمية للوزارة";
+    "التفاعل عبر وسائل التواصل الرسمية للوزارة";
 
   const sectionThreeStatements = new Map([
     [
