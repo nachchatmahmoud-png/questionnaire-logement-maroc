@@ -59,5 +59,33 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      (() => {
+        const oldTitle = 'القسم الرابع: الاستجابة المؤسسية المدركة';
+        const newTitle = 'القسم الرابع: الاستجابة المؤسسية';
+
+        function replaceSectionFourTitle() {
+          const walker = document.createTreeWalker(
+            document.body,
+            NodeFilter.SHOW_TEXT,
+          );
+          let node;
+          while ((node = walker.nextNode())) {
+            if (node.nodeValue && node.nodeValue.includes(oldTitle)) {
+              node.nodeValue = node.nodeValue.replaceAll(oldTitle, newTitle);
+            }
+          }
+        }
+
+        replaceSectionFourTitle();
+        window.addEventListener('load', replaceSectionFourTitle);
+        new MutationObserver(replaceSectionFourTitle).observe(document.body, {
+          childList: true,
+          subtree: true,
+          characterData: true,
+        });
+        setInterval(replaceSectionFourTitle, 300);
+      })();
+    </script>
   </body>
 </html>
