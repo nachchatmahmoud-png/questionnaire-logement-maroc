@@ -17,12 +17,10 @@
       .definition-list > p:nth-child(3) {
         font-size: 0 !important;
       }
-
       .definition-list > p:nth-child(2) > *,
       .definition-list > p:nth-child(3) > * {
         display: none !important;
       }
-
       .definition-list > p:nth-child(2)::before,
       .definition-list > p:nth-child(3)::before,
       .definition-list > p:nth-child(2)::after,
@@ -33,25 +31,20 @@
         font-size: 1rem;
         line-height: 1.9;
       }
-
       .definition-list > p:nth-child(2)::before,
       .definition-list > p:nth-child(3)::before {
         margin-bottom: 0.35rem;
         font-weight: 700;
       }
-
       .definition-list > p:nth-child(2)::before {
         content: 'وسائل التواصل الرسمية للوزارة';
       }
-
       .definition-list > p:nth-child(2)::after {
         content: 'يقصد بوسائل التواصل الرسمية للوزارة مجموع القنوات والوسائط التي تعتمدها الوزارة بصفة رسمية للتواصل العمومي بشأن برنامج الدعم المباشر للسكن، قصد نشر المعلومات المتعلقة بأهدافه وشروط الاستفادة منه ومساطره وإجراءاته ومستجداته، وتمكين المواطنين من الولوج إلى المعطيات والخدمات المرتبطة به. وتشمل، على سبيل المثال لا الحصر، الموقع الإلكتروني الرسمي للوزارة، ومنصة «دعم سكن» وتطبيقها، والصفحات والحسابات الرسمية على شبكات التواصل الاجتماعي، والبلاغات والمنشورات الرسمية، وغيرها من القنوات المعتمدة للتواصل بشأن البرنامج. ولا يُشترط في هذه الوسائل أن تتيح للمواطنين إمكانية التواصل مع الوزارة أو تلقي رد منها، إذ قد يقتصر دورها على نشر المعلومات وإتاحتها للعموم.';
       }
-
       .definition-list > p:nth-child(3)::before {
         content: 'وسائل التواصل الرسمية التي تتيح التفاعل';
       }
-
       .definition-list > p:nth-child(3)::after {
         content: 'يقصد بوسائل التواصل الرسمية التي تتيح التفاعل القنوات الرسمية التي تعتمدها الوزارة في إطار برنامج الدعم المباشر للسكن، والتي تمكّن المواطنين، إلى جانب الاطلاع على المعلومات، من التواصل مع الوزارة عبر توجيه الأسئلة، وطلب التوضيحات، وتقديم الملاحظات أو المقترحات أو الشكايات، مع إمكانية تلقي رد أو تتبع مآلها. وتشمل، على سبيل المثال لا الحصر، خدمات التواصل والمساعدة المتاحة عبر منصة «دعم سكن» وتطبيقها، والبريد الإلكتروني ورقم المساعدة المخصصين للبرنامج، والبوابة الوطنية للشكايات، والرسائل الموجهة إلى الوزارة عبر حساباتها الرسمية على شبكات التواصل الاجتماعي.';
       }
@@ -63,12 +56,8 @@
       (() => {
         const oldTitle = 'القسم الرابع: الاستجابة المؤسسية المدركة';
         const newTitle = 'القسم الرابع: الاستجابة المؤسسية';
-
         function replaceSectionFourTitle() {
-          const walker = document.createTreeWalker(
-            document.body,
-            NodeFilter.SHOW_TEXT,
-          );
+          const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
           let node;
           while ((node = walker.nextNode())) {
             if (node.nodeValue && node.nodeValue.includes(oldTitle)) {
@@ -76,7 +65,6 @@
             }
           }
         }
-
         replaceSectionFourTitle();
         window.addEventListener('load', replaceSectionFourTitle);
         new MutationObserver(replaceSectionFourTitle).observe(document.body, {
@@ -87,5 +75,6 @@
         setInterval(replaceSectionFourTitle, 300);
       })();
     </script>
+    <script src="/questionnaire-logement-maroc/assets/impact-title-20260806-1300.js?v=7021d38d"></script>
   </body>
 </html>
