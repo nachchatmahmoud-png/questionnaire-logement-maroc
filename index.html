@@ -3,78 +3,51 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta
-      name="description"
-      content="استبيان أكاديمي حول التواصل العمومي المرتبط ببرنامج الدعم المباشر للسكن"
-    />
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    <meta name="description" content="استبيان أكاديمي حول التواصل العمومي المرتبط ببرنامج الدعم المباشر للسكن" />
     <title>استبيان برنامج الدعم المباشر للسكن</title>
-    <script type="module" crossorigin src="/questionnaire-logement-maroc/assets/bootstrap-final-20260806.js?v=20260806-1238"></script>
-    <link rel="modulepreload" crossorigin href="/questionnaire-logement-maroc/assets/rolldown-runtime-jpDsebLB.js">
-    <link rel="modulepreload" crossorigin href="/questionnaire-logement-maroc/assets/react-B0ZntvhZ.js">
-    <link rel="stylesheet" crossorigin href="/questionnaire-logement-maroc/assets/index-iQBeb6Ok.css">
+    <link rel="stylesheet" crossorigin href="/questionnaire-logement-maroc/assets/index-iQBeb6Ok.css?v=20260807-ghpages-final" />
+    <script>
+      (() => {
+        const nativeStringify = JSON.stringify.bind(JSON);
+        JSON.stringify = (value, ...args) => {
+          if (value && value.schema_version === '2026-08-07-final' && value.answers?.q2 !== 'نعم') {
+            value = {
+              ...value,
+              scores: Object.fromEntries(Object.keys(value.scores || {}).map((key) => [key, null])),
+            };
+          }
+          return nativeStringify(value, ...args);
+        };
+      })();
+    </script>
+    <script src="/questionnaire-logement-maroc/assets/ui-cleanup-20260807.js?v=20260807-ghpages-final"></script>
+    <script src="/questionnaire-logement-maroc/assets/google-form-final-validation-20260807.js?v=20260807-ghpages-final"></script>
+    <script defer src="/questionnaire-logement-maroc/assets/questionnaire-final-20260807.js?v=20260807-ghpages-final"></script>
     <style>
-      .definition-list > p:nth-child(2),
-      .definition-list > p:nth-child(3) {
-        font-size: 0 !important;
-      }
-      .definition-list > p:nth-child(2) > *,
-      .definition-list > p:nth-child(3) > * {
-        display: none !important;
-      }
-      .definition-list > p:nth-child(2)::before,
-      .definition-list > p:nth-child(3)::before,
-      .definition-list > p:nth-child(2)::after,
-      .definition-list > p:nth-child(3)::after {
-        display: block;
-        direction: rtl;
-        text-align: right;
-        font-size: 1rem;
-        line-height: 1.9;
-      }
-      .definition-list > p:nth-child(2)::before,
-      .definition-list > p:nth-child(3)::before {
-        margin-bottom: 0.35rem;
-        font-weight: 700;
-      }
-      .definition-list > p:nth-child(2)::before {
-        content: 'وسائل التواصل الرسمية للوزارة';
-      }
-      .definition-list > p:nth-child(2)::after {
-        content: 'يقصد بوسائل التواصل الرسمية للوزارة مجموع القنوات والوسائط التي تعتمدها الوزارة بصفة رسمية للتواصل العمومي بشأن برنامج الدعم المباشر للسكن، قصد نشر المعلومات المتعلقة بأهدافه وشروط الاستفادة منه ومساطره وإجراءاته ومستجداته، وتمكين المواطنين من الولوج إلى المعطيات والخدمات المرتبطة به. وتشمل، على سبيل المثال لا الحصر، الموقع الإلكتروني الرسمي للوزارة، ومنصة «دعم سكن» وتطبيقها، والصفحات والحسابات الرسمية على شبكات التواصل الاجتماعي، والبلاغات والمنشورات الرسمية، وغيرها من القنوات المعتمدة للتواصل بشأن البرنامج. ولا يُشترط في هذه الوسائل أن تتيح للمواطنين إمكانية التواصل مع الوزارة أو تلقي رد منها، إذ قد يقتصر دورها على نشر المعلومات وإتاحتها للعموم.';
-      }
-      .definition-list > p:nth-child(3)::before {
-        content: 'وسائل التواصل الرسمية التي تتيح التفاعل';
-      }
-      .definition-list > p:nth-child(3)::after {
-        content: 'يقصد بوسائل التواصل الرسمية التي تتيح التفاعل القنوات الرسمية التي تعتمدها الوزارة في إطار برنامج الدعم المباشر للسكن، والتي تمكّن المواطنين، إلى جانب الاطلاع على المعلومات، من التواصل مع الوزارة عبر توجيه الأسئلة، وطلب التوضيحات، وتقديم الملاحظات أو المقترحات أو الشكايات، مع إمكانية تلقي رد أو تتبع مآلها. وتشمل، على سبيل المثال لا الحصر، خدمات التواصل والمساعدة المتاحة عبر منصة «دعم سكن» وتطبيقها، والبريد الإلكتروني ورقم المساعدة المخصصين للبرنامج، والبوابة الوطنية للشكايات، والرسائل الموجهة إلى الوزارة عبر حساباتها الرسمية على شبكات التواصل الاجتماعي.';
-      }
+      #boot-fallback{max-width:760px;margin:48px auto;padding:28px;border:1px solid #e5e7eb;border-radius:18px;background:#fff;font-family:Arial,sans-serif;line-height:1.8;text-align:center;color:#172033}
+      #boot-fallback h1{font-size:1.45rem;margin:0 0 10px;font-weight:700}
+      #boot-fallback p{margin:0;color:#667085;font-weight:400}
     </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <section id="boot-fallback" aria-live="polite">
+        <h1>جاري تحميل الاستبيان…</h1>
+        <p>إذا استمر ظهور هذه الرسالة، يرجى تحديث الصفحة مرة واحدة.</p>
+      </section>
+    </div>
     <script>
-      (() => {
-        const oldTitle = 'القسم الرابع: الاستجابة المؤسسية المدركة';
-        const newTitle = 'القسم الرابع: الاستجابة المؤسسية';
-        function replaceSectionFourTitle() {
-          const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
-          let node;
-          while ((node = walker.nextNode())) {
-            if (node.nodeValue && node.nodeValue.includes(oldTitle)) {
-              node.nodeValue = node.nodeValue.replaceAll(oldTitle, newTitle);
-            }
-          }
+      setTimeout(() => {
+        const root = document.getElementById('root');
+        const fallback = document.getElementById('boot-fallback');
+        if (fallback && root && root.contains(fallback)) {
+          fallback.querySelector('h1').textContent = 'تعذر تشغيل الاستبيان على هذا المتصفح';
+          fallback.querySelector('p').textContent = 'الصفحة نفسها متاحة، لكن أحد ملفات التشغيل لم يبدأ. يرجى إعادة تحميل الصفحة.';
         }
-        replaceSectionFourTitle();
-        window.addEventListener('load', replaceSectionFourTitle);
-        const observer = new MutationObserver(replaceSectionFourTitle);
-        observer.observe(document.documentElement, {
-          childList: true,
-          subtree: true,
-          characterData: true,
-        });
-      })();
+      }, 7000);
     </script>
-    <script src="/questionnaire-logement-maroc/assets/impact-title-20260806-1300.js?v=b9ba1cce"></script>
   </body>
 </html>
