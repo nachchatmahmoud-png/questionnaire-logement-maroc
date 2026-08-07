@@ -1,35 +1,45 @@
-/* GitHub Pages authoritative Likert styling */
+/* GitHub Pages authoritative Likert presentation */
+html body .site-shell #questionnaire-form .legend-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  gap: 8px !important;
+}
+
 html body .site-shell #questionnaire-form .legend-grid > span {
   font-family: "Noto Sans Arabic", Tahoma, Arial, sans-serif !important;
   font-size: 15px !important;
   font-weight: 700 !important;
   line-height: 1.45 !important;
   color: var(--ink) !important;
-  padding: 6px 7px !important;
+  padding: 7px 8px !important;
   white-space: normal !important;
+  text-align: center !important;
 }
 
+/* In the tables, keep only the statement heading and the radio choices. */
 html body .site-shell #questionnaire-form .likert-table thead th:not(:first-child) {
-  font-family: "Noto Sans Arabic", Tahoma, Arial, sans-serif !important;
-  font-size: 15px !important;
-  font-weight: 700 !important;
-  line-height: 1.45 !important;
-  color: var(--ink) !important;
-  white-space: normal !important;
-  min-width: 94px !important;
-  padding: .54rem .30rem !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  color: transparent !important;
+  min-width: 56px !important;
+  width: 56px !important;
+  padding: .30rem .12rem !important;
 }
 
 @media (max-width: 900px) {
-  html body .site-shell #questionnaire-form .legend-grid > span,
-  html body .site-shell #questionnaire-form .likert-table thead th:not(:first-child) {
+  html body .site-shell #questionnaire-form .legend-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 7px !important;
+  }
+  html body .site-shell #questionnaire-form .legend-grid > span {
     font-size: 14px !important;
     font-weight: 700 !important;
     line-height: 1.4 !important;
+    padding: 6px 7px !important;
   }
   html body .site-shell #questionnaire-form .likert-table thead th:not(:first-child) {
-    min-width: 86px !important;
-    padding: .50rem .26rem !important;
+    min-width: 52px !important;
+    width: 52px !important;
+    padding: .26rem .10rem !important;
   }
 }
 
@@ -38,17 +48,15 @@ html body .site-shell #questionnaire-form .likert-table thead th:not(:first-chil
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     gap: 6px !important;
   }
-  html body .site-shell #questionnaire-form .legend-grid > span,
-  html body .site-shell #questionnaire-form .likert-table thead th:not(:first-child) {
+  html body .site-shell #questionnaire-form .legend-grid > span {
     font-size: 13px !important;
     font-weight: 700 !important;
     line-height: 1.35 !important;
-  }
-  html body .site-shell #questionnaire-form .legend-grid > span {
     padding: 5px 6px !important;
   }
   html body .site-shell #questionnaire-form .likert-table thead th:not(:first-child) {
-    min-width: 78px !important;
-    padding: .44rem .22rem !important;
+    min-width: 48px !important;
+    width: 48px !important;
+    padding: .22rem .08rem !important;
   }
 }
