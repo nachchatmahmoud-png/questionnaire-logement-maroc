@@ -45,7 +45,9 @@
 
     for (const [id, text] of Object.entries(labels)) {
       const button = document.getElementById(id);
-      if (button && !button.disabled) button.textContent = text;
+      if (button && !button.disabled && button.textContent !== text) {
+        button.textContent = text;
+      }
     }
 
     const nav = document.querySelector('.form-actions');
@@ -75,10 +77,20 @@
   `;
   document.head.appendChild(style);
 
+  let scheduled = false;
+  function scheduleAdapt() {
+    if (scheduled) return;
+    scheduled = true;
+    requestAnimationFrame(() => {
+      scheduled = false;
+      adaptFinalButtons();
+    });
+  }
+
   adaptFinalButtons();
-  window.addEventListener('DOMContentLoaded', adaptFinalButtons);
-  window.addEventListener('load', adaptFinalButtons);
-  new MutationObserver(adaptFinalButtons).observe(document.documentElement, {
+  window.addEventListener('DOMContentLoaded', scheduleAdapt);
+  window.addEventListener('load', scheduleAdapt);
+  new MutationObserver(scheduleAdapt).observe(document.documentElement, {
     childList: true,
     subtree: true,
   });
