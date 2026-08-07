@@ -10,6 +10,10 @@
     <title>استبيان برنامج الدعم المباشر للسكن</title>
     <link rel="stylesheet" crossorigin href="/questionnaire-logement-maroc/assets/index-iQBeb6Ok.css?v=20260807-access-1" />
     <script>
+      window.__surveyBooted = false;
+      window.addEventListener('error', function () {
+        document.documentElement.dataset.scriptError = '1';
+      });
       (() => {
         const nativeStringify = JSON.stringify.bind(JSON);
         JSON.stringify = (value, ...args) => {
@@ -26,16 +30,28 @@
     <script src="/questionnaire-logement-maroc/assets/ui-cleanup-20260807.js?v=20260807-access-1"></script>
     <script src="/questionnaire-logement-maroc/assets/google-form-final-validation-20260807.js?v=20260807-access-1"></script>
     <script type="module" crossorigin src="/questionnaire-logement-maroc/assets/questionnaire-final-20260807.js?v=20260807-access-1"></script>
+    <style>
+      #boot-fallback{max-width:760px;margin:48px auto;padding:28px;border:1px solid #e5e7eb;border-radius:18px;background:#fff;font-family:Arial,sans-serif;line-height:1.8;text-align:center;color:#172033}
+      #boot-fallback h1{font-size:1.45rem;margin:0 0 10px;font-weight:700}
+      #boot-fallback p{margin:0;color:#667085;font-weight:400}
+    </style>
   </head>
   <body>
     <div id="root">
-      <main dir="rtl" style="max-width:760px;margin:48px auto;padding:24px;font-family:Arial,sans-serif;line-height:1.8;text-align:right">
-        <h1 style="font-size:1.4rem;margin:0 0 12px">جارٍ تحميل الاستبيان…</h1>
-        <p style="margin:0;color:#667085">إذا استمرت هذه الرسالة، يرجى تحديث الصفحة تحديثًا كاملاً.</p>
-      </main>
+      <section id="boot-fallback" aria-live="polite">
+        <h1>جاري تحميل الاستبيان…</h1>
+        <p>إذا استمر ظهور هذه الرسالة، يرجى تحديث الصفحة مرة واحدة.</p>
+      </section>
     </div>
-    <noscript>
-      <p dir="rtl" style="max-width:760px;margin:24px auto;padding:16px;font-family:Arial,sans-serif">يجب تفعيل JavaScript لعرض الاستبيان.</p>
-    </noscript>
+    <script>
+      setTimeout(() => {
+        const root = document.getElementById('root');
+        const fallback = document.getElementById('boot-fallback');
+        if (fallback && root && root.contains(fallback)) {
+          fallback.querySelector('h1').textContent = 'تعذر تشغيل الاستبيان على هذا المتصفح';
+          fallback.querySelector('p').textContent = 'الصفحة نفسها متاحة، لكن أحد ملفات التشغيل لم يبدأ. يرجى إعادة تحميل الصفحة.';
+        }
+      }, 7000);
+    </script>
   </body>
 </html>
