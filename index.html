@@ -6,7 +6,21 @@
     <meta name="description" content="استبيان أكاديمي حول التواصل العمومي المرتبط ببرنامج الدعم المباشر للسكن" />
     <title>استبيان برنامج الدعم المباشر للسكن</title>
     <link rel="stylesheet" crossorigin href="/questionnaire-logement-maroc/assets/index-iQBeb6Ok.css" />
-    <script type="module" crossorigin src="/questionnaire-logement-maroc/assets/questionnaire-final-20260807.js?v=20260807-final"></script>
+    <script>
+      (() => {
+        const nativeStringify = JSON.stringify.bind(JSON);
+        JSON.stringify = (value, ...args) => {
+          if (value && value.schema_version === '2026-08-07-final' && value.answers?.q2 !== 'نعم') {
+            value = {
+              ...value,
+              scores: Object.fromEntries(Object.keys(value.scores || {}).map((key) => [key, null])),
+            };
+          }
+          return nativeStringify(value, ...args);
+        };
+      })();
+    </script>
+    <script type="module" crossorigin src="/questionnaire-logement-maroc/assets/questionnaire-final-20260807.js?v=20260807-final-2"></script>
   </head>
   <body>
     <div id="root"></div>
