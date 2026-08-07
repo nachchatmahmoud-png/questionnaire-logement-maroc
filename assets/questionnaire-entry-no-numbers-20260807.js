@@ -13,7 +13,7 @@ function fixLikertDisplay() {
     const items = Array.from(legend.children);
     if (items.length === 5) {
       items.forEach((item, index) => {
-        item.textContent = LIKERT_LABELS[index];
+        item.textContent = `${index + 1} — ${LIKERT_LABELS[index]}`;
       });
     }
   });
@@ -22,8 +22,8 @@ function fixLikertDisplay() {
     const headers = Array.from(row.querySelectorAll('th')).slice(1);
     if (headers.length !== 5) return;
     headers.forEach((header, index) => {
-      header.textContent = LIKERT_LABELS[index];
-      header.title = LIKERT_LABELS[index];
+      header.textContent = '';
+      header.removeAttribute('title');
       header.setAttribute('aria-label', LIKERT_LABELS[index]);
     });
   });
