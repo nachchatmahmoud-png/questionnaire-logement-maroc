@@ -22,8 +22,8 @@ function applyLikertLayout() {
     const headers = Array.from(row.querySelectorAll('th')).slice(1, 6);
     if (headers.length !== 5) return;
     headers.forEach((header, index) => {
-      if (header.textContent !== '') header.textContent = '';
-      header.removeAttribute('title');
+      if (header.textContent !== LABELS[index]) header.textContent = LABELS[index];
+      header.title = LABELS[index];
       header.setAttribute('aria-label', LABELS[index]);
     });
   });
