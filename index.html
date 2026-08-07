@@ -8,7 +8,7 @@
     <meta http-equiv="Expires" content="0" />
     <meta name="description" content="استبيان أكاديمي حول التواصل العمومي المرتبط ببرنامج الدعم المباشر للسكن" />
     <title>استبيان برنامج الدعم المباشر للسكن</title>
-    <link rel="stylesheet" crossorigin href="/questionnaire-logement-maroc/assets/index-iQBeb6Ok.css?v=20260807-access-6" />
+    <link rel="stylesheet" crossorigin href="/questionnaire-logement-maroc/assets/index-iQBeb6Ok.css?v=20260807-access-7" />
     <script>
       window.addEventListener('error', function () {
         document.documentElement.dataset.scriptError = '1';
@@ -26,13 +26,77 @@
         };
       })();
     </script>
-    <script src="/questionnaire-logement-maroc/assets/ui-cleanup-20260807.js?v=20260807-access-6"></script>
-    <script src="/questionnaire-logement-maroc/assets/google-form-final-validation-20260807.js?v=20260807-access-6"></script>
-    <script type="module" crossorigin src="/questionnaire-logement-maroc/assets/questionnaire-entry-no-numbers-20260807.js?v=20260807-2"></script>
+    <script src="/questionnaire-logement-maroc/assets/ui-cleanup-20260807.js?v=20260807-access-7"></script>
+    <script src="/questionnaire-logement-maroc/assets/google-form-final-validation-20260807.js?v=20260807-access-7"></script>
+    <script type="module" crossorigin src="/questionnaire-logement-maroc/assets/questionnaire-entry-no-numbers-20260807.js?v=20260807-3"></script>
     <style>
       #boot-fallback{max-width:760px;margin:48px auto;padding:28px;border:1px solid #e5e7eb;border-radius:18px;background:#fff;font-family:Arial,sans-serif;line-height:1.8;text-align:center;color:#172033}
       #boot-fallback h1{font-size:1.45rem;margin:0 0 10px;font-weight:700}
       #boot-fallback p{margin:0;color:#667085;font-weight:400}
+
+      /* Affichage Likert imposé directement sur la page publique. */
+      .legend-grid > span,
+      .likert-table thead th:not(:first-child){
+        font-size:0 !important;
+        color:transparent !important;
+        white-space:normal !important;
+      }
+
+      .legend-grid > span::before,
+      .likert-table thead th:not(:first-child)::before{
+        display:block;
+        font-size:.72rem;
+        font-weight:600;
+        color:#667085;
+        line-height:1.2;
+        margin-bottom:.28rem;
+      }
+
+      .legend-grid > span::after,
+      .likert-table thead th:not(:first-child)::after{
+        display:block;
+        font-size:1.08rem;
+        font-weight:800;
+        color:#172033;
+        line-height:1.5;
+      }
+
+      .legend-grid > span:nth-child(1)::before,
+      .likert-table thead th:nth-child(2)::before{content:'1';}
+      .legend-grid > span:nth-child(2)::before,
+      .likert-table thead th:nth-child(3)::before{content:'2';}
+      .legend-grid > span:nth-child(3)::before,
+      .likert-table thead th:nth-child(4)::before{content:'3';}
+      .legend-grid > span:nth-child(4)::before,
+      .likert-table thead th:nth-child(5)::before{content:'4';}
+      .legend-grid > span:nth-child(5)::before,
+      .likert-table thead th:nth-child(6)::before{content:'5';}
+
+      .legend-grid > span:nth-child(1)::after,
+      .likert-table thead th:nth-child(2)::after{content:'لا أوافق إطلاقًا';}
+      .legend-grid > span:nth-child(2)::after,
+      .likert-table thead th:nth-child(3)::after{content:'لا أوافق';}
+      .legend-grid > span:nth-child(3)::after,
+      .likert-table thead th:nth-child(4)::after{content:'لا أوافق ولا أعارض';}
+      .legend-grid > span:nth-child(4)::after,
+      .likert-table thead th:nth-child(5)::after{content:'أوافق';}
+      .legend-grid > span:nth-child(5)::after,
+      .likert-table thead th:nth-child(6)::after{content:'أوافق تمامًا';}
+
+      .likert-table thead th:not(:first-child){
+        min-width:150px !important;
+        padding:.9rem .65rem !important;
+        vertical-align:middle;
+      }
+
+      @media(max-width:900px){
+        .legend-grid > span::after,
+        .likert-table thead th:not(:first-child)::after{
+          font-size:1rem;
+          font-weight:800;
+        }
+        .likert-table thead th:not(:first-child){min-width:132px !important;}
+      }
     </style>
   </head>
   <body>
