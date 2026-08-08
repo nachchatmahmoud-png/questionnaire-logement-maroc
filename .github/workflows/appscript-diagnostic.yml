@@ -1,0 +1,35 @@
+name: Apps Script diagnostic
+
+on:
+  push:
+    branches: [gh-pages]
+    paths:
+      - '.github/workflows/appscript-diagnostic.yml'
+
+jobs:
+  diagnostic:
+    runs-on: ubuntu-latest
+    env:
+      ENDPOINT: https://script.google.com/macros/s/AKfycbzWv9vYyyvLkP0htcW7ch4w6rn-CcFNK8BA2L04eVbmAVtE05w0i1yiJwnMgZSOpyNZ/exec
+    steps:
+      - name: Test GET endpoint
+        shell: bash
+        run: |
+          set -euo pipefail
+          code=$(curl -L -sS -o /tmp/get_body.txt -w '%{http_code}' "$ENDPOINT")
+          echo "GET_HTTP=$code"
+          echo 'GET_BODY_BEGIN'
+          head -c 2000 /tmp/get_body.txt || true
+          echo
+          echo 'GET_BODY_END'
+
+      - name: Test POST endpoint without creating response
+        shell: bash
+        run: |
+          set -euo pipefail
+          code=$(curl -L -sS -o /tmp/post_body.txt -w '%{http_code}' -X POST --data-urlencode 'payload={"answers":null}' "$ENDPOINT")
+          echo "POST_HTTP=$code"
+          echo 'POST_BODY_BEGIN'
+          head -c 2000 /tmp/post_body.txt || true
+          echo
+          echo 'POST_BODY_END'
