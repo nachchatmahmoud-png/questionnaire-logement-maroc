@@ -1,5 +1,5 @@
 (() => {
-  const APPS_SCRIPT_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzWv9vYyyvLkP0htcW7ch4w6rn-CcFNK8BA2L04eVbmAVtE05w0i1yiJwnMgZSOpyNZ/exec';
+  const APPS_SCRIPT_ENDPOINT = 'https://script.google.com/macros/s/AKfycby1zRP7s7H6XxbAb3gs-zmnO_mrKv8WmcLAY5Zy7ramem7EUt26FnuAhf599NULbC31/exec';
 
   if (typeof submit !== 'function') return;
 
