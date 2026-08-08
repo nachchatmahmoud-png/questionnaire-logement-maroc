@@ -1,30 +1,4 @@
 (() => {
-  const GOOGLE_FORM_ID = '1FAIpQLScGEubgpATNTz90NztM1zAqKboGOS1p5ePQzg5e703l_JRx0g';
-  const FORM_RESPONSE = `https://docs.google.com/forms/d/e/${GOOGLE_FORM_ID}/formResponse`;
-  const FORM_VIEW = `https://docs.google.com/forms/d/e/${GOOGLE_FORM_ID}/viewform`;
-  const nativeSubmit = HTMLFormElement.prototype.submit;
-
-  function isQuestionnaireGoogleForm(form) {
-    try { return new URL(form.action, window.location.href).href.startsWith(FORM_RESPONSE); }
-    catch (_) { return false; }
-  }
-
-  function openGoogleValidation(form) {
-    const params = new URLSearchParams();
-    params.set('usp', 'pp_url');
-    for (const field of Array.from(form.elements || [])) {
-      if (!field.name || !field.name.startsWith('entry.') || field.disabled) continue;
-      params.append(field.name, field.value ?? '');
-    }
-    try { sessionStorage.setItem('housingSurveyGoogleValidationPending', '1'); } catch (_) {}
-    window.location.assign(`${FORM_VIEW}?${params.toString()}`);
-  }
-
-  HTMLFormElement.prototype.submit = function patchedSubmit() {
-    if (isQuestionnaireGoogleForm(this)) { openGoogleValidation(this); return; }
-    return nativeSubmit.call(this);
-  };
-
   function removeLegacyGoogleNote() {
     document.querySelectorAll('.google-validation-note').forEach((note) => note.remove());
     const forbiddenText = 'سيتم فتح نموذج Google في الخطوة الأخيرة للتحقق من المشاركة وإرسال الإجابة. لا يطلب هذا الموقع بريدكم الإلكتروني الشخصي.';
@@ -37,8 +11,8 @@
 
   function adaptFinalButtons() {
     const labels = {
-      submit: 'متابعة إلى Google Forms وإرسال الإجابة',
-      'submit-end': 'متابعة إلى Google Forms وإنهاء الاستبيان',
+      submit: 'إرسال الإجابات',
+      'submit-end': 'إرسال الإجابة وإنهاء الاستبيان',
     };
     for (const [id, text] of Object.entries(labels)) {
       const button = document.getElementById(id);
