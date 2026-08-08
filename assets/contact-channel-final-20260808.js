@@ -9,13 +9,20 @@
     OTHER_CHANNEL
   ];
 
+  const stripLikertLegend = (html) => html.replace(
+    /^<div class="instruction-card"><strong>يرجى تحديد درجة موافقتكم على العبارات التالية:<\/strong><div class="legend-grid">[\s\S]*?<\/div><\/div>/,
+    ''
+  );
+
   if (typeof contactChannels !== 'undefined' && Array.isArray(contactChannels)) {
     contactChannels.splice(0, contactChannels.length, ...FINAL_CHANNELS);
   }
 
   if (typeof interaction === 'function') {
     interaction = function () {
-      let h = `<div class="instruction-card"><p>يرجى الإجابة استنادًا إلى ما تعرفونه أو عايشتموه بشأن القنوات الرسمية التي تتيح للمواطنين التواصل أو التفاعل حول البرنامج، مثل البريد الإلكتروني والهاتف المخصصين للدعم عبر «دعم سكن»، والموقع الإلكتروني الرسمي للوزارة، والبوابة الوطنية للشكايات، والرسائل الخاصة عبر الحسابات الرسمية للوزارة على شبكات التواصل الاجتماعي.</p></div>${table(G.interComm)}${table(G.interPart)}<section class="group-card"><div class="group-heading"><h3>ثالثًا: تجربة التواصل الفعلي مع الوزارة</h3></div>${radio('contact_reel','هل سبق لكم استخدام إحدى القنوات الرسمية للتواصل أو التفاعل بشأن البرنامج، لطرح سؤال أو طلب توضيح أو تقديم ملاحظة أو مقترح أو شكاية؟',['نعم','لا'])}`;
+      const mainLikertBlock = table([...G.interComm, ...G.interPart]);
+
+      let h = `<div class="instruction-card"><p>يرجى الإجابة استنادًا إلى ما تعرفونه أو عايشتموه بشأن القنوات الرسمية التي تتيح للمواطنين التواصل أو التفاعل حول البرنامج، مثل البريد الإلكتروني والهاتف المخصصين للدعم عبر «دعم سكن»، والموقع الإلكتروني الرسمي للوزارة، والبوابة الوطنية للشكايات، والرسائل الخاصة عبر الحسابات الرسمية للوزارة على شبكات التواصل الاجتماعي.</p></div>${mainLikertBlock}<section class="group-card"><div class="group-heading"><h3>ثالثًا: تجربة التواصل الفعلي مع الوزارة</h3></div>${radio('contact_reel','هل سبق لكم استخدام إحدى القنوات الرسمية للتواصل أو التفاعل بشأن البرنامج، لطرح سؤال أو طلب توضيح أو تقديم ملاحظة أو مقترح أو شكاية؟',['نعم','لا'])}`;
 
       if (val('contact_reel') === 'نعم') {
         h += radio('canal_dernier_contact','من خلال أي قناة رسمية تم آخر تواصل لكم بشأن البرنامج؟',contactChannels);
@@ -26,7 +33,7 @@
 
         h += radio('reponse_recue','هل توصلتم برد بشأن هذا التواصل؟',['نعم','لا']);
         if (val('reponse_recue') === 'نعم') {
-          h += `<p class="question-help">يرجى تقييم الرد الذي توصلتم به:</p>${table(G.response)}`;
+          h += `<p class="question-help">يرجى تقييم الرد الذي توصلتم به:</p>${stripLikertLegend(table(G.response))}`;
         }
       }
 
