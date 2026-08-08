@@ -34,21 +34,9 @@
       const button = document.getElementById(id);
       if (button && !button.disabled && button.textContent !== text) button.textContent = text;
     }
-    const nav = document.querySelector('.form-actions');
-    if (nav && (document.getElementById('submit') || document.getElementById('submit-end'))) {
-      const section = nav.closest('#questionnaire-form, .form-section');
-      if (section && !section.querySelector('.google-validation-note')) {
-        const note = document.createElement('div');
-        note.className = 'instruction-card compact google-validation-note';
-        note.innerHTML = '<p>سيتم فتح نموذج Google في الخطوة الأخيرة للتحقق من المشاركة وإرسال الإجابة. لا يطلب هذا الموقع بريدكم الإلكتروني الشخصي.</p>';
-        nav.before(note);
-      }
-    }
-  }
 
-  const style = document.createElement('style');
-  style.textContent = `.google-validation-note{margin-top:1rem;margin-bottom:.75rem}.google-validation-note p{margin:0;font-size:.94rem;line-height:1.75;font-weight:400!important}`;
-  document.head.appendChild(style);
+    document.querySelectorAll('.google-validation-note').forEach((note) => note.remove());
+  }
 
   let scheduled = false;
   function scheduleAdapt() {
