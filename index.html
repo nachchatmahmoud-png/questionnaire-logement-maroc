@@ -8,7 +8,7 @@
     <meta http-equiv="Expires" content="0" />
     <meta name="description" content="استبيان أكاديمي حول التواصل العمومي المرتبط ببرنامج الدعم المباشر للسكن" />
     <title>استبيان برنامج الدعم المباشر للسكن</title>
-    <link rel="stylesheet" crossorigin href="/questionnaire-logement-maroc/assets/index-iQBeb6Ok.css?v=20260808-definition-2" />
+    <link rel="stylesheet" crossorigin href="/questionnaire-logement-maroc/assets/index-iQBeb6Ok.css?v=20260808-definition-final" />
     <script>
       (() => {
         const nativeStringify = JSON.stringify.bind(JSON);
@@ -23,9 +23,10 @@
         };
       })();
     </script>
-    <script src="/questionnaire-logement-maroc/assets/ui-cleanup-20260807.js?v=20260808-definition-2"></script>
-    <script src="/questionnaire-logement-maroc/assets/google-form-final-validation-20260807.js?v=20260808-definition-2"></script>
-    <script defer src="/questionnaire-logement-maroc/assets/questionnaire-final-20260807.js?v=20260808-definition-2"></script>
+    <script src="/questionnaire-logement-maroc/assets/ui-cleanup-20260807.js?v=20260808-definition-final"></script>
+    <script src="/questionnaire-logement-maroc/assets/google-form-final-validation-20260807.js?v=20260808-definition-final"></script>
+    <script defer src="/questionnaire-logement-maroc/assets/questionnaire-final-20260807.js?v=20260808-definition-final"></script>
+    <script defer src="/questionnaire-logement-maroc/assets/definitions-final-20260808.js?v=20260808-definition-final"></script>
     <style>
       #boot-fallback{max-width:760px;margin:48px auto;padding:28px;border:1px solid #e5e7eb;border-radius:18px;background:#fff;font-family:Arial,sans-serif;line-height:1.8;text-align:center;color:#172033}
       #boot-fallback h1{font-size:1.45rem;margin:0 0 10px;font-weight:700}
@@ -71,63 +72,6 @@
         <p>إذا استمر ظهور هذه الرسالة، يرجى تحديث الصفحة مرة واحدة.</p>
       </section>
     </div>
-
-    <script>
-      (() => {
-        const DEFINITIONS = [
-          {
-            index: 1,
-            title: 'وسائل التواصل الرسمية للوزارة',
-            text: 'يقصد بوسائل التواصل الرسمية للوزارة مجموع القنوات والوسائط التي تعتمدها الوزارة بصفة رسمية للتواصل العمومي بشأن برنامج الدعم المباشر للسكن، قصد نشر المعلومات المتعلقة بأهدافه وشروط الاستفادة منه ومساطره وإجراءاته ومستجداته، وتمكين المواطنين من الولوج إلى المعطيات والخدمات المرتبطة به. وتشمل، على سبيل المثال لا الحصر، الموقع الإلكتروني الرسمي للوزارة، ومنصة «دعم سكن» وتطبيقها، والصفحات والحسابات الرسمية على شبكات التواصل الاجتماعي، والبلاغات والمنشورات الرسمية، وغيرها من القنوات المعتمدة للتواصل بشأن البرنامج. ولا يُشترط في هذه الوسائل أن تتيح للمواطنين إمكانية التواصل مع الوزارة أو تلقي رد منها، إذ قد يقتصر دورها على نشر المعلومات وإتاحتها للعموم.'
-          },
-          {
-            index: 2,
-            title: 'وسائل التواصل الرسمية التي تتيح التفاعل',
-            text: 'يقصد بوسائل التواصل الرسمية التي تتيح التفاعل القنوات الرسمية التي تعتمدها الوزارة في إطار برنامج الدعم المباشر للسكن، والتي تمكّن المواطنين، إلى جانب الاطلاع على المعلومات، من التواصل مع الوزارة عبر توجيه الأسئلة، وطلب التوضيحات، وتقديم الملاحظات أو المقترحات أو الشكايات، مع إمكانية تلقي رد أو تتبع مآلها. وتشمل، على سبيل المثال لا الحصر، خدمات التواصل والمساعدة المتاحة عبر منصة «دعم سكن» وتطبيقها، والبريد الإلكتروني ورقم المساعدة المخصصين للبرنامج، والبوابة الوطنية للشكايات، والرسائل الموجهة إلى الوزارة عبر حساباتها الرسمية على شبكات التواصل الاجتماعي.'
-          }
-        ];
-
-        function applyDefinitions() {
-          const list = document.querySelector('.definition-list');
-          if (!list) return;
-          const paragraphs = list.querySelectorAll(':scope > p');
-
-          DEFINITIONS.forEach(({ index, title, text }) => {
-            const paragraph = paragraphs[index];
-            if (!paragraph) return;
-            const expected = `${title}: ${text}`;
-            if (paragraph.textContent.trim() === expected) return;
-            paragraph.replaceChildren();
-            const strong = document.createElement('strong');
-            strong.textContent = `${title}:`;
-            paragraph.append(strong, ` ${text}`);
-          });
-        }
-
-        let queued = false;
-        function scheduleDefinitions() {
-          if (queued) return;
-          queued = true;
-          requestAnimationFrame(() => {
-            queued = false;
-            applyDefinitions();
-          });
-        }
-
-        scheduleDefinitions();
-        window.addEventListener('DOMContentLoaded', scheduleDefinitions);
-        window.addEventListener('load', scheduleDefinitions);
-        window.addEventListener('pageshow', scheduleDefinitions);
-        new MutationObserver(scheduleDefinitions).observe(document.documentElement, {
-          childList: true,
-          subtree: true
-        });
-        setTimeout(scheduleDefinitions, 250);
-        setTimeout(scheduleDefinitions, 750);
-        setTimeout(scheduleDefinitions, 1500);
-      })();
-    </script>
-
     <script>
       setTimeout(() => {
         const root = document.getElementById('root');
