@@ -1,6 +1,30 @@
 (() => {
   const marker = 'يرجى تحديد درجة موافقتكم على العبارات التالية:';
 
+  if (typeof table === 'function' && typeof section === 'function') {
+    const baseTable = table;
+    const baseSection = section;
+    let legendAlreadyRendered = false;
+
+    table = function (groups) {
+      const html = baseTable(groups);
+      if (!legendAlreadyRendered) {
+        legendAlreadyRendered = true;
+        return html;
+      }
+
+      return html.replace(
+        /^<div class="instruction-card"><strong>يرجى تحديد درجة موافقتكم على العبارات التالية:<\/strong><div class="legend-grid">[\s\S]*?<\/div><\/div>/,
+        ''
+      );
+    };
+
+    section = function () {
+      legendAlreadyRendered = false;
+      return baseSection();
+    };
+  }
+
   function cleanupLikertInstructions() {
     const form = document.querySelector('#questionnaire-form, .form-section');
     if (!form) return;
