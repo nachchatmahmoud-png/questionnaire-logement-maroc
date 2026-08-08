@@ -1,27 +1,23 @@
 (() => {
   const marker = 'يرجى تحديد درجة موافقتكم على العبارات التالية:';
+  const legendPattern = /<div class="instruction-card"><strong>يرجى تحديد درجة موافقتكم على العبارات التالية:<\/strong><div class="legend-grid">[\s\S]*?<\/div><\/div>/g;
 
-  if (typeof table === 'function' && typeof section === 'function') {
-    const baseTable = table;
-    const baseSection = section;
-    let legendAlreadyRendered = false;
-
-    table = function (groups) {
-      const html = baseTable(groups);
-      if (!legendAlreadyRendered) {
-        legendAlreadyRendered = true;
-        return html;
+  function dedupeLegendHtml(html) {
+    if (typeof html !== 'string') return html;
+    let seen = false;
+    return html.replace(legendPattern, (block) => {
+      if (!seen) {
+        seen = true;
+        return block;
       }
+      return '';
+    });
+  }
 
-      return html.replace(
-        /^<div class="instruction-card"><strong>يرجى تحديد درجة موافقتكم على العبارات التالية:<\/strong><div class="legend-grid">[\s\S]*?<\/div><\/div>/,
-        ''
-      );
-    };
-
+  if (typeof section === 'function') {
+    const baseSection = section;
     section = function () {
-      legendAlreadyRendered = false;
-      return baseSection();
+      return dedupeLegendHtml(baseSection());
     };
   }
 
