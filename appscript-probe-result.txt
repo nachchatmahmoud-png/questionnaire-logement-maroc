@@ -1,0 +1,67 @@
+timestamp=2026-08-08T17:47:13Z
+--- GET ---
+http=200
+final=https://accounts.google.com/v3/signin/identifier?continue=https%3A%2F%2Fscript.google.com%2Fmacros%2Fs%2FAKfycbzWv9vYyyvLkP0htcW7ch4w6rn-CcFNK8BA2L04eVbmAVtE05w0i1yiJwnMgZSOpyNZ%2Fexec&dsh=S1076293083%3A1786211233614582&followup=https%3A%2F%2Fscript.google.com%2Fmacros%2Fs%2FAKfycbzWv9vYyyvLkP0htcW7ch4w6rn-CcFNK8BA2L04eVbmAVtE05w0i1yiJwnMgZSOpyNZ%2Fexec&passive=1209600&flowName=WebLiteSignIn&flowEntry=ServiceLogin&ifkv=Ac50bxvo4H5kKgKhQEsyvAgaTq-9rSiSoL6MwNHYWRSK5FYvTfxW9-fUg8sAG8vaI-_uO6j0rVsknA
+headers:
+HTTP/2 302 
+content-type: text/html; charset=UTF-8
+cache-control: no-cache, no-store, max-age=0, must-revalidate
+pragma: no-cache
+expires: Mon, 01 Jan 1990 00:00:00 GMT
+date: Sat, 08 Aug 2026 17:47:13 GMT
+location: https://accounts.google.com/ServiceLogin?passive=1209600&continue=https%3A%2F%2Fscript.google.com%2Fmacros%2Fs%2FAKfycbzWv9vYyyvLkP0htcW7ch4w6rn-CcFNK8BA2L04eVbmAVtE05w0i1yiJwnMgZSOpyNZ%2Fexec&followup=https%3A%2F%2Fscript.google.com%2Fmacros%2Fs%2FAKfycbzWv9vYyyvLkP0htcW7ch4w6rn-CcFNK8BA2L04eVbmAVtE05w0i1yiJwnMgZSOpyNZ%2Fexec
+x-frame-options: SAMEORIGIN
+content-security-policy: frame-ancestors 'self'
+x-content-type-options: nosniff
+x-xss-protection: 1; mode=block
+server: GSE
+alt-svc: h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
+accept-ranges: none
+vary: Accept-Encoding
+
+HTTP/2 302 
+content-type: application/binary
+set-cookie: __Host-GAPS=1:GR4XydCTZ3IG56YSmdkTfE8GMWPZYA:IWW47AZ8c4Ksfkck; Expires=Mon, 07-Aug-2028 17:47:13 GMT; Path=/; Secure; HttpOnly; Priority=HIGH
+cache-control: no-cache, no-store, max-age=0, must-revalidate
+pragma: no-cache
+expires: Mon, 01 Jan 1990 00:00:00 GMT
+date: Sat, 08 Aug 2026 17:47:13 GMT
+location: https://accounts.google.com/InteractiveLogin?continue=https://script.google.com/macros/s/AKfycbzWv9vYyyvLkP0htcW7ch4w6rn-CcFNK8BA2L04eVbmAVtE05w0i1yiJwnMgZSOpyNZ/exec&followup=https://script.google.com/macros/s/AKfycbzWv9vYyyvLkP0htcW7ch4w6rn-CcFNK8BA2L04eVbmAVtE05w0i1yiJwnMgZSOpyNZ/exec&passive=1209600&dsh=S1076293083:1786211233614582
+strict-transport-security: max-age=31536000; includeSubDomains
+cross-origin-resource-policy: cross-origin
+content-security-policy: script-src 'nonce-8-l-2ijNVlDNG6NiRLMBBA' 'unsafe-inline';object-src 'none';base-uri 'self';report-uri /_/AccountsSigninPassiveLoginHttp/cspreport;worker-src 'self'
+content-security-policy: require-trusted-types-for 'script';report-uri /_/AccountsSigninPassiveLoginHttp/cspreport
+accept-ch: Sec-CH-UA-Arch, Sec-CH-UA-Bitness, Sec-CH-UA-Full-Version, Sec-CH-UA-Full-Version-List, Sec-CH-UA-Model, Sec-CH-UA-WoW64, Sec-CH-UA-Form-Factors, Sec-CH-UA-Platform, Sec-CH-UA-Platform-Version
+permissions-policy: ch-ua-arch=*, ch-ua-bitness=*, ch-ua-full-version=*, ch-ua-full-version-list=*, ch-ua-model=*, ch-ua-wow64=*, ch-ua-form-factors=*, ch-ua-platform=*, ch-ua-platform-version=*
+cross-origin-opener-policy: unsafe-none
+server: ESF
+content-length: 0
+x-xss-protection: 0
+x-content-type-options: nosniff
+alt-svc: h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
+
+HTTP/2 302 
+content-type: text/html; charset=UTF-8
+set-cookie: __Host-GAPS=1:aDfFUI6tn2lFCl6A9GZMmUvPhu76Eg:IngXGnUd9MOLsVyu;Path=/;Expires=Mon, 07-Aug-2028 17:47:13 GMT;Secure;HttpOnly;Priority=HIGH
+body:
+<!doctype html><html lang="en-US" dir="ltr"><head><base href="https://accounts.google.com/v3/signin/"><link rel="preconnect" href="//www.gstatic.com"><meta name="referrer" content="origin"><style data-href="https://www.gstatic.com/_/mss/boq-identity/_/ss/k=boq-identity.AccountsSignInUi.MOF7n5fL5LY.L.W.O/am=ESFABDjfiB85APL__zcAgAEKAAJAAAgIAKAAAAAAAAAAAAAQAACwCEAE/d=1/ed=1/rs=AOaEmlELCWuVyq-wIoE7GpFXhl3gbKuubQ/m=identifierview,_b,_tp" nonce="vmPxs-gDd_WOQaL4vcxEeA">@-webkit-keyframes mdc-ripple-fg-radius-in{0%{-webkit-animation-timing-function:cubic-bezier(.4,0,.2,1);animation-timing-function:cubic-bezier(.4,0,.2,1);-webkit-transform:translate(var(--mdc-ripple-fg-translate-start,0)) scale(1);transform:translate(var(--mdc-ripple-fg-translate-start,0)) scale(1)}to{-webkit-transform:translate(var(--mdc-ripple-fg-translate-end,0)) scale(var(--mdc-ripple-fg-scale,1));transform:translate(var(--mdc-ripple-fg-translate-end,0)) scale(var(--mdc-ripple-fg-scale,1))}}@keyframes mdc-ripple-fg-radius-in{0%{-webkit-animation-timing-function:cubic-bezier(.4,0,.2,1);animation-timing-function:cubic-bezier(.4,0,.2,1);-webkit-transform:translate(var(--mdc-ripple-fg-translate-start,0)) scale(1);transform:translate(var(--mdc-ripple-fg-translate-start,0)) scale(1)}to{-webkit-transform:translate(var(--mdc-ripple-fg-translate-end,0)) scale(var(--mdc-ripple-fg-scale,1));transform:translate(var(--mdc-ripple-fg-translate-end,0)) scale(var(--mdc-ripple-fg-scale,1))}}@-webkit-keyframes mdc-ripple-fg-opacity-in{0%{-webkit-animation-timing-function:linear;animation-timing-function:linear;opacity:0}to{opacity:var(--mdc-ripple-fg-opacity,0)}}@keyframes mdc-ripple-fg-opacity-in{0%{-webkit-animation-timing-function:linear;animation-timing-function:linear;opacity:0}to{opacity:var(--mdc-ripple-fg-opacity,0)}}@-webkit-keyframes mdc-ripple-fg-opacity-out{0%{-webkit-animation-timing-function:linear;animation-timing-function:linear;opacity:var(--mdc-ripple-fg-opacity,0)}to{opacity:0}}@keyframes mdc-ripple-fg-opacity-out{0%{-webkit-animation-timing-function:linear;animation-timing-function:linear;opacity:var(--mdc-ripple-fg-opacity,0)}to{opacity:0}}.VfPpkd-ksKsZd-XxIAqe{--mdc-ripple-fg-size:0;--mdc-ripple-left:0;--mdc-ripple-top:0;--mdc-ripple-fg-scale:1;--mdc-ripple-fg-translate-end:0;--mdc-ripple-fg-translate-start:0;-webkit-tap-highlight-color:rgba(0,0,0,0);will-change:transform,opacity}.VfPpkd-ksKsZd-XxIAqe:after,.VfPpkd-ksKsZd-XxIAqe:before{position:absolute;border-radius:50%;opacity:0;pointer-events:none;content:""}.VfPpkd-ksKsZd-XxIAqe:before{-webkit-transition:opacity 15ms linear,background-color 15ms linear;transition:opacity 15ms linear,background-color 15ms linear;z-index:1;z-index:var(--mdc-ripple-z-index,1)}.VfPpkd-ksKsZd-XxIAqe:after{z-index:0;z-index:var(--mdc-ripple-z-index,0)}.VfPpkd-ksKsZd-XxIAqe.VfPpkd-ksKsZd-mWPk3d:before{-webkit-transform:scale(var(--mdc-ripple-fg-scale,1));transform:scale(var(--mdc-ripple-fg-scale,1))}.VfPpkd-ksKsZd-XxIAqe.VfPpkd-ksKsZd-mWPk3d:after{top:0;left:0;-webkit-transform:scale(0);transform:scale(0);-webkit-transform-origin:center center;transform-origin:center center}.VfPpkd-ksKsZd-XxIAqe.VfPpkd-ksKsZd-mWPk3d-OWXEXe-ZNMTqd:after{top:var(--mdc-ripple-top,0);left:var(--mdc-ripple-left,0)}.VfPpkd-ksKsZd-XxIAqe.VfPpkd-ksKsZd-mWPk3d-OWXEXe-Tv8l5d-lJfZMc:after{-webkit-animation:mdc-ripple-fg-radius-in 225ms forwards,mdc-ripple-fg-opacity-in 75ms forwards;animation:mdc-ripple-fg-radius-in 225ms forwards,mdc-ripple-fg-opacity-in 75ms forwards}.VfPpkd-ksKsZd-XxIAqe.VfPpkd-ksKsZd-mWPk3d-OWXEXe-Tv8l5d-OmS1vf:after{-webkit-animation:mdc-ripple-fg-opacity-out .15s;animation:mdc-ripple-fg-opacity-out .15s;-webkit-transform:translate(var(--mdc-ripple-fg-translate-end,0)) scale(var(--mdc-ripple-fg-scale,1));transform:translate(var(--mdc-ripple-fg-translate-end,0)) scale(var(--mdc-ripple-fg-scale,1))}.VfPpkd-ksKsZd-XxIAqe:after,.VfPpkd-ksKsZd-XxIAqe:before{top:-50%;left:-50%;width:200%;height:200%}.VfPpkd-ksKsZd-XxIAqe.VfPpkd-ksKsZd-mWPk3d:
+--- POST INVALID (no form response should be created) ---
+http=401
+final=https://script.google.com/macros/s/AKfycbzWv9vYyyvLkP0htcW7ch4w6rn-CcFNK8BA2L04eVbmAVtE05w0i1yiJwnMgZSOpyNZ/exec
+headers:
+HTTP/2 401 
+cache-control: no-cache, no-store, max-age=0, must-revalidate
+pragma: no-cache
+expires: Mon, 01 Jan 1990 00:00:00 GMT
+date: Sat, 08 Aug 2026 17:47:14 GMT
+content-type: text/html; charset=utf-8
+referrer-policy: origin
+x-content-type-options: nosniff
+x-xss-protection: 1; mode=block
+server: GSE
+alt-svc: h3=":443"; ma=2592000,h3-29=":443"; ma=2592000
+accept-ranges: none
+vary: Accept-Encoding
+
+body:
+<!DOCTYPE html><html lang="en"><head><meta name="description" content="Web word processing, presentations and spreadsheets"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0"><link rel="shortcut icon" href="//docs.google.com/favicon.ico"><title>Page Not Found</title><meta name="referrer" content="origin"><link href="//fonts.googleapis.com/css?family=Product+Sans" rel="stylesheet" type="text/css" nonce="HrlxXP3nJb3S98zJrtyiUw"><style nonce="HrlxXP3nJb3S98zJrtyiUw">#drive-logo{margin:18px 0;position:absolute;white-space:nowrap}.docs-drivelogo-img{background-image:url(//ssl.gstatic.com/images/branding/googlelogo/1x/googlelogo_color_116x41dp.png);-webkit-background-size:116px 41px;background-size:116px 41px;display:inline-block;height:41px;vertical-align:bottom;width:116px}.docs-drivelogo-text{color:var(--gm3-sys-color-on-surface,#1f1f1f);display:inline-block;opacity:.54;text-decoration:none;font-family:Product Sans,Arial,Helvetica,sans-serif;font-size:32px;text-rendering:optimizeLegibility;position:relative;top:-6px;left:-7px;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}@media (-webkit-min-device-pixel-ratio:1.5),(min-resolution:144dpi){.docs-drivelogo-img{background-image:url(//ssl.gstatic.com/images/branding/googlelogo/2x/googlelogo_color_116x41dp.png)}}.goog-inline-block{position:relative;display:-moz-inline-box;display:inline-block}* html .goog-inline-block{display:inline}:first-child+html .goog-inline-block{display:inline}sentinel{}</style><style type="text/css" nonce="HrlxXP3nJb3S98zJrtyiUw">body {background-color: #fff; font-family: Arial,sans-serif; font-size: 13px; margin: 0; padding: 0;}a, a:link, a:visited {color: #112ABB;}</style><style type="text/css" nonce="HrlxXP3nJb3S98zJrtyiUw">.errorMessage {font-size: 12pt; font-weight: bold; line-height: 150%;}</style></head><body><div id="outerContainer"><div id="innerContainer"><div style="position: absolute; top: -80px;"><div id="drive-logo"><a href="/"><span class="docs-drivelogo-img" title="Google logo"></span><span class="docs-drivelogo-text">&nbsp;Drive</span></a></div></div><div align="center"><p class="errorMessage" style="padding-top: 50px">Sorry, unable to open the file at this time.</p><p> Please check the address and try again. </p><div style="background: #F0F6FF; border: 1px solid black; margin-top: 35px; padding: 10px 125px; width: 300px;"><p><strong>Get stuff done with Google Drive</strong></p><p>Apps in Google Drive make it easy to create, store and share online documents, spreadsheets, presentations and more.</p><p>Learn more at <a href="https://drive.google.com/start/apps">drive.google.com/start/apps</a>.</p></div></div></div></div></body><style nonce="HrlxXP3nJb3S98zJrtyiUw">html {height: 100%; overflow: auto;}body {height: 100%; overflow: auto;}#outerContainer {margin: auto; max-width: 750px;}#innerContainer {margin-bottom: 20px; margin-left: 40px; margin-right: 40px; margin-top: 80px; position: relative;}</style></html>
