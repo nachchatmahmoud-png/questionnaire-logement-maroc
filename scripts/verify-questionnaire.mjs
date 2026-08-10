@@ -1,6 +1,6 @@
 import fs from 'node:fs';
 
-const source = fs.readFileSync('assets/questionnaire-final-20260807.js', 'utf8');
+const source = fs.readFileSync('assets/questionnaire.js', 'utf8');
 const index = fs.readFileSync('index.html', 'utf8');
 const failures = [];
 
@@ -13,8 +13,9 @@ expect(!source.includes('email_personal'), 'Le fichier principal ne doit plus d�
 expect(source.includes('رابعًا: الأثر العام للبرنامج'), 'Le titre court de l’impact général doit être conservé.');
 expect(!source.includes('رابعًا: الأثر العام المدرك للبرنامج'), 'Le mot المدرك ne doit pas réapparaître dans le titre.');
 expect(source.includes('function scaleLegend()'), 'La légende Likert extérieure doit exister.');
-expect(source.includes('<th aria-label="${esc(t)}"></th>'), 'Les colonnes Likert doivent avoir des en-têtes visuellement vides et accessibles.');
-expect(!source.includes('<th title="${esc(t)}">${n}</th>'), 'Les chiffres de l’échelle ne doivent pas réapparaître dans les tableaux.');
+expect(source.includes('<th title="${esc(t)}" aria-label="${esc(t)}">${n}</th>'), 'Les numéros 1 à 5 doivent rester visibles dans les tableaux.');
+expect(source.includes('.likert-table{min-width:0;table-layout:fixed;width:100%}'), 'La mise en page mobile doit afficher toutes les colonnes Likert sans largeur minimale.');
+expect(!source.includes('.likert-table{min-width:660px}'), 'L’ancienne largeur mobile qui masquait les colonnes ne doit pas réapparaître.');
 
 const interaction = source.slice(
   source.indexOf('function interaction()'),
