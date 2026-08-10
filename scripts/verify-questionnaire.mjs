@@ -42,7 +42,9 @@ expect(quiz.every((question, index) => question[1].startsWith((index + 1) + '. '
 expect(JSON.stringify(positions) === JSON.stringify([2, 3, 4, 2, 3, 4]), 'L’ordre validé des bonnes réponses doit être conservé.');
 
 expect(source.includes('1FAIpQLSfm5EXmdlOc_4k1wA14rliRwoSo0a23WyryaQK2G9yXn0TKAg/formResponse'), 'Le formulaire Google actif ne doit pas être remplacé.');
-expect((index.match(/questionnaire-final-20260807\.js\?v=/g) || []).length === 1, 'index.html doit charger exactement une version du fichier principal.');
+expect((index.match(/questionnaire\.js\?v=/g) || []).length === 1, 'index.html doit charger exactement une version du fichier canonique.');
+expect((index.match(/<script[^>]+src=/g) || []).length === 1, 'index.html doit charger un seul fichier JavaScript fonctionnel.');
+expect(!index.includes('ui-cleanup-20260807.js'), 'Le correctif secondaire ui-cleanup ne doit plus être chargé.');
 
 if (failures.length) {
   console.error('Régressions détectées :');
