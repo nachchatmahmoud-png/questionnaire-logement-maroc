@@ -79,6 +79,7 @@ async function submit(){
  let packed='[STRUCTURED_DATA_V2]\n'+JSON.stringify(payload)+'\n\n[OPEN_SUGGESTION]\n'+(val('suggestion')||'');
  let form=document.createElement('form');form.method='POST';form.action=FORM_ACTION;form.target='google-form-response';form.style.display='none';
  let add=(id,v)=>{if(!id||v===undefined||v===null||v==='')return;let i=document.createElement('input');i.name='entry.'+id;i.value=v;form.appendChild(i)};
+ let addRaw=(name,v)=>{let i=document.createElement('input');i.name=name;i.value=v;form.appendChild(i)};
  let addKey=(key,v)=>add(ENTRY[key],v);
  let addScale=(key)=>{let n=val(key);if(!n)return;let row=SCALE.find(([value])=>value===n);addKey(key,row?n+' — '+row[1]:n);};
  addKey('q1',val('q1'));addKey('q2',val('q2'));
@@ -107,6 +108,8 @@ async function submit(){
  quiz.forEach(([id])=>addKey(id,val(id)));
  addKey('suggestion',packed);
  ['age','gender','education','housing','residence','region','country','professional'].forEach(k=>addKey(k,val(k)));
+ let pageHistory=val('q1')==='لا'?'0,3':val('q2')==='لا'?'0,1,2,3':'0,1,4,5,6,7,8,9,10,11,12,13';
+ addRaw('fvv','1');addRaw('pageHistory',pageHistory);
  let completed=false;
  let finish=()=>{if(completed)return;completed=true;state.done=true;state.sending=false;render();};
  let responseFrame=document.querySelector('iframe[name="google-form-response"]');
