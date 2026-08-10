@@ -1,5 +1,5 @@
 (() => {
-  const GOOGLE_FORM_ID = '1FAIpQLScGEubgpATNTz90NztM1zAqKboGOS1p5ePQzg5e703l_JRx0g';
+  const GOOGLE_FORM_ID = '1FAIpQLSfm5EXmdlOc_4k1wA14rliRwoSo0a23WyryaQK2G9yXn0TKAg';
   const FORM_RESPONSE = `https://docs.google.com/forms/d/e/${GOOGLE_FORM_ID}/formResponse`;
   const FORM_VIEW = `https://docs.google.com/forms/d/e/${GOOGLE_FORM_ID}/viewform`;
   const nativeSubmit = HTMLFormElement.prototype.submit;
