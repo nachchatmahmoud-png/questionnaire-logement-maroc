@@ -68,12 +68,11 @@ function understanding(){return `<div class="instruction-card"><strong>فهم ا
 function evaluation(){let h=`<div class="instruction-card"><p>يرجى الإجابة استنادًا إلى ما تعرفونه أو عايشتموه بشأن شروط وإجراءات الاستفادة من البرنامج.</p></div>${scaleLegend()}${table(G.ease)}${table(G.accept)}`; if(beneficiary())h+=table(G.satisfaction); h+=table(G.generalImpact)+table(G.success);return h;}
 const demographics={age:['من 18 إلى 24 سنة','من 25 إلى 34 سنة','من 35 إلى 44 سنة','من 45 إلى 54 سنة','55 سنة فأكثر'],gender:['ذكر','أنثى'],education:['بدون تعليم نظامي','التعليم الابتدائي','التعليم الإعدادي','التعليم الثانوي','التعليم العالي'],housing:['أملك السكن الذي أقيم فيه','أكتري السكن الذي أقيم فيه','أقيم مع الأسرة','أقيم في سكن وظيفي أو مؤقت','وضع سكني آخر'],residence:['داخل المغرب','خارج المغرب'],region:['طنجة - تطوان - الحسيمة','الشرق','فاس - مكناس','الرباط - سلا - القنيطرة','الدار البيضاء - سطات','بني ملال - خنيفرة','مراكش - آسفي','درعة - تافيلالت','سوس - ماسة','كلميم - واد نون','العيون - الساقية الحمراء','الداخلة - وادي الذهب'],professional:['موظف أو موظفة في القطاع العام','مستخدم أو مستخدمة في القطاع الخاص','مقاول أو مقاولة','متقاعد أو متقاعدة','طالب أو طالبة','بدون عمل']};
 function demo(){let h=`<div class="instruction-card compact"><strong>المعلومات العامة</strong><p>تساعد هذه المعلومات في التحليل العلمي للنتائج، ولا تُستعمل للتعرف على هوية المشارك.</p></div>${radio('age','1. ما هي فئتكم العمرية؟',demographics.age)}${radio('gender','2. ما هو جنسكم؟',demographics.gender)}${radio('education','3. ما هو أعلى مستوى دراسي حصلتم عليه؟',demographics.education)}${radio('housing','4. ما هو وضعكم السكني الحالي؟',demographics.housing)}${radio('residence','5. أين تقيمون حاليًا؟',demographics.residence)}`; if(val('residence')==='داخل المغرب')h+=`<fieldset class="question-card"><legend>5-أ. جهة الإقامة داخل المغرب <span class="required-mark"> *</span></legend><select class="text-input" id="region-select"><option value="">اختاروا الجهة</option>${demographics.region.map(x=>`<option ${val('region')===x?'selected':''}>${esc(x)}</option>`).join('')}</select></fieldset>`;if(val('residence')==='خارج المغرب')h+=`<fieldset class="question-card"><legend>5-ب. بلد الإقامة خارج المغرب <span class="required-mark"> *</span></legend><input class="text-input" id="country-input" value="${esc(val('country'))}" placeholder="اكتبوا اسم البلد"></fieldset>`;h+=radio('professional','6. ما هو وضعكم المهني الحالي؟',demographics.professional);return h;}
-function section(){switch(state.step){case'filters':return filters();case'information':return scaleLegend()+table(G.information);case'interaction':return interaction();case'understanding':return understanding();case'trust':return scaleLegend()+table(G.trust);case'legitimacy':return scaleLegend()+table(G.legitimacy);case'evaluation':return evaluation();case'impact':return scaleLegend()+table(G.personalImpact);case'suggestions':return `<fieldset class="question-card"><legend>ما أهم التغييرات أو الإجراءات التي تقترحونها لتحسين التواصل والتفاعل بين الوزارة والمواطنين بشأن برنامج الدعم المباشر للسكن؟</legend><textarea id="suggestion" rows="7" placeholder="اكتبوا مقترحاتكم هنا…">${esc(val('suggestion'))}</textarea></fieldset>`;case'demographics':return demo();}}
+function section(){switch(state.step){case'filters':return filters();case'information':return scaleLegend()+table(G.information);case'interaction':return interaction();case'understanding':return understanding();case'trust':return scaleLegend()+table(G.trust);case'legitimacy':return scaleLegend()+table(G.legitimacy);case'evaluation':return evaluation();case'impact':return `<div class="instruction-card compact"><p>هذا القسم خاص بالمستفيدين من البرنامج.</p></div>`+scaleLegend()+table(G.personalImpact);case'suggestions':return `<fieldset class="question-card"><legend>ما أهم التغييرات أو الإجراءات التي تقترحونها لتحسين التواصل والتفاعل بين الوزارة والمواطنين بشأن برنامج الدعم المباشر للسكن؟</legend><textarea id="suggestion" rows="7" placeholder="اكتبوا مقترحاتكم هنا…">${esc(val('suggestion'))}</textarea></fieldset>`;case'demographics':return demo();}}
 function requiredIds(step){if(step==='filters'){if(val('q1')==='لا')return['q1'];let ids=['q1','q2'];if(val('q2')==='نعم')ids.push('status');if(val('q2')==='لا')return ids;return ids;} if(step==='information')return G.information.flatMap(g=>g[1].map(r=>r[0]));if(step==='interaction'){let ids=[...G.interComm,...G.interPart,...G.interGlobal,...G.communicationQuality].flatMap(g=>g[1].map(r=>r[0]));ids.push('contact_reel');if(val('contact_reel')==='نعم'){ids.push('canal_dernier_contact','reponse_recue');if(val('reponse_recue')==='نعم')ids.push(...G.response[0][1].map(r=>r[0]));}return ids;}if(step==='understanding')return quiz.map(q=>q[0]);if(step==='trust')return G.trust[0][1].map(r=>r[0]);if(step==='legitimacy')return G.legitimacy[0][1].map(r=>r[0]);if(step==='evaluation'){let ids=[...G.ease,...G.accept,...G.generalImpact,...G.success].flatMap(g=>g[1].map(r=>r[0]));if(beneficiary())ids.push(...G.satisfaction[0][1].map(r=>r[0]));return ids;}if(step==='impact')return G.personalImpact[0][1].map(r=>r[0]);if(step==='demographics'){let ids=['age','gender','education','housing','residence','professional'];if(val('residence')==='داخل المغرب')ids.push('region');if(val('residence')==='خارج المغرب')ids.push('country');return ids;}return[];}
 function valid(){if(state.step==='filters'&&val('q2')==='نعم'&&!officialSources.some(([id])=>val(id))){state.error='يرجى اختيار وسيلة رسمية واحدة على الأقل.';return false;}if(state.step==='filters'&&val('q2')==='لا'&&!externalSources.some(([id])=>val(id))){state.error='يرجى اختيار مصدر واحد على الأقل.';return false;}for(const id of requiredIds(state.step)){if(!val(id)){state.error='يرجى الإجابة عن جميع الأسئلة المطلوبة قبل المتابعة.';return false;}}state.error='';return true;}
 function mean(ids){let nums=ids.map(id=>Number(val(id))).filter(Number.isFinite);return nums.length===ids.length?nums.reduce((a,b)=>a+b,0)/nums.length:null;}
 function scores(){return{communication_possibility:mean(G.interComm[0][1].map(r=>r[0])),participation_possibility:mean(G.interPart[0][1].map(r=>r[0])),interaction_global:mean(G.interGlobal[0][1].map(r=>r[0])),communication_quality_global:mean(G.communicationQuality[0][1].map(r=>r[0])),trust:mean(G.trust[0][1].map(r=>r[0])),legitimacy:mean(G.legitimacy[0][1].map(r=>r[0])),ease:mean(G.ease[0][1].map(r=>r[0])),satisfaction:beneficiary()?mean(G.satisfaction[0][1].map(r=>r[0])):null,general_impact:mean(G.generalImpact[0][1].map(r=>r[0])),personal_impact:beneficiary()?mean(G.personalImpact[0][1].map(r=>r[0])):null,understanding:quiz.reduce((s,[id,,,correct])=>s+(val(id)===correct?1:0),0)};}
-function backendStatus(s){return{'استفدت شخصيًا من البرنامج':'استفدت من البرنامج','استفاد أحد أفراد أسرتي من البرنامج':'استفاد أحد أفراد أسرتي من البرنامج','قدمت طلبًا وما زال قيد المعالجة':'تقدمت بطلب، وما يزال طلبي قيد المعالجة','قدمت طلبًا ولم تتم الموافقة عليه':'تقدمت بطلب، ولم تتم الموافقة عليه','اطلعت على البرنامج ولم أتقدم بطلب للاستفادة منه':'اطلعت على البرنامج، لكنني لم أتقدم بطلب للاستفادة منه'}[s]||s;}
 async function submit(){
  if(!valid())return render();
  state.sending=true;render();
@@ -85,7 +84,7 @@ async function submit(){
  addKey('q1',val('q1'));addKey('q2',val('q2'));
  if(val('q2')==='نعم')officialSources.forEach(([id,label])=>{if(val(id))add(ENTRY.official_sources,label);});
  if(val('q2')==='لا')externalSources.forEach(([id,label])=>{if(val(id))add(ENTRY.external_sources,label);});
- addKey('status',backendStatus(val('status')));
+ addKey('status',val('status'));
  [
   'info_1','info_2','info_3','info_4','info_5','info_6','info_7','info_8','info_9','info_10','info_11','info_12','info_13','transparency_global',
   'inter_comm_1','inter_comm_2','inter_comm_3','inter_part_1','inter_part_2','inter_part_3','interaction_global','communication_quality_global','clarte_reponse','suffisance_reponse','delai_reponse',
@@ -94,16 +93,8 @@ async function submit(){
   'impact_general_1','impact_general_2','impact_general_3','success_global','impact_personal_1','impact_personal_2','impact_personal_3'
  ].forEach(addScale);
  addKey('contact_reel',val('contact_reel'));
- const channelMap={
-  'خدمة «اتصل بنا» على منصة «دعم سكن»':'قناة رسمية أخرى',
-  'خدمة التواصل عبر الموقع الإلكتروني الرسمي للوزارة':'الموقع الإلكتروني الرسمي للوزارة',
-  'الهاتف المخصص للتواصل':'الهاتف المخصص للدعم عبر «دعم سكن»',
-  'البريد الإلكتروني المخصص للتواصل':'البريد الإلكتروني المخصص للدعم عبر «دعم سكن» (contact@daamsakane.ma)',
-  'الصفحات أو الحسابات الرسمية للوزارة على شبكات التواصل الاجتماعي (عبر الرسائل أو التعليقات)':'الرسائل الخاصة عبر الحسابات الرسمية للوزارة على شبكات التواصل الاجتماعي'
- };
- let channel=val('canal_dernier_contact'),googleChannel=channelMap[channel]||channel;
+ let channel=val('canal_dernier_contact'),googleChannel=channel;
  addKey('canal_dernier_contact',googleChannel);
- if(channel&&googleChannel==='قناة رسمية أخرى')addKey('channel_other',channel);
  addKey('reponse_recue',val('reponse_recue'));
  quiz.forEach(([id])=>addKey(id,val(id)));
  addKey('suggestion',val('suggestion'));
@@ -117,7 +108,6 @@ async function submit(){
   let pages=[0,1,3,4,5];
   if(val('contact_reel')==='نعم'){
    pages.push(6);
-   if(googleChannel==='قناة رسمية أخرى')pages.push(7);
    pages.push(8);
    if(val('reponse_recue')==='نعم')pages.push(9);
   }

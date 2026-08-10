@@ -27,6 +27,8 @@ un fichier correctif temporaire.
 - Dans la section 3, les deux évaluations générales apparaissent après le parcours de contact réel et avant la compréhension.
 - La réponse `لا` à `هل توصلتم برد بشأن هذا التواصل؟` conduit aux deux évaluations générales, puis à la compréhension.
 - La réponse `نعم` conduit d’abord à l’évaluation du retour reçu, puis aux deux évaluations générales et à la compréhension.
+- Les questions, affirmations et choix de réponse du site doivent correspondre mot pour mot à ceux du Google Form.
+- Les valeurs du statut et du canal sont envoyées directement, sans conversion vers d’anciennes formulations.
 - Le site envoie les réponses au formulaire Google actif identifié dans le fichier principal.
 - Les corrections futures doivent préserver toutes les règles ci-dessus.
 

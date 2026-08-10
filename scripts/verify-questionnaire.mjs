@@ -35,6 +35,14 @@ expect(source.includes("val('residence')==='داخل المغرب'?18:19"), 'Les
 expect(source.includes("...G.interPart,...G.interGlobal,...G.communicationQuality"), 'Les deux nouvelles évaluations doivent rester obligatoires.');
 expect(source.includes("'interaction_global','communication_quality_global','clarte_reponse'"), 'Les deux nouvelles réponses doivent être envoyées à Google Forms.');
 
+
+expect(!source.includes('function backendStatus'), 'Les statuts ne doivent plus être reconvertis vers d’anciennes formulations Google Forms.');
+expect(source.includes("addKey('status',val('status'))"), 'Le statut doit être envoyé mot pour mot à Google Forms.');
+expect(!source.includes('const channelMap='), 'Les canaux ne doivent plus être reconvertis vers d’anciennes formulations Google Forms.');
+expect(source.includes("let channel=val('canal_dernier_contact'),googleChannel=channel"), 'Le canal doit être envoyé mot pour mot à Google Forms.');
+expect(!source.includes("googleChannel==='قناة رسمية أخرى'"), 'L’ancienne branche du canal autre ne doit plus être utilisée.');
+expect(source.includes('هذا القسم خاص بالمستفيدين من البرنامج.'), 'La note de la section des bénéficiaires doit correspondre à Google Forms.');
+
 const interaction = source.slice(
   source.indexOf('function interaction()'),
   source.indexOf('function understanding()')
