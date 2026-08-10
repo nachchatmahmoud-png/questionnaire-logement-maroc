@@ -1,5 +1,8 @@
 const FORM_ACTION='https://docs.google.com/forms/d/e/1FAIpQLSfIOkBS04JQVuTRE0npIB6QOJ6UPg0ckoBTqAdLG9PT3yUOkA/formResponse';
 const FORM_PUBLIC_URL='https://docs.google.com/forms/d/e/1FAIpQLSfIOkBS04JQVuTRE0npIB6QOJ6UPg0ckoBTqAdLG9PT3yUOkA/viewform';
+const GOOGLE_CLIENT_ID='285878510024-7dhdojiucp6ff20m2snuro018t70c6s5.apps.googleusercontent.com';
+const AUTH_BRIDGE_URL='https://script.google.com/macros/s/AKfycbxmwpYfo8bhwBmPPsKrIsqIfW4DQUxOxrwYavWgojHvLzR0e-TDK-DQj7t3LNeODRSv/exec';
+const AUTH_CHANNEL='questionnaire-logement-auth-v1';
 const SCHEMA_VERSION='2026-08-10-profils-g1-g5-v5-five-point-scales';
 const ENTRY_COMMON={
  q1:'299895912',q2:'1225420672',age:'1577939573',gender:'2068308268',education:'1330802393',housing:'1373868444',residence:'865830704',professional:'1061681182',region:'861634292',country:'1099313147'
@@ -48,6 +51,8 @@ const ENTRY_OFFICIAL_OTHER={
 };
 const SCALE=[['1','لا أوافق إطلاقًا'],['2','لا أوافق'],['3','لا أوافق ولا أعارض'],['4','أوافق'],['5','أوافق تمامًا']];
 const state={a:{},step:'filters',intro:true,error:'',sending:false,done:false};
+const auth={allowed:false,idToken:'',checking:false,blocked:false,error:'',gisReady:false};
+const authRequests=new Map();
 const $=s=>document.querySelector(s); const esc=(s='')=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const val=id=>state.a[id]??''; const set=(id,v)=>{state.a[id]=v;state.error='';};
 const del=(...ids)=>ids.forEach(id=>delete state.a[id]);
@@ -138,9 +143,111 @@ function requiredIds(step){
 function valid(){if(state.step==='filters'&&val('q2')==='نعم'&&!officialSources.some(([id])=>val(id))){state.error='يرجى اختيار وسيلة رسمية واحدة على الأقل.';return false;}if(state.step==='filters'&&val('q2')==='لا'&&!externalSources.some(([id])=>val(id))){state.error='يرجى اختيار مصدر واحد على الأقل.';return false;}for(const id of requiredIds(state.step)){if(!val(id)){state.error='يرجى الإجابة عن جميع الأسئلة المطلوبة قبل المتابعة.';return false;}}state.error='';return true;}
 function mean(ids){let nums=ids.map(id=>Number(val(id))).filter(Number.isFinite);return nums.length===ids.length?nums.reduce((a,b)=>a+b,0)/nums.length:null;}
 function scores(){return{information_access:route()==='official'?mean(G.information[0][1].map(r=>r[0])):null,information_clarity:route()==='official'?mean(G.information[1][1].map(r=>r[0])):null,information_sufficiency:route()==='official'?mean(G.information[2][1].map(r=>r[0])):null,information_accuracy:route()==='official'?mean(G.information[3][1].map(r=>r[0])):null,transparency:route()==='official'?mean(G.information[4][1].map(r=>r[0])):null,communication_possibility:route()==='official'?mean(G.interComm[0][1].map(r=>r[0])):null,participation_possibility:route()==='official'?mean(G.interPart[0][1].map(r=>r[0])):null,response_quality:val('reponse_recue')==='نعم'?mean(G.response[0][1].map(r=>r[0])):null,interaction_global:route()==='official'?mean(G.interGlobal[0][1].map(r=>r[0])):null,communication_quality_global:route()==='official'?mean(G.communicationQuality[0][1].map(r=>r[0])):null,trust:mean((route()==='g2'?G.trustGeneral:G.trust)[0][1].map(r=>r[0])),legitimacy:mean(G.legitimacy[0][1].map(r=>r[0])),ease:mean(G.ease[0][1].map(r=>r[0])),acceptance:mean(G.accept[0][1].map(r=>r[0])),satisfaction:beneficiary()?mean(G.satisfaction[0][1].map(r=>r[0])):null,general_impact:mean(G.generalImpact[0][1].map(r=>r[0])),success:mean(G.success[0][1].map(r=>r[0])),personal_impact:beneficiary()?mean(G.personalImpact[0][1].map(r=>r[0])):null,understanding:route()==='g1'?null:quiz.reduce((s,[id,,,correct])=>s+(val(id)===correct?1:0),0)};}
+function authConfigured(){return /^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec$/.test(AUTH_BRIDGE_URL);}
+function authRequestId(){return globalThis.crypto?.randomUUID?.()||Date.now().toString(36)+Math.random().toString(36).slice(2);}
+function authGateMessage(){
+ if(auth.blocked)return'<div class="auth-alert auth-alert-blocked" role="alert"><strong>سبق إرسال إجابة بهذا الحساب.</strong><p>لا يمكن المشاركة أكثر من مرة بالحساب نفسه.</p></div>';
+ if(auth.error)return`<div class="auth-alert" role="alert"><strong>تعذر التحقق من الحساب.</strong><p>${esc(auth.error)}</p></div>`;
+ return'<p class="auth-help">يُستخدم حساب Google فقط للتحقق من أن المشاركة تُرسل مرة واحدة. لا يُضاف البريد إلى إجابات الاستبيان ولا يُحفظ في ورقة الردود.</p>';
+}
+function renderAuthGate(){
+ $('#root').innerHTML=`<main class="site-shell auth-shell" dir="rtl"><header class="hero"><div class="hero-accent"></div><p class="eyebrow">بحث أكاديمي بسلك الدكتوراه</p><h1>استبيان حول التواصل العمومي المرتبط ببرنامج الدعم المباشر للسكن</h1><p class="hero-lead">في إطار إعداد بحث أكاديمي بسلك الدكتوراه، أضع بين أيديكم هذا الاستبيان، الذي يندرج ضمن دراسة حول التواصل العمومي المرتبط ببرنامج الدعم المباشر للسكن.</p><div class="privacy-note"><span>◉</span><p>جميع الأجوبة سرية، ولن تُستعمل إلا لأغراض البحث العلمي.</p></div></header><section class="auth-card" aria-labelledby="auth-title"><div class="auth-icon" aria-hidden="true">G</div><h2 id="auth-title">تسجيل الدخول للمشاركة</h2>${authGateMessage()}${auth.checking?'<div class="auth-loading" role="status"><span></span> جارٍ التحقق من الحساب…</div>':'<div id="google-signin-button" class="google-signin-button"></div>'}${!authConfigured()?'<p class="auth-config-error">لم يكتمل بعد ربط خدمة التحقق بالموقع.</p>':''}</section><footer><p>شكرًا لتعاونكم ومساهمتكم في هذا البحث العلمي.</p></footer></main>`;
+ requestAnimationFrame(initAuthGate);
+}
+function initAuthGate(){
+ if(!authConfigured())return;
+ ensureGoogleIdentity();
+ renderGoogleSignInButton();
+}
+function ensureGoogleIdentity(){
+ if(window.google?.accounts?.id){initializeGoogleIdentity();return;}
+ if(document.getElementById('google-identity-services'))return;
+ const script=document.createElement('script');
+ script.id='google-identity-services';
+ script.src='https://accounts.google.com/gsi/client';
+ script.async=true;
+ script.defer=true;
+ script.onload=initializeGoogleIdentity;
+ script.onerror=()=>{auth.error='تعذر تحميل خدمة تسجيل الدخول إلى Google. يرجى التحقق من الاتصال ثم إعادة المحاولة.';render();};
+ document.head.appendChild(script);
+}
+function initializeGoogleIdentity(){
+ if(!window.google?.accounts?.id)return;
+ if(!auth.gisReady){
+  google.accounts.id.initialize({client_id:GOOGLE_CLIENT_ID,callback:handleGoogleCredential,auto_select:false,cancel_on_tap_outside:false});
+  auth.gisReady=true;
+ }
+ renderGoogleSignInButton();
+}
+function renderGoogleSignInButton(){
+ if(!auth.gisReady||auth.checking)return;
+ const target=document.getElementById('google-signin-button');
+ if(!target)return;
+ target.innerHTML='';
+ google.accounts.id.renderButton(target,{type:'standard',theme:'outline',size:'large',text:'continue_with',shape:'rectangular',logo_alignment:'left',locale:'ar',width:Math.min(360,Math.max(240,document.documentElement.clientWidth-72))});
+}
+async function handleGoogleCredential(response){
+ const jeton=String(response?.credential||'');
+ if(!jeton)return;
+ auth.checking=true;auth.error='';auth.blocked=false;render();
+ try{
+  const resultat=await callAuthBridge('check',jeton);
+  if(resultat?.allowed){auth.allowed=true;auth.idToken=jeton;auth.blocked=false;auth.error='';}
+  else{auth.allowed=false;auth.idToken='';auth.blocked=resultat?.reason==='already_submitted';auth.error=auth.blocked?'':'تعذر تأكيد صلاحية الحساب. يرجى إعادة المحاولة.';}
+ }catch(_){auth.allowed=false;auth.idToken='';auth.error='تعذر الاتصال بخدمة التحقق. يرجى إعادة المحاولة بعد لحظات.';}
+ finally{auth.checking=false;render();}
+}
+function callAuthBridge(action,idToken){
+ const requestId=authRequestId();
+ return new Promise((resolve,reject)=>{
+  const frame=document.createElement('iframe');
+  const frameName='participation-auth-'+requestId;
+  frame.name=frameName;
+  frame.title='التحقق من المشاركة';
+  frame.setAttribute('aria-hidden','true');
+  frame.tabIndex=-1;
+  frame.style.display='none';
+  const form=document.createElement('form');
+  form.method='POST';
+  form.action=AUTH_BRIDGE_URL;
+  form.target=frameName;
+  form.style.display='none';
+  const add=(name,value)=>{const input=document.createElement('input');input.type='hidden';input.name=name;input.value=value;form.appendChild(input);};
+  add('requestId',requestId);add('action',action);add('idToken',idToken);
+  const cleanup=()=>{form.remove();frame.remove();};
+  const timer=setTimeout(()=>{authRequests.delete(requestId);cleanup();reject(new Error('request_timeout'));},25000);
+  authRequests.set(requestId,{resolve:result=>{clearTimeout(timer);cleanup();resolve(result);}});
+  document.body.append(frame,form);
+  form.submit();
+ });
+}
+window.addEventListener('message',event=>{
+ if(!/^https:\/\/[-a-z0-9]+-script\.googleusercontent\.com$/.test(event.origin))return;
+ const message=event.data||{};
+ if(message.channel!==AUTH_CHANNEL)return;
+ if(message.type==='response'&&message.requestId){
+  const pending=authRequests.get(message.requestId);
+  if(!pending)return;
+  authRequests.delete(message.requestId);
+  pending.resolve(message.result||{ok:false,allowed:false,reason:'server_error'});
+ }
+});
 async function submit(){
  if(!valid())return render();
  state.sending=true;render();
+ let autorisation;
+ try{autorisation=await callAuthBridge('claim',auth.idToken);}
+ catch(_){state.sending=false;state.error='تعذر التحقق من المشاركة قبل الإرسال. لم تُرسل إجاباتكم، ويمكنكم إعادة المحاولة.';render();return;}
+ if(!autorisation?.allowed){
+  state.sending=false;
+  if(autorisation?.reason==='already_submitted'){
+   auth.allowed=false;auth.idToken='';auth.blocked=true;auth.error='';render();return;
+  }
+  if(autorisation?.reason==='reauthentication_required'){
+   auth.allowed=false;auth.idToken='';auth.blocked=false;auth.error='انتهت جلسة تسجيل الدخول. يرجى تسجيل الدخول مجددًا، وستبقى إجاباتكم محفوظة في هذه الصفحة.';render();return;
+  }
+  state.error='تعذر تأكيد صلاحية الحساب. لم تُرسل إجاباتكم، ويمكنكم إعادة المحاولة.';render();return;
+ }
  let form=document.createElement('form');form.method='POST';form.action=FORM_ACTION;form.target='google-form-response';form.style.display='none';
  let add=(id,v)=>{if(!id||v===undefined||v===null||v==='')return;let i=document.createElement('input');i.name='entry.'+id;i.value=v;form.appendChild(i)};
  let addRaw=(name,v)=>{let i=document.createElement('input');i.name=name;i.value=v;form.appendChild(i)};
@@ -204,7 +311,7 @@ async function submit(){
  setTimeout(finish,8000);
 }
 function nav(){let ss=steps(),i=ss.indexOf(state.step);return `<nav class="form-actions">${i>0?'<button class="secondary-button" id="prev" type="button">السابق</button>':'<span></span>'}${i<ss.length-1?'<button class="primary-button" id="next" type="button">التالي</button>':`<button class="primary-button submit-button" id="submit" type="button" ${state.sending?'disabled':''}>${state.sending?'جارٍ إرسال الإجابات…':'إرسال الإجابات'}</button>`}</nav>`;}
-function render(){if(state.done){$('#root').innerHTML=`<main class="site-shell" dir="rtl"><section class="success-card"><div class="success-icon">✓</div><p class="eyebrow">نهاية الاستبيان</p><h1>شكرًا جزيلًا على مشاركتكم</h1><p>تم تسجيل إجاباتكم بنجاح، ولن تُستعمل إلا لأغراض البحث العلمي.</p></section></main>`;return;}let ss=steps(),i=Math.max(ss.indexOf(state.step),0),pct=(i+1)/ss.length*100,title=currentStepTitle(state.step);$('#root').innerHTML=`<main class="site-shell" dir="rtl"><header class="hero"><div class="hero-accent"></div><p class="eyebrow">بحث أكاديمي بسلك الدكتوراه</p><h1>استبيان حول التواصل العمومي المرتبط ببرنامج الدعم المباشر للسكن</h1><p class="hero-lead">في إطار إعداد بحث أكاديمي بسلك الدكتوراه، أضع بين أيديكم هذا الاستبيان، الذي يندرج ضمن دراسة حول التواصل العمومي المرتبط ببرنامج الدعم المباشر للسكن.</p><div class="privacy-note"><span>◉</span><p>جميع الأجوبة سرية، ولن تُستعمل إلا لأغراض البحث العلمي.</p></div><button class="intro-toggle" id="intro-toggle" type="button">${state.intro?'إخفاء مقدمة الاستبيان':'عرض مقدمة الاستبيان'} <span>${state.intro?'−':'+'}</span></button>${state.intro?`<div class="intro-copy"><p>وتكتسي مشاركتكم أهمية كبيرة، لما ستوفره من معطيات أساسية تسهم في إغناء هذا البحث وتعزيز نتائجه من الناحية العلمية. لذلك، نرجو منكم الإجابة عن الأسئلة بكل موضوعية ودقة.</p><details><summary>توضيحات</summary><div class="definition-list"><p><strong>الوزارة:</strong> وزارة إعداد التراب الوطني والتعمير والإسكان وسياسة المدينة.</p><p><strong>وسائل التواصل الرسمية للوزارة:</strong> يقصد بها مجموع القنوات والوسائط التي تعتمدها الوزارة رسمياً للتواصل العمومي بشأن برنامج الدعم المباشر للسكن، سواء لنشر المعلومات المتعلقة بأهدافه وشروط الاستفادة منه وإجراءاته ومستجداته، أو لتيسير الولوج إلى المعطيات والخدمات المرتبطة به. وتشمل، على الخصوص، الموقع الإلكتروني للوزارة، ومنصة «دعم سكن» وتطبيقها، والحسابات الرسمية على شبكات التواصل الاجتماعي، والبلاغات والمنشورات الرسمية. ولا تفترض هذه الوسائل، بالضرورة، إتاحة تواصل مباشر بين المواطن والوزارة.</p><p><strong>وسائل التواصل الرسمية التي تتيح التفاعل:</strong> يقصد بها القنوات الرسمية التي تمكّن المواطنين من التواصل مع الوزارة بشأن برنامج الدعم المباشر للسكن، من خلال توجيه الاستفسارات وطلب التوضيحات وتقديم الملاحظات أو المقترحات أو الشكايات، مع إمكانية تلقي جواب أو تتبع مآل الطلبات والشكايات المقدمة. وتشمل، على الخصوص، خدمات التواصل والمساعدة عبر منصة «دعم سكن» وتطبيقها، والبريد الإلكتروني ورقم المساعدة المخصصين للبرنامج، والبوابة الوطنية للشكايات، وخدمات المراسلة عبر الحسابات الرسمية للوزارة على شبكات التواصل الاجتماعي.</p></div></details></div>`:''}</header><section class="progress-panel"><div class="progress-copy"><span>المرحلة ${i+1}</span><strong>${esc(title)}</strong><span dir="ltr">${i+1} / ${ss.length}</span></div><div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div></section><section id="questionnaire-form" class="form-section"><div class="section-heading"><p>الاستبيان</p><h2>${esc(title)}</h2></div>${state.error?`<div class="error-message" role="alert">${esc(state.error)}</div>`:''}${section()}${nav()}</section><iframe name="google-form-response" class="submission-frame" title="إرسال الاستبيان"></iframe><footer><p>شكرًا لتعاونكم ومساهمتكم في هذا البحث العلمي.</p></footer></main>`;bind();}
+function render(){if(!auth.allowed){renderAuthGate();return;}if(state.done){$('#root').innerHTML=`<main class="site-shell" dir="rtl"><section class="success-card"><div class="success-icon">✓</div><p class="eyebrow">نهاية الاستبيان</p><h1>شكرًا جزيلًا على مشاركتكم</h1><p>تم تسجيل إجاباتكم بنجاح، ولن تُستعمل إلا لأغراض البحث العلمي.</p></section></main>`;return;}let ss=steps(),i=Math.max(ss.indexOf(state.step),0),pct=(i+1)/ss.length*100,title=currentStepTitle(state.step);$('#root').innerHTML=`<main class="site-shell" dir="rtl"><header class="hero"><div class="hero-accent"></div><p class="eyebrow">بحث أكاديمي بسلك الدكتوراه</p><h1>استبيان حول التواصل العمومي المرتبط ببرنامج الدعم المباشر للسكن</h1><p class="hero-lead">في إطار إعداد بحث أكاديمي بسلك الدكتوراه، أضع بين أيديكم هذا الاستبيان، الذي يندرج ضمن دراسة حول التواصل العمومي المرتبط ببرنامج الدعم المباشر للسكن.</p><div class="privacy-note"><span>◉</span><p>جميع الأجوبة سرية، ولن تُستعمل إلا لأغراض البحث العلمي.</p></div><button class="intro-toggle" id="intro-toggle" type="button">${state.intro?'إخفاء مقدمة الاستبيان':'عرض مقدمة الاستبيان'} <span>${state.intro?'−':'+'}</span></button>${state.intro?`<div class="intro-copy"><p>وتكتسي مشاركتكم أهمية كبيرة، لما ستوفره من معطيات أساسية تسهم في إغناء هذا البحث وتعزيز نتائجه من الناحية العلمية. لذلك، نرجو منكم الإجابة عن الأسئلة بكل موضوعية ودقة.</p><details><summary>توضيحات</summary><div class="definition-list"><p><strong>الوزارة:</strong> وزارة إعداد التراب الوطني والتعمير والإسكان وسياسة المدينة.</p><p><strong>وسائل التواصل الرسمية للوزارة:</strong> يقصد بها مجموع القنوات والوسائط التي تعتمدها الوزارة رسمياً للتواصل العمومي بشأن برنامج الدعم المباشر للسكن، سواء لنشر المعلومات المتعلقة بأهدافه وشروط الاستفادة منه وإجراءاته ومستجداته، أو لتيسير الولوج إلى المعطيات والخدمات المرتبطة به. وتشمل، على الخصوص، الموقع الإلكتروني للوزارة، ومنصة «دعم سكن» وتطبيقها، والحسابات الرسمية على شبكات التواصل الاجتماعي، والبلاغات والمنشورات الرسمية. ولا تفترض هذه الوسائل، بالضرورة، إتاحة تواصل مباشر بين المواطن والوزارة.</p><p><strong>وسائل التواصل الرسمية التي تتيح التفاعل:</strong> يقصد بها القنوات الرسمية التي تمكّن المواطنين من التواصل مع الوزارة بشأن برنامج الدعم المباشر للسكن، من خلال توجيه الاستفسارات وطلب التوضيحات وتقديم الملاحظات أو المقترحات أو الشكايات، مع إمكانية تلقي جواب أو تتبع مآل الطلبات والشكايات المقدمة. وتشمل، على الخصوص، خدمات التواصل والمساعدة عبر منصة «دعم سكن» وتطبيقها، والبريد الإلكتروني ورقم المساعدة المخصصين للبرنامج، والبوابة الوطنية للشكايات، وخدمات المراسلة عبر الحسابات الرسمية للوزارة على شبكات التواصل الاجتماعي.</p></div></details></div>`:''}</header><section class="progress-panel"><div class="progress-copy"><span>المرحلة ${i+1}</span><strong>${esc(title)}</strong><span dir="ltr">${i+1} / ${ss.length}</span></div><div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div></section><section id="questionnaire-form" class="form-section"><div class="section-heading"><p>الاستبيان</p><h2>${esc(title)}</h2></div>${state.error?`<div class="error-message" role="alert">${esc(state.error)}</div>`:''}${section()}${nav()}</section><iframe name="google-form-response" class="submission-frame" title="إرسال الاستبيان"></iframe><footer><p>شكرًا لتعاونكم ومساهمتكم في هذا البحث العلمي.</p></footer></main>`;bind();}
 function bind(){document.querySelectorAll('input[type=radio][data-id]').forEach(x=>x.onchange=()=>{let id=x.dataset.id;set(id,x.value);if(id==='q1'&&x.value!=='نعم')del('q2','status',...officialSources.map(z=>z[0]),...externalSources.map(z=>z[0]));if(id==='q2'){del('status');if(x.value==='نعم')del(...externalSources.map(z=>z[0]));else del(...officialSources.map(z=>z[0]));}if(id==='status'&&!beneficiary())del(...G.satisfaction[0][1].map(r=>r[0]),...G.personalImpact[0][1].map(r=>r[0]));if(id==='contact_reel'&&x.value==='لا')del('canal_dernier_contact','reponse_recue',...G.response[0][1].map(r=>r[0]));if(id==='reponse_recue'&&x.value==='لا')del(...G.response[0][1].map(r=>r[0]));if(id==='residence'){if(x.value==='داخل المغرب')del('country');else del('region');}render();});document.querySelectorAll('input[type=checkbox][data-check]').forEach(x=>x.onchange=()=>{set(x.dataset.check,x.checked?'1':'');render();});let s=$('#suggestion');if(s)s.oninput=()=>set('suggestion',s.value);let r=$('#region-select');if(r)r.onchange=()=>{set('region',r.value);render();};let c=$('#country-input');if(c)c.oninput=()=>set('country',c.value);let it=$('#intro-toggle');if(it)it.onclick=()=>{state.intro=!state.intro;render();};let n=$('#next');if(n)n.onclick=()=>{if(!valid())return render();let ss=steps(),i=ss.indexOf(state.step);state.step=ss[i+1];state.error='';render();scrollToForm();};let p=$('#prev');if(p)p.onclick=()=>{let ss=steps(),i=ss.indexOf(state.step);state.step=ss[i-1];state.error='';render();scrollToForm();};let sub=$('#submit');if(sub)sub.onclick=submit;}
 function scrollToForm(){requestAnimationFrame(()=>$('#questionnaire-form')?.scrollIntoView({behavior:'smooth',block:'start'}));}
 const style=document.createElement('style');style.textContent=`.likert-wrap{overflow-x:auto}.likert-table{width:100%;border-collapse:collapse;min-width:760px;background:#fff}.likert-table th,.likert-table td{border:1px solid rgba(15,23,42,.12);padding:.85rem;text-align:center}.likert-table th:first-child,.likert-table td:first-child{text-align:right;min-width:360px}.likert-table input{width:20px;height:20px}.likert-table thead th{font-weight:800;background:rgba(15,23,42,.04)}.group-card+.instruction-card{margin-top:1rem}@media(max-width:700px){.likert-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}.likert-table{width:100%;min-width:0;table-layout:fixed;border-collapse:collapse;background:#fff}.likert-table thead{display:table-header-group}.likert-table thead th{font-size:1.12rem;font-weight:800;padding-block:.85rem}.likert-table thead th:first-child{font-size:1.08rem}.likert-table tbody{display:table-row-group}.likert-table tr{display:table-row}.likert-table th,.likert-table td{display:table-cell;padding:.76rem .24rem;font-size:1rem;vertical-align:middle}.likert-table th:first-child,.likert-table td:first-child{display:table-cell;width:45%;min-width:0;padding:.95rem .6rem;text-align:right;line-height:1.75}.likert-table th:not(:first-child),.likert-table td:not(:first-child){width:11%;min-width:0;padding-inline:.08rem}.likert-table tbody td label{display:flex;width:100%;min-height:60px;align-items:center;justify-content:center}.likert-table input{width:28px;height:28px;margin:0}}@media(max-width:380px){.likert-table th,.likert-table td{padding:.6rem .12rem;font-size:.88rem}.likert-table thead th{font-size:.98rem;padding-block:.68rem}.likert-table thead th:first-child{font-size:.96rem}.likert-table th:first-child,.likert-table td:first-child{width:45%;padding:.78rem .38rem}.likert-table th:not(:first-child),.likert-table td:not(:first-child){width:11%}.likert-table input{width:25px;height:25px}}`;document.head.appendChild(style);
