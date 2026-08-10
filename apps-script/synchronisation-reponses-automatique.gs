@@ -116,7 +116,6 @@ function synchroniserReponsesAutomatiquement() {
 
     remplacerDonnees_(rawSheet, rawRows, rawHeaders.length);
     rawSheet.setFrozenRows(1);
-    rawSheet.getRange('A:A').setNumberFormat('dd/MM/yyyy HH:mm:ss');
 
     const usefulRows = construireLignesUtiles_(rawRows, rawHeaders);
     remplacerDonneesUtiles_(usefulSheet, usefulRows);
@@ -268,7 +267,6 @@ function remplacerDonneesUtiles_(sheet, rows) {
   }
 
   sheet.setFrozenRows(1);
-  sheet.getRange('A:A').setNumberFormat('dd/MM/yyyy HH:mm:ss');
 }
 
 function lireEntetesNonVides_(sheet) {
@@ -283,4 +281,3 @@ function exigerOnglet_(spreadsheet, sheetName) {
   if (!sheet) throw new Error('Onglet introuvable : ' + sheetName);
   return sheet;
 }
-
