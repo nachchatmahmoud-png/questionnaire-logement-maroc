@@ -1,0 +1,17 @@
+name: Vérifier le questionnaire
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  validation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Contrôler les règles validées
+        run: node scripts/verify-questionnaire.mjs
