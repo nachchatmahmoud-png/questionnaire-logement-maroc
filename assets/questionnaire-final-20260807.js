@@ -1,5 +1,4 @@
 const FORM_ACTION='https://docs.google.com/forms/d/e/1FAIpQLSfm5EXmdlOc_4k1wA14rliRwoSo0a23WyryaQK2G9yXn0TKAg/formResponse';
-const FORM_FBZX='-4954258208657414293';
 const ENTRY={
  q1:'1192071131',q2:'1769903365',external_sources:'952069730',official_sources:'1941084715',status:'1560882748',
  info_1:'1589806096',info_2:'1636847901',info_3:'101960292',info_4:'1503481604',info_5:'266917154',info_6:'1378574615',
@@ -125,9 +124,6 @@ async function submit(){
  }
  addRaw('fvv','1');
  addRaw('pageHistory',pageHistory);
- addRaw('fbzx',FORM_FBZX);
- addRaw('partialResponse',JSON.stringify([null,null,FORM_FBZX]));
- addRaw('submissionTimestamp','-1');
  let completed=false;
  let finish=()=>{if(completed)return;completed=true;state.done=true;state.sending=false;render();};
  let responseFrame=document.querySelector('iframe[name="google-form-response"]');
