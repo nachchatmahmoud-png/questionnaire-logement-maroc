@@ -53,6 +53,27 @@ function installerControleParticipationGoogle() {
   console.log('NOM_FEUILLE_TECHNIQUE: ' + CONTROLE_PARTICIPATION.SHEET_NAME);
 }
 
+/**
+ * À exécuter manuellement si Apps Script n'a pas encore demandé l'autorisation
+ * d'accéder au service externe de validation des jetons Google.
+ */
+function autoriserEtTesterServiceGoogle() {
+  const reponse = UrlFetchApp.fetch(
+    CONTROLE_PARTICIPATION.TOKENINFO_URL + 'invalid',
+    { muteHttpExceptions: true, followRedirects: true }
+  );
+  const code = reponse.getResponseCode();
+
+  console.log('URL_FETCH_AUTORISE: oui');
+  console.log('CODE_TEST_TOKENINFO: ' + code);
+
+  // Google doit refuser le faux jeton avec HTTP 400 : cela confirme que
+  // l'appel externe fonctionne et que l'autorisation est bien accordée.
+  if (code !== 400) {
+    throw new Error('Réponse inattendue du service Google Tokeninfo : ' + code);
+  }
+}
+
 /** Affiche uniquement l'état du service lorsqu'on ouvre directement l'URL /exec. */
 function doGet() {
   return HtmlService.createHtmlOutput(
