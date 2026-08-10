@@ -53,38 +53,42 @@ function installerControleParticipationGoogle() {
   console.log('NOM_FEUILLE_TECHNIQUE: ' + CONTROLE_PARTICIPATION.SHEET_NAME);
 }
 
-/**
- * Page intermédiaire invisible chargée dans un iframe par le site GitHub Pages.
- * Elle permet une communication sécurisée sans placer le jeton dans l'URL.
- */
+/** Affiche uniquement l'état du service lorsqu'on ouvre directement l'URL /exec. */
 function doGet() {
-  const origine = JSON.stringify(CONTROLE_PARTICIPATION.SITE_ORIGIN);
-  const canal = JSON.stringify(CONTROLE_PARTICIPATION.CHANNEL);
-  const html = [
-    '<!doctype html><html><head><base target="_top"><meta charset="utf-8"></head><body>',
-    '<script>',
-    '(function(){',
-    'const SITE_ORIGIN=' + origine + ';',
-    'const CHANNEL=' + canal + ';',
-    'function repondre(cible,origine,id,resultat){',
-    '  cible.postMessage({channel:CHANNEL,type:"response",requestId:id,result:resultat},origine);',
-    '}',
-    'window.addEventListener("message",function(event){',
-    '  if(event.origin!==SITE_ORIGIN||event.source!==window.parent)return;',
-    '  const message=event.data||{};',
-    '  if(message.channel!==CHANNEL||message.type!=="request"||!message.requestId)return;',
-    '  const cible=event.source, origine=event.origin, id=message.requestId;',
-    '  google.script.run',
-    '    .withSuccessHandler(function(resultat){repondre(cible,origine,id,resultat);})',
-    '    .withFailureHandler(function(){repondre(cible,origine,id,{ok:false,allowed:false,reason:"server_error"});})',
-    '    .verifierParticipationGoogle({idToken:message.idToken,action:message.action});',
-    '});',
-    'window.parent.postMessage({channel:CHANNEL,type:"ready"},SITE_ORIGIN);',
-    '})();',
-    '<\/script></body></html>',
-  ].join('');
+  return HtmlService.createHtmlOutput(
+    '<!doctype html><html><head><meta charset="utf-8"></head>' +
+    '<body><p>Service de contrôle des participations actif.</p></body></html>'
+  ).setTitle('Contrôle de participation');
+}
 
-  return HtmlService.createHtmlOutput(html)
+/**
+ * Reçoit le jeton par formulaire POST dans un iframe invisible.
+ * Le jeton ne figure donc ni dans l'URL, ni dans l'historique du navigateur.
+ */
+function doPost(e) {
+  const parametres = (e && e.parameter) || {};
+  const requestId = String(parametres.requestId || '');
+  const requestIdValide = /^[A-Za-z0-9_-]{8,128}$/.test(requestId);
+  const resultat = requestIdValide
+    ? verifierParticipationGoogle({
+        idToken: String(parametres.idToken || ''),
+        action: String(parametres.action || ''),
+      })
+    : resultatRefus_('invalid_request');
+
+  const message = JSON.stringify({
+    channel: CONTROLE_PARTICIPATION.CHANNEL,
+    type: 'response',
+    requestId: requestId,
+    result: resultat,
+  }).replace(/</g, '\\u003c');
+  const origine = JSON.stringify(CONTROLE_PARTICIPATION.SITE_ORIGIN);
+
+  return HtmlService.createHtmlOutput(
+    '<!doctype html><html><head><meta charset="utf-8"></head><body>' +
+    '<script>window.top.postMessage(' + message + ',' + origine + ');<\/script>' +
+    '</body></html>'
+  )
     .setTitle('Contrôle de participation')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
