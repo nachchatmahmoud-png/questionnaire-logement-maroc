@@ -106,7 +106,7 @@ async function submit(){
  if(channel&&googleChannel==='قناة رسمية أخرى')addKey('channel_other',channel);
  addKey('reponse_recue',val('reponse_recue'));
  quiz.forEach(([id])=>addKey(id,val(id)));
- addKey('suggestion',packed);
+ addKey('suggestion',val('suggestion'));
  ['age','gender','education','housing','residence','region','country','professional'].forEach(k=>addKey(k,val(k)));
  let pageHistory=val('q1')==='لا'?'0,3':val('q2')==='لا'?'0,1,2,3':'0,1,4,5,6,7,8,9,10,11,12,13';
  addRaw('fvv','1');addRaw('pageHistory',pageHistory);
