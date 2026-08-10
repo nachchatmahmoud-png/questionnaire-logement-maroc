@@ -156,8 +156,23 @@ expect(quiz.every((question, index) => question[1].startsWith((index + 1) + '. '
 expect(JSON.stringify(positions) === JSON.stringify([2, 3, 4, 2, 3, 4]), 'L’ordre validé des bonnes réponses doit être conservé.');
 
 expect((index.match(/questionnaire\.js\?v=/g) || []).length === 1, 'index.html doit charger un seul fichier questionnaire versionné.');
-expect(index.includes('questionnaire.js?v=20260810-new-form-v6'), 'Le cache doit être invalidé pour cette version.');
+expect(index.includes('questionnaire.js?v=20260810-google-account-v7'), 'Le cache doit être invalidé pour cette version.');
 expect((index.match(/<script[^>]+src=/g) || []).length === 1, 'index.html doit charger un seul JavaScript fonctionnel.');
+
+expect(source.includes("const GOOGLE_CLIENT_ID='285878510024-7dhdojiucp6ff20m2snuro018t70c6s5.apps.googleusercontent.com'"), 'Le site doit utiliser le client Google public configuré.');
+expect(source.includes("const AUTH_BRIDGE_URL='https://script.google.com/macros/s/AKfycbwpvABCx0YzyQukvKwkuJqW_k4rkycwyrgkcuXVcJ5v8D64aS9g8h3pQksVNdX6lrf7BQ/exec'"), 'Le site doit utiliser le déploiement Apps Script actif.');
+expect(!source.includes('__URL_APPLICATION_WEB_APPS_SCRIPT__'), 'Une URL Apps Script provisoire ne doit jamais être publiée.');
+expect(source.includes("callAuthBridge('check',jeton)"), 'Le compte Google doit être contrôlé avant l’affichage du questionnaire.');
+expect(source.includes("callAuthBridge('claim',auth.idToken)"), 'La participation doit être réservée avant l’envoi à Google Forms.');
+expect(source.includes('if(!auth.allowed){renderAuthGate();return;}'), 'Le questionnaire ne doit pas apparaître avant la validation du compte.');
+expect(!source.includes('GOCSPX-'), 'Aucun code secret OAuth ne doit être publié dans le site.');
+
+const authServer = fs.readFileSync('apps-script/controle-participation-google.gs', 'utf8');
+expect(authServer.includes("SHEET_NAME: 'Contrôle participations'"), 'Le service doit utiliser une feuille technique séparée.');
+expect(authServer.includes("proprietes.setProperty('PARTICIPATION_TEST_EMAIL', adresseProprietaire)"), 'L’exception de test doit rester privée dans Apps Script.');
+expect(authServer.includes('Utilities.computeDigest('), 'Le compte doit être pseudonymisé avant son enregistrement.');
+expect(authServer.includes('LockService.getScriptLock()'), 'La réservation doit être atomique pour bloquer les doubles envois simultanés.');
+expect(!authServer.includes('GOCSPX-'), 'Le service ne doit contenir aucun code secret OAuth.');
 
 if (failures.length) {
   console.error('Régressions détectées :');
