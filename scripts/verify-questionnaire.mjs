@@ -17,8 +17,9 @@ expect(source.includes('<th title="${esc(t)}" aria-label="${esc(t)}">${n}</th>')
 expect(source.includes('.likert-table{width:100%;min-width:0;table-layout:fixed;border-collapse:collapse'), 'Le tableau Likert mobile doit rester un vrai tableau adaptatif.');
 expect(source.includes('.likert-table thead{display:table-header-group}'), 'L’en-tête du tableau Likert doit rester visible sur mobile.');
 expect(source.includes('.likert-table thead th{font-size:1.12rem;font-weight:800'), 'Les numéros de l’échelle et l’en-tête العبارة doivent rester agrandis sur mobile.');
+expect(source.includes('.likert-table th:not(:first-child),.likert-table td:not(:first-child){width:10%'), 'Chaque colonne de mesure doit conserver 10 % de la largeur mobile.');
 expect(source.includes('.likert-table tr{display:table-row}'), 'Les affirmations Likert doivent rester présentées en lignes de tableau.');
-expect(source.includes('.likert-table th:first-child,.likert-table td:first-child{display:table-cell;width:55%'), 'La colonne des affirmations doit garder une largeur lisible sur mobile.');
+expect(source.includes('.likert-table th:first-child,.likert-table td:first-child{display:table-cell;width:50%'), 'La colonne des affirmations doit garder une largeur lisible sur mobile.');
 expect(source.includes('.likert-table input{width:28px;height:28px;margin:0}'), 'Les boutons Likert mobiles doivent rester suffisamment grands.');
 expect(!source.includes('display:grid;grid-template-columns:repeat(5,1fr)'), 'La présentation mobile en cartes/grilles ne doit pas remplacer le tableau.');
 expect(!source.includes('.likert-table{min-width:660px}'), 'L’ancienne largeur mobile qui masquait les colonnes ne doit pas réapparaître.');
