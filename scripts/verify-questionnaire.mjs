@@ -28,7 +28,7 @@ expect(
   'Le contenu validé du questionnaire a été modifié sans mise à jour explicite de son empreinte.'
 );
 
-const publicFormId = '1FAIpQLSdI0Kg9VHrMxEoRHFnSBly2TWd6DMR1vOnvEBUCfXnCyJXjyA';
+const publicFormId = '1FAIpQLSfIOkBS04JQVuTRE0npIB6QOJ6UPg0ckoBTqAdLG9PT3yUOkA';
 expect(source.includes(publicFormId + '/formResponse'), 'Le site doit envoyer vers le Google Form actif.');
 expect(source.includes(publicFormId + '/viewform'), 'Le lien public doit viser le Google Form actif.');
 expect(source.includes("2026-08-10-profils-g1-g5-v5-five-point-scales"), 'La version du schéma doit correspondre au formulaire actuel.');
@@ -156,7 +156,7 @@ expect(quiz.every((question, index) => question[1].startsWith((index + 1) + '. '
 expect(JSON.stringify(positions) === JSON.stringify([2, 3, 4, 2, 3, 4]), 'L’ordre validé des bonnes réponses doit être conservé.');
 
 expect((index.match(/questionnaire\.js\?v=/g) || []).length === 1, 'index.html doit charger un seul fichier questionnaire versionné.');
-expect(index.includes('questionnaire.js?v=20260810-five-point-scales-v5'), 'Le cache doit être invalidé pour cette version.');
+expect(index.includes('questionnaire.js?v=20260810-new-form-v6'), 'Le cache doit être invalidé pour cette version.');
 expect((index.match(/<script[^>]+src=/g) || []).length === 1, 'index.html doit charger un seul JavaScript fonctionnel.');
 
 if (failures.length) {

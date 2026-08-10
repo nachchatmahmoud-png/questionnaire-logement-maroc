@@ -1,5 +1,5 @@
-const FORM_ACTION='https://docs.google.com/forms/d/e/1FAIpQLSdI0Kg9VHrMxEoRHFnSBly2TWd6DMR1vOnvEBUCfXnCyJXjyA/formResponse';
-const FORM_PUBLIC_URL='https://docs.google.com/forms/d/e/1FAIpQLSdI0Kg9VHrMxEoRHFnSBly2TWd6DMR1vOnvEBUCfXnCyJXjyA/viewform';
+const FORM_ACTION='https://docs.google.com/forms/d/e/1FAIpQLSfIOkBS04JQVuTRE0npIB6QOJ6UPg0ckoBTqAdLG9PT3yUOkA/formResponse';
+const FORM_PUBLIC_URL='https://docs.google.com/forms/d/e/1FAIpQLSfIOkBS04JQVuTRE0npIB6QOJ6UPg0ckoBTqAdLG9PT3yUOkA/viewform';
 const SCHEMA_VERSION='2026-08-10-profils-g1-g5-v5-five-point-scales';
 const ENTRY_COMMON={
  q1:'299895912',q2:'1225420672',age:'1577939573',gender:'2068308268',education:'1330802393',housing:'1373868444',residence:'865830704',professional:'1061681182',region:'861634292',country:'1099313147'
