@@ -13,7 +13,7 @@ un fichier correctif temporaire.
 - Les numéros 1 à 5 restent visibles dans les tableaux sur ordinateur et sur mobile.
 - La légende Likert complète apparaît une seule fois par page, sans masquer les colonnes du tableau.
 - La version mobile affiche le même contenu que la version ordinateur.
-- Sur mobile, chaque affirmation occupe toute la largeur et les cinq réponses 1 à 5 apparaissent sur une ligne tactile lisible.
+- Sur mobile, le tableau conserve ses six colonnes : 50 % pour `العبارة` et 10 % pour chacune des mesures 1 à 5.
 - Le titre est `رابعًا: الأثر العام للبرنامج`, sans `المدرك`.
 - La section `القسم الرابع: فهم البرنامج` contient six questions numérotées.
 - Les positions validées des bonnes réponses sont : 2, 3, 4, 2, 3, 4.
@@ -21,6 +21,9 @@ un fichier correctif temporaire.
 - Les questions d’expérience personnelle ne s’affichent que pour le bénéficiaire personnel.
 - L’affirmation `4. بصفة عامة، يحظى برنامج الدعم المباشر للسكن بتأييدي.` reste supprimée.
 - La phrase `لن تُعرض الإجابات الصحيحة أثناء الاستبيان.` reste supprimée.
+- La section 3 contient `التقييم العام لإمكانية التفاعل مع الوزارة` avec l’affirmation numérotée 7 et une échelle de 1 à 5.
+- La section 3 contient `التقييم العام لجودة تواصل الوزارة` avec une échelle de 1 à 5.
+- Ces deux évaluations sont obligatoires et leurs réponses sont envoyées au formulaire Google.
 - Le site envoie les réponses au formulaire Google actif identifié dans le fichier principal.
 - Les corrections futures doivent préserver toutes les règles ci-dessus.
 
