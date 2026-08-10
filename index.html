@@ -26,7 +26,7 @@
         };
       })();
     </script>
-    <script type="module" crossorigin src="/questionnaire-logement-maroc/assets/questionnaire.js?v=20260810-interactive-channels"></script>
+    <script type="module" crossorigin src="/questionnaire-logement-maroc/assets/questionnaire.js?v=20260810-status-routing-v4"></script>
     <style>
       #boot-fallback{max-width:760px;margin:48px auto;padding:28px;border:1px solid #e5e7eb;border-radius:18px;background:#fff;font-family:Arial,sans-serif;line-height:1.8;text-align:center;color:#172033}
       #boot-fallback h1{font-size:1.45rem;margin:0 0 10px;font-weight:700}
@@ -68,6 +68,7 @@
       html body .likert-table thead th:nth-child(4)::after{content:"لا أوافق ولا أعارض" !important;}
       html body .likert-table thead th:nth-child(5)::after{content:"أوافق" !important;}
       html body .likert-table thead th:nth-child(6)::after{content:"أوافق تمامًا" !important;}
+      html body .likert-table.has-unknown thead th:nth-child(7)::after{content:"لا أعرف / لا أستطيع التقييم" !important;}
 
       @media(max-width:760px){
         html body .legend-grid{grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:7px !important;}
