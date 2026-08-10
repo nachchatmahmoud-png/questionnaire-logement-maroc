@@ -24,6 +24,9 @@ un fichier correctif temporaire.
 - La section 3 contient `التقييم العام لإمكانية التفاعل مع الوزارة` avec l’affirmation numérotée 7 et une échelle de 1 à 5.
 - La section 3 contient `التقييم العام لجودة تواصل الوزارة` avec une échelle de 1 à 5.
 - Ces deux évaluations sont obligatoires et leurs réponses sont envoyées au formulaire Google.
+- Dans la section 3, les deux évaluations générales apparaissent après le parcours de contact réel et avant la compréhension.
+- La réponse `لا` à `هل توصلتم برد بشأن هذا التواصل؟` conduit aux deux évaluations générales, puis à la compréhension.
+- La réponse `نعم` conduit d’abord à l’évaluation du retour reçu, puis aux deux évaluations générales et à la compréhension.
 - Le site envoie les réponses au formulaire Google actif identifié dans le fichier principal.
 - Les corrections futures doivent préserver toutes les règles ci-dessus.
 

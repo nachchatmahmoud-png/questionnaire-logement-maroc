@@ -29,7 +29,9 @@ expect(source.includes("interaction_global:'240047744'"), 'L’identifiant Googl
 expect(source.includes("communication_quality_global:'1189017906'"), 'L’identifiant Google Forms de l’évaluation générale de la qualité doit être conservé.');
 expect(source.includes("interGlobal:[['التقييم العام لإمكانية التفاعل مع الوزارة'"), 'Le tableau d’évaluation générale de l’interaction doit rester dans la section 3.');
 expect(source.includes("communicationQuality:[['التقييم العام لجودة تواصل الوزارة'"), 'Le tableau d’évaluation générale de la qualité doit rester dans la section 3.');
-expect(source.includes("${table(G.interPart)}${table(G.interGlobal)}${table(G.communicationQuality)}<section"), 'Les deux évaluations générales doivent précéder l’expérience de contact dans la section 3.');
+expect(source.includes("return h+'</section>'+table(G.interGlobal)+table(G.communicationQuality)"), 'Les deux évaluations générales doivent suivre l’expérience de contact dans la section 3.');
+expect(source.includes("pages.push(10,11,12,13,14,15,16,17)"), 'La nouvelle page Google Forms des évaluations générales doit rester dans l’historique d’envoi.');
+expect(source.includes("val('residence')==='داخل المغرب'?18:19"), 'Les numéros des pages de résidence doivent rester décalés après l’ajout de la page globale.');
 expect(source.includes("...G.interPart,...G.interGlobal,...G.communicationQuality"), 'Les deux nouvelles évaluations doivent rester obligatoires.');
 expect(source.includes("'interaction_global','communication_quality_global','clarte_reponse'"), 'Les deux nouvelles réponses doivent être envoyées à Google Forms.');
 
