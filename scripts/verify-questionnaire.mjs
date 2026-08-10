@@ -14,7 +14,10 @@ expect(source.includes('رابعًا: الأثر العام للبرنامج'), 
 expect(!source.includes('رابعًا: الأثر العام المدرك للبرنامج'), 'Le mot المدرك ne doit pas réapparaître dans le titre.');
 expect(source.includes('function scaleLegend()'), 'La légende Likert extérieure doit exister.');
 expect(source.includes('<th title="${esc(t)}" aria-label="${esc(t)}">${n}</th>'), 'Les numéros 1 à 5 doivent rester visibles dans les tableaux.');
-expect(source.includes('.likert-table{min-width:0;table-layout:fixed;width:100%}'), 'La mise en page mobile doit afficher toutes les colonnes Likert sans largeur minimale.');
+expect(source.includes('.likert-table thead tr{display:grid;grid-template-columns:repeat(5,1fr)'), 'Les cinq numéros Likert doivent occuper cinq colonnes lisibles sur mobile.');
+expect(source.includes('.likert-table tbody tr{display:grid;grid-template-columns:repeat(5,1fr)'), 'Chaque affirmation doit utiliser une grille mobile de cinq réponses.');
+expect(source.includes('grid-column:1/-1;display:block;width:auto;min-width:0;padding:1rem;font-size:1rem'), 'Le texte de chaque affirmation doit occuper toute la largeur avec une taille lisible.');
+expect(source.includes('.likert-table input{width:22px;height:22px}'), 'Les boutons Likert mobiles doivent rester suffisamment grands.');
 expect(!source.includes('.likert-table{min-width:660px}'), 'L’ancienne largeur mobile qui masquait les colonnes ne doit pas réapparaître.');
 
 const interaction = source.slice(
