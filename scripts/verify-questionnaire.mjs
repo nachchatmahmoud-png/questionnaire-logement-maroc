@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import crypto from 'node:crypto';
 
 const source = fs.readFileSync('assets/questionnaire.js', 'utf8');
 const index = fs.readFileSync('index.html', 'utf8');
@@ -8,10 +9,29 @@ function expect(condition, message) {
   if (!condition) failures.push(message);
 }
 
+// Empreinte sémantique : protège tous les titres, affirmations, choix et groupes
+// contre le retour involontaire d'une ancienne version lors d'une mise à jour.
+const questionnaireDataSource = source.slice(
+  source.indexOf('const PERSONAL_BENEFICIARY='),
+  source.indexOf('function currentStepTitle')
+) + source.slice(
+  source.indexOf('const demographics='),
+  source.indexOf('function demo()')
+);
+const questionnaireData = Function(questionnaireDataSource + '\nreturn {PERSONAL_BENEFICIARY,FAMILY_BENEFICIARY,officialSources,externalSources,statuses,contactChannels,quiz,G,stepTitles,demographics};')();
+const contentFingerprint = crypto
+  .createHash('sha256')
+  .update(JSON.stringify(questionnaireData))
+  .digest('hex');
+expect(
+  contentFingerprint === '21b17b1a0ebe7c4618c9507ea752c056fca2ba63da0d6344274dccf2fe4a5ab7',
+  'Le contenu validé du questionnaire a été modifié sans mise à jour explicite de son empreinte.'
+);
+
 const publicFormId = '1FAIpQLSdI0Kg9VHrMxEoRHFnSBly2TWd6DMR1vOnvEBUCfXnCyJXjyA';
 expect(source.includes(publicFormId + '/formResponse'), 'Le site doit envoyer vers le Google Form actif.');
 expect(source.includes(publicFormId + '/viewform'), 'Le lien public doit viser le Google Form actif.');
-expect(source.includes("2026-08-10-profils-g1-g5-v4-status-routing"), 'La version du schéma doit correspondre au formulaire actuel.');
+expect(source.includes("2026-08-10-profils-g1-g5-v5-five-point-scales"), 'La version du schéma doit correspondre au formulaire actuel.');
 
 for (const mapName of [
   'ENTRY_G2_BENEFICIARY',
@@ -82,6 +102,23 @@ for (const history of [
 
 const interactiveChannelsInstruction = 'يرجى الإجابة بناءً على معرفتكم أو تجربتكم مع قنوات التواصل المتاحة بشأن برنامج «دعم سكن»، مثل خدمات التواصل عبر منصة أو تطبيق «دعم سكن»، والموقع الإلكتروني للوزارة، ورقم الهاتف والبريد الإلكتروني المخصصين للدعم، وكذلك الحسابات الرسمية للوزارة على شبكات التواصل الاجتماعي.';
 expect(source.includes(interactiveChannelsInstruction), 'La formulation validée sur les canaux interactifs doit être conservée mot pour mot.');
+const protectedTexts = [
+  'س1. هل سبق لكم أن سمعتم ببرنامج الدعم المباشر للسكن؟',
+  'س2. هل سبق لكم الاطلاع على معلومات حول برنامج الدعم المباشر للسكن عبر إحدى وسائل التواصل الرسمية للوزارة؟',
+  'من خلال أي من وسائل التواصل الرسمية التالية اطلعتم على معلومات حول البرنامج؟',
+  'من خلال أي من المصادر التالية اطلعتم على معلومات حول البرنامج؟',
+  'ما هي طبيعة علاقتكم الحالية ببرنامج الدعم المباشر للسكن؟',
+  'في إطار إعداد بحث أكاديمي بسلك الدكتوراه، أضع بين أيديكم هذا الاستبيان، الذي يندرج ضمن دراسة حول التواصل العمومي المرتبط ببرنامج الدعم المباشر للسكن.',
+  'وتكتسي مشاركتكم أهمية كبيرة، لما ستوفره من معطيات أساسية تسهم في إغناء هذا البحث وتعزيز نتائجه من الناحية العلمية. لذلك، نرجو منكم الإجابة عن الأسئلة بكل موضوعية ودقة.',
+  'جميع الأجوبة سرية، ولن تُستعمل إلا لأغراض البحث العلمي.',
+  'هل سبق لكم استخدام إحدى القنوات الرسمية للتواصل أو التفاعل بشأن البرنامج، لطرح سؤال أو طلب توضيح أو تقديم ملاحظة أو مقترح أو شكاية؟',
+  'من خلال أي قناة تم آخر تواصل لكم بشأن البرنامج؟',
+  'هل توصلتم برد بشأن هذا التواصل؟',
+  'ما أهم التغييرات أو الإجراءات التي تقترحونها لتحسين التواصل والتفاعل بين الوزارة والمواطنين بشأن برنامج الدعم المباشر للسكن؟',
+];
+for (const text of protectedTexts) {
+  expect(source.includes(text), 'Texte protégé absent ou modifié : ' + text);
+}
 expect(source.includes('وسائل التواصل الرسمية للوزارة:</strong> يقصد بها مجموع القنوات والوسائط التي تعتمدها الوزارة رسمياً'), 'La définition des moyens officiels doit rester présente.');
 expect(source.includes('وسائل التواصل الرسمية التي تتيح التفاعل:'), 'La définition des canaux interactifs doit rester présente.');
 expect(!source.includes('لن تُعرض الإجابات الصحيحة أثناء الاستبيان.'), 'La mention supprimée sur les bonnes réponses ne doit pas réapparaître.');
@@ -98,9 +135,10 @@ const evaluation = source.slice(source.indexOf('function evaluation()'), source.
 expect((interaction.match(/scaleLegend\(\)/g) || []).length === 1, 'La section 3 doit afficher une seule légende Likert.');
 expect((evaluation.match(/scaleLegend\(\)/g) || []).length === 1, 'La section 7 doit afficher une seule légende Likert.');
 
-expect(source.includes("const UNKNOWN_SCALE=[...SCALE,[\"لا أعرف / لا أستطيع التقييم\",\"لا أعرف / لا أستطيع التقييم\"]]"), 'La réponse Je ne sais pas doit rester disponible pour la légitimité.');
-expect(index.includes('.likert-table.has-unknown thead th:nth-child(7)::after'), 'L’en-tête Je ne sais pas doit être visible dans le tableau.');
-expect(source.includes('.likert-table.has-unknown{width:900px;min-width:900px}'), 'Le tableau à six choix doit rester lisible sur mobile.');
+expect(!source.includes('لا أعرف / لا أستطيع التقييم'), 'L’option supprimée ne doit jamais réapparaître dans le questionnaire.');
+expect(!index.includes('لا أعرف / لا أستطيع التقييم'), 'L’option supprimée ne doit jamais réapparaître dans la présentation.');
+expect(!source.includes('UNKNOWN_SCALE'), 'Toutes les échelles doivent utiliser uniquement les cinq modalités validées.');
+expect(!source.includes('has-unknown'), 'La mise en page à six modalités ne doit pas réapparaître.');
 expect(source.includes('.likert-table thead{display:table-header-group}'), 'L’en-tête du tableau doit rester visible sur mobile.');
 expect(source.includes('.likert-table input{width:28px;height:28px;margin:0}'), 'Les boutons Likert mobiles doivent rester suffisamment grands.');
 expect(!source.includes('display:grid;grid-template-columns:repeat(5,1fr)'), 'Les échelles doivent rester sous forme de tableaux sur mobile.');
@@ -118,7 +156,7 @@ expect(quiz.every((question, index) => question[1].startsWith((index + 1) + '. '
 expect(JSON.stringify(positions) === JSON.stringify([2, 3, 4, 2, 3, 4]), 'L’ordre validé des bonnes réponses doit être conservé.');
 
 expect((index.match(/questionnaire\.js\?v=/g) || []).length === 1, 'index.html doit charger un seul fichier questionnaire versionné.');
-expect(index.includes('questionnaire.js?v=20260810-status-routing-v4'), 'Le cache doit être invalidé pour cette version.');
+expect(index.includes('questionnaire.js?v=20260810-five-point-scales-v5'), 'Le cache doit être invalidé pour cette version.');
 expect((index.match(/<script[^>]+src=/g) || []).length === 1, 'index.html doit charger un seul JavaScript fonctionnel.');
 
 if (failures.length) {

@@ -23,6 +23,7 @@ un fichier correctif temporaire.
 - La phrase `لن تُعرض الإجابات الصحيحة أثناء الاستبيان.` reste supprimée.
 - La section 3 contient `التقييم العام لإمكانية التفاعل مع الوزارة` avec l’affirmation numérotée 7 et une échelle de 1 à 5.
 - La section 3 contient `التقييم العام لجودة تواصل الوزارة` avec une échelle de 1 à 5.
+- Toutes les échelles du questionnaire comportent exclusivement les cinq modalités de 1 à 5 ; l’option `لا أعرف / لا أستطيع التقييم` est interdite.
 - Ces deux évaluations sont obligatoires et leurs réponses sont envoyées au formulaire Google.
 - Dans la section 3, les deux évaluations générales apparaissent après le parcours de contact réel et avant la compréhension.
 - La réponse `لا` à `هل توصلتم برد بشأن هذا التواصل؟` conduit aux deux évaluations générales, puis à la compréhension.
@@ -38,6 +39,7 @@ un fichier correctif temporaire.
 - GitHub Pages publie uniquement le contenu validé de la branche `main` et ne modifie pas les fichiers source.
 - Le déploiement attend obligatoirement la réussite de `scripts/verify-questionnaire.mjs`.
 - Si une mise à jour réintroduit une ancienne copie ou enfreint une règle protégée, le déploiement échoue et la dernière version publique valide reste en ligne.
+- Une empreinte sémantique protège l’ensemble des titres, affirmations, choix et groupes du questionnaire, indépendamment des changements de mise en page.
 - Toute modification volontaire d’une règle protégée doit mettre à jour simultanément le questionnaire, le validateur et ce document.
 
 ## Vérification
