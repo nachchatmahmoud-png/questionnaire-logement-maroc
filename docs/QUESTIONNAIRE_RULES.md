@@ -16,6 +16,7 @@ un fichier correctif temporaire.
 - Les positions validées des bonnes réponses sont : 2, 3, 4, 2, 3, 4.
 - Les choix `استفدت شخصيًا من البرنامج` et `استفاد أحد أفراد أسرتي من البرنامج` restent séparés.
 - Les questions d’expérience personnelle ne s’affichent que pour le bénéficiaire personnel.
+- L’affirmation `4. بصفة عامة، يحظى برنامج الدعم المباشر للسكن بتأييدي.` reste supprimée.
 - Le site envoie les réponses au formulaire Google actif identifié dans le fichier principal.
 - Les corrections futures doivent préserver toutes les règles ci-dessus.
 
