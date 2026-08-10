@@ -24,6 +24,10 @@ expect(source.includes('.likert-table input{width:28px;height:28px;margin:0}'), 
 expect(!source.includes('display:grid;grid-template-columns:repeat(5,1fr)'), 'La présentation mobile en cartes/grilles ne doit pas remplacer le tableau.');
 expect(!source.includes('.likert-table{min-width:660px}'), 'L’ancienne largeur mobile qui masquait les colonnes ne doit pas réapparaître.');
 
+const interactiveChannelsInstruction = 'يرجى الإجابة بناءً على معرفتكم أو تجربتكم مع قنوات التواصل المتاحة بشأن برنامج «دعم سكن»، مثل خدمات التواصل عبر منصة أو تطبيق «دعم سكن»، والموقع الإلكتروني للوزارة، ورقم الهاتف والبريد الإلكتروني المخصصين للدعم، وكذلك الحسابات الرسمية للوزارة على شبكات التواصل الاجتماعي.';
+expect(source.includes(interactiveChannelsInstruction), 'La formulation validée sur les canaux interactifs doit être conservée mot pour mot.');
+expect(!source.includes('يرجى الإجابة استنادًا إلى ما تعرفونه أو عايشتموه بشأن القنوات الرسمية التي تتيح للمواطنين التواصل أو التفاعل حول البرنامج'), 'L’ancienne formulation longue des canaux interactifs ne doit pas réapparaître.');
+
 
 expect(source.includes("interaction_global:'240047744'"), 'L’identifiant Google Forms de l’évaluation générale de l’interaction doit être conservé.');
 expect(source.includes("communication_quality_global:'1189017906'"), 'L’identifiant Google Forms de l’évaluation générale de la qualité doit être conservé.');

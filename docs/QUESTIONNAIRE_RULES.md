@@ -29,8 +29,16 @@ un fichier correctif temporaire.
 - La réponse `نعم` conduit d’abord à l’évaluation du retour reçu, puis aux deux évaluations générales et à la compréhension.
 - Les questions, affirmations et choix de réponse du site doivent correspondre mot pour mot à ceux du Google Form.
 - Les valeurs du statut et du canal sont envoyées directement, sans conversion vers d’anciennes formulations.
+- L’instruction de la section 3 sur les canaux interactifs conserve mot pour mot la formulation validée commençant par `يرجى الإجابة بناءً على معرفتكم أو تجربتكم`.
 - Le site envoie les réponses au formulaire Google actif identifié dans le fichier principal.
 - Les corrections futures doivent préserver toutes les règles ci-dessus.
+
+## Protection de la publication
+
+- GitHub Pages publie uniquement le contenu validé de la branche `main` et ne modifie pas les fichiers source.
+- Le déploiement attend obligatoirement la réussite de `scripts/verify-questionnaire.mjs`.
+- Si une mise à jour réintroduit une ancienne copie ou enfreint une règle protégée, le déploiement échoue et la dernière version publique valide reste en ligne.
+- Toute modification volontaire d’une règle protégée doit mettre à jour simultanément le questionnaire, le validateur et ce document.
 
 ## Vérification
 

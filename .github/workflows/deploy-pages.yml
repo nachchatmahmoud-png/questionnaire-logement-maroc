@@ -16,7 +16,20 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  validation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Vérifier le contenu protégé
+        run: node scripts/verify-questionnaire.mjs
+
   deploy:
+    needs: validation
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
