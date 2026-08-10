@@ -13,7 +13,7 @@ un fichier correctif temporaire.
 - Les numéros 1 à 5 restent visibles dans les tableaux sur ordinateur et sur mobile.
 - La légende Likert complète apparaît une seule fois par page, sans masquer les colonnes du tableau.
 - La version mobile affiche le même contenu que la version ordinateur.
-- Sur mobile, le tableau conserve ses six colonnes : 50 % pour `العبارة` et 10 % pour chacune des mesures 1 à 5.
+- Sur mobile, le tableau conserve ses six colonnes : 45 % pour `العبارة` et 11 % pour chacune des mesures 1 à 5.
 - Le titre est `رابعًا: الأثر العام للبرنامج`, sans `المدرك`.
 - La section `القسم الرابع: فهم البرنامج` contient six questions numérotées.
 - Les positions validées des bonnes réponses sont : 2, 3, 4, 2, 3, 4.
