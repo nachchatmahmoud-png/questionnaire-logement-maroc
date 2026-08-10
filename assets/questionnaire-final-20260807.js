@@ -22,7 +22,7 @@ const del=(...ids)=>ids.forEach(id=>delete state.a[id]);
 const beneficiary=()=>val('status')==='استفدت من البرنامج';
 const officialSources=[['official_daamsakane_web','المنصة الإلكترونية «دعم سكن» (daamsakane.ma)'],['official_daamsakane_app','تطبيق «دعم سكن» على الهاتف المحمول'],['official_ministry_web','الموقع الإلكتروني الرسمي للوزارة'],['official_social','الصفحات أو الحسابات الرسمية للوزارة على شبكات التواصل الاجتماعي']];
 const externalSources=[['external_tv_radio','التلفزيون أو الإذاعة'],['external_press','الصحافة الإلكترونية أو الورقية'],['external_unofficial_social','مواقع أو صفحات غير رسمية على شبكات التواصل الاجتماعي'],['external_family','الأسرة أو الأصدقاء أو المعارف']];
-const statuses=['استفدت من البرنامج','قدمت طلبًا وما زال قيد المعالجة','قدمت طلبًا ولم تتم الموافقة عليه','اطلعت على البرنامج ولم أتقدم بطلب للاستفادة منه'];
+const statuses=['استفدت من البرنامج','استفاد أحد أفراد أسرتي من البرنامج','قدمت طلبًا وما زال قيد المعالجة','قدمت طلبًا ولم تتم الموافقة عليه','اطلعت على البرنامج ولم أتقدم بطلب للاستفادة منه'];
 const contactChannels=['خدمة «اتصل بنا» على منصة «دعم سكن»','خدمة التواصل عبر الموقع الإلكتروني الرسمي للوزارة','الهاتف المخصص للتواصل','البريد الإلكتروني المخصص للتواصل','الصفحات أو الحسابات الرسمية للوزارة على شبكات التواصل الاجتماعي (عبر الرسائل أو التعليقات)'];
 const quiz=[
  ['understanding_1','ما الذي يقدمه برنامج الدعم المباشر للسكن؟',['دعماً مالياً للمساعدة على اقتناء سكن','قرضاً بنكياً لاقتناء سكن','سكناً مجانياً','دعماً لأداء واجبات الكراء'],'دعماً مالياً للمساعدة على اقتناء سكن'],
@@ -69,7 +69,7 @@ function valid(){if(state.step==='filters'&&val('q2')==='نعم'&&!officialSourc
 function mean(ids){let nums=ids.map(id=>Number(val(id))).filter(Number.isFinite);return nums.length===ids.length?nums.reduce((a,b)=>a+b,0)/nums.length:null;}
 function scores(){return{communication_possibility:mean(G.interComm[0][1].map(r=>r[0])),participation_possibility:mean(G.interPart[0][1].map(r=>r[0])),trust:mean(G.trust[0][1].map(r=>r[0])),legitimacy:mean(G.legitimacy[0][1].map(r=>r[0])),ease:mean(G.ease[0][1].map(r=>r[0])),satisfaction:beneficiary()?mean(G.satisfaction[0][1].map(r=>r[0])):null,general_impact:mean(G.generalImpact[0][1].map(r=>r[0])),personal_impact:beneficiary()?mean(G.personalImpact[0][1].map(r=>r[0])):null,understanding:quiz.reduce((s,[id,,,correct])=>s+(val(id)===correct?1:0),0)};}
 async function emailHash(email){let bytes=new TextEncoder().encode(email.trim().toLowerCase());let digest=await crypto.subtle.digest('SHA-256',bytes);return [...new Uint8Array(digest)].map(b=>b.toString(16).padStart(2,'0')).join('');}
-function backendStatus(s){return{'استفدت من البرنامج':'استفدت من البرنامج','قدمت طلبًا وما زال قيد المعالجة':'تقدمت بطلب، وما يزال طلبي قيد المعالجة','قدمت طلبًا ولم تتم الموافقة عليه':'تقدمت بطلب، ولم تتم الموافقة عليه','اطلعت على البرنامج ولم أتقدم بطلب للاستفادة منه':'اطلعت على البرنامج، لكنني لم أتقدم بطلب للاستفادة منه'}[s]||s;}
+function backendStatus(s){return{'استفدت من البرنامج':'استفدت من البرنامج','استفاد أحد أفراد أسرتي من البرنامج':'استفاد أحد أفراد أسرتي من البرنامج','قدمت طلبًا وما زال قيد المعالجة':'تقدمت بطلب، وما يزال طلبي قيد المعالجة','قدمت طلبًا ولم تتم الموافقة عليه':'تقدمت بطلب، ولم تتم الموافقة عليه','اطلعت على البرنامج ولم أتقدم بطلب للاستفادة منه':'اطلعت على البرنامج، لكنني لم أتقدم بطلب للاستفادة منه'}[s]||s;}
 async function submit(){
  if(!valid())return render();
  state.sending=true;render();
