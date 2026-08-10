@@ -1,4 +1,5 @@
 const FORM_ACTION='https://docs.google.com/forms/d/e/1FAIpQLSfm5EXmdlOc_4k1wA14rliRwoSo0a23WyryaQK2G9yXn0TKAg/formResponse';
+const FORM_FBZX='-4954258208657414293';
 const ENTRY={
  q1:'1192071131',q2:'1769903365',external_sources:'952069730',official_sources:'1941084715',status:'1560882748',
  info_1:'1589806096',info_2:'1636847901',info_3:'101960292',info_4:'1503481604',info_5:'266917154',info_6:'1378574615',
@@ -73,10 +74,7 @@ function backendStatus(s){return{'استفدت من البرنامج':'استف�
 async function submit(){
  if(!valid())return render();
  state.sending=true;render();
- let normalized=val('email_personal').trim().toLowerCase(),hash=normalized?await emailHash(normalized):null;
- if(hash&&localStorage.getItem('housingSurveyEmailHash')===hash){state.sending=false;state.error='سبق تسجيل مشاركة بهذا البريد الإلكتروني على هذا الجهاز.';return render();}
- const payload={schema_version:'2026-08-10-google-form-remap',submitted_at:new Date().toISOString(),answers:{...state.a,email_personal:normalized||null},scores:scores(),structural_missing:{satisfaction:beneficiary()?false:true,personal_impact:beneficiary()?false:true,response_quality:val('contact_reel')==='نعم'&&val('reponse_recue')==='نعم'?false:true}};
- let packed='[STRUCTURED_DATA_V2]\n'+JSON.stringify(payload)+'\n\n[OPEN_SUGGESTION]\n'+(val('suggestion')||'');
+ let normalized=val('email_personal').trim().toLowerCase();
  let form=document.createElement('form');form.method='POST';form.action=FORM_ACTION;form.target='google-form-response';form.style.display='none';
  let add=(id,v)=>{if(!id||v===undefined||v===null||v==='')return;let i=document.createElement('input');i.name='entry.'+id;i.value=v;form.appendChild(i)};
  let addRaw=(name,v)=>{let i=document.createElement('input');i.name=name;i.value=v;form.appendChild(i)};
@@ -108,14 +106,33 @@ async function submit(){
  quiz.forEach(([id])=>addKey(id,val(id)));
  addKey('suggestion',val('suggestion'));
  ['age','gender','education','housing','residence','region','country','professional'].forEach(k=>addKey(k,val(k)));
- let pageHistory=val('q1')==='لا'?'0,3':val('q2')==='لا'?'0,1,2,3':'0,1,4,5,6,7,8,9,10,11,12,13';
- addRaw('fvv','1');addRaw('pageHistory',pageHistory);
+ let pageHistory;
+ if(val('q1')==='لا'){
+  pageHistory='0';
+ }else if(val('q2')==='لا'){
+  pageHistory='0,1,2';
+ }else{
+  let pages=[0,1,3,4,5];
+  if(val('contact_reel')==='نعم'){
+   pages.push(6);
+   if(googleChannel==='قناة رسمية أخرى')pages.push(7);
+   pages.push(8);
+   if(val('reponse_recue')==='نعم')pages.push(9);
+  }
+  pages.push(10,11,12,13,14,15,16);
+  pages.push(val('residence')==='داخل المغرب'?17:18);
+  pageHistory=pages.join(',');
+ }
+ addRaw('fvv','1');
+ addRaw('pageHistory',pageHistory);
+ addRaw('fbzx',FORM_FBZX);
+ addRaw('partialResponse',JSON.stringify([null,null,FORM_FBZX]));
+ addRaw('submissionTimestamp','-1');
  let completed=false;
  let finish=()=>{if(completed)return;completed=true;state.done=true;state.sending=false;render();};
  let responseFrame=document.querySelector('iframe[name="google-form-response"]');
  if(responseFrame)responseFrame.addEventListener('load',finish,{once:true});
  document.body.appendChild(form);form.submit();
- if(hash)localStorage.setItem('housingSurveyEmailHash',hash);
  setTimeout(finish,5000);
 }
 function nav(){let ss=steps(),i=ss.indexOf(state.step);if(state.step==='filters'&&val('q1')==='لا')return`<nav class="form-actions"><span></span><button class="primary-button" id="submit-end" type="button">إرسال الإجابة وإنهاء الاستبيان</button></nav>`;if(state.step==='filters'&&val('q2')==='لا')return`<nav class="form-actions"><span></span><button class="primary-button" id="submit-end" type="button">إرسال الإجابة وإنهاء الاستبيان</button></nav>`;return `<nav class="form-actions">${i>0?'<button class="secondary-button" id="prev" type="button">السابق</button>':'<span></span>'}${i<ss.length-1?'<button class="primary-button" id="next" type="button">التالي</button>':`<button class="primary-button submit-button" id="submit" type="button" ${state.sending?'disabled':''}>${state.sending?'جارٍ إرسال الإجابات…':'إرسال الإجابات'}</button>`}</nav>`;}
