@@ -14,10 +14,12 @@ expect(source.includes('رابعًا: الأثر العام للبرنامج'), 
 expect(!source.includes('رابعًا: الأثر العام المدرك للبرنامج'), 'Le mot المدرك ne doit pas réapparaître dans le titre.');
 expect(source.includes('function scaleLegend()'), 'La légende Likert extérieure doit exister.');
 expect(source.includes('<th title="${esc(t)}" aria-label="${esc(t)}">${n}</th>'), 'Les numéros 1 à 5 doivent rester visibles dans les tableaux.');
-expect(source.includes('.likert-table thead tr{display:grid;grid-template-columns:repeat(5,1fr)'), 'Les cinq numéros Likert doivent occuper cinq colonnes lisibles sur mobile.');
-expect(source.includes('.likert-table tbody tr{display:grid;grid-template-columns:repeat(5,1fr)'), 'Chaque affirmation doit utiliser une grille mobile de cinq réponses.');
-expect(source.includes('grid-column:1/-1;display:block;width:auto;min-width:0;padding:1rem;font-size:1rem'), 'Le texte de chaque affirmation doit occuper toute la largeur avec une taille lisible.');
-expect(source.includes('.likert-table input{width:22px;height:22px}'), 'Les boutons Likert mobiles doivent rester suffisamment grands.');
+expect(source.includes('.likert-table{width:100%;min-width:0;table-layout:fixed;border-collapse:collapse'), 'Le tableau Likert mobile doit rester un vrai tableau adaptatif.');
+expect(source.includes('.likert-table thead{display:table-header-group}'), 'L’en-tête du tableau Likert doit rester visible sur mobile.');
+expect(source.includes('.likert-table tr{display:table-row}'), 'Les affirmations Likert doivent rester présentées en lignes de tableau.');
+expect(source.includes('.likert-table th:first-child,.likert-table td:first-child{display:table-cell;width:55%'), 'La colonne des affirmations doit garder une largeur lisible sur mobile.');
+expect(source.includes('.likert-table input{width:21px;height:21px;margin:0}'), 'Les boutons Likert mobiles doivent rester suffisamment grands.');
+expect(!source.includes('display:grid;grid-template-columns:repeat(5,1fr)'), 'La présentation mobile en cartes/grilles ne doit pas remplacer le tableau.');
 expect(!source.includes('.likert-table{min-width:660px}'), 'L’ancienne largeur mobile qui masquait les colonnes ne doit pas réapparaître.');
 
 const interaction = source.slice(
