@@ -108,6 +108,9 @@ function verifierParticipationGoogle(requete) {
     }
 
     const identite = verifierJetonGoogle_(jeton);
+    if (!identite) {
+      return resultatRefus_('reauthentication_required');
+    }
     const proprietes = PropertiesService.getScriptProperties();
     const adresseTest = String(proprietes.getProperty('PARTICIPATION_TEST_EMAIL') || '')
       .trim()
@@ -147,24 +150,34 @@ function verifierParticipationGoogle(requete) {
   } catch (erreur) {
     console.error(erreur && erreur.stack ? erreur.stack : erreur);
     const message = String((erreur && erreur.message) || '');
-    if (message.indexOf('TOKEN_') === 0) {
-      return resultatRefus_('reauthentication_required');
-    }
+    if (message.indexOf('TOKEN_SERVICE_UNAVAILABLE') !== -1) return resultatRefus_('token_service_unavailable');
+    if (message.indexOf('CONFIGURATION_MISSING') !== -1) return resultatRefus_('configuration_error');
     return resultatRefus_('server_error');
   }
 }
 
 function verifierJetonGoogle_(jeton) {
-  if (!jeton || jeton.length > 6000) throw new Error('TOKEN_MISSING');
+  if (!jeton || jeton.length > 6000) return null;
 
-  const reponse = UrlFetchApp.fetch(
-    CONTROLE_PARTICIPATION.TOKENINFO_URL + encodeURIComponent(jeton),
-    { muteHttpExceptions: true, followRedirects: true }
-  );
+  let reponse;
+  try {
+    reponse = UrlFetchApp.fetch(
+      CONTROLE_PARTICIPATION.TOKENINFO_URL + encodeURIComponent(jeton),
+      { muteHttpExceptions: true, followRedirects: true }
+    );
+  } catch (erreur) {
+    console.error(erreur && erreur.stack ? erreur.stack : erreur);
+    throw new Error('TOKEN_SERVICE_UNAVAILABLE');
+  }
 
-  if (reponse.getResponseCode() !== 200) throw new Error('TOKEN_INVALID');
+  if (reponse.getResponseCode() !== 200) return null;
 
-  const donnees = JSON.parse(reponse.getContentText());
+  let donnees;
+  try {
+    donnees = JSON.parse(reponse.getContentText());
+  } catch (_) {
+    return null;
+  }
   const emetteurValide =
     donnees.iss === 'https://accounts.google.com' ||
     donnees.iss === 'accounts.google.com';
@@ -173,10 +186,10 @@ function verifierJetonGoogle_(jeton) {
   const expiration = Number(donnees.exp || 0);
 
   if (!emetteurValide || !audienceValide || !emailVerifie || !donnees.sub) {
-    throw new Error('TOKEN_INVALID');
+    return null;
   }
   if (!expiration || expiration * 1000 <= Date.now()) {
-    throw new Error('TOKEN_EXPIRED');
+    return null;
   }
 
   return {
