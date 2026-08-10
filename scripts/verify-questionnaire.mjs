@@ -29,6 +29,8 @@ expect((evaluation.match(/scaleLegend\(\)/g) || []).length === 1, 'La section 7 
 
 expect(source.includes('استفدت شخصيًا من البرنامج'), 'Le choix du bénéficiaire personnel doit être conservé.');
 expect(source.includes('استفاد أحد أفراد أسرتي من البرنامج'), 'Le choix du membre de la famille doit être conservé.');
+expect(!source.includes('accept_4'), 'La quatrième affirmation d’acceptation supprimée ne doit pas réapparaître.');
+expect(!source.includes('بصفة عامة، يحظى برنامج الدعم المباشر للسكن بتأييدي.'), 'Le texte supprimé sur l’acceptation générale ne doit pas réapparaître.');
 
 const quizStart = source.indexOf('const quiz=[') + 'const quiz='.length;
 const quizEnd = source.indexOf(';\nconst G={', quizStart);
