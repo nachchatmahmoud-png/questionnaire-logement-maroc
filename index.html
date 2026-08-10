@@ -26,11 +26,27 @@
         };
       })();
     </script>
-    <script type="module" crossorigin src="/questionnaire-logement-maroc/assets/questionnaire.js?v=20260810-new-form-v6"></script>
+    <script type="module" crossorigin src="/questionnaire-logement-maroc/assets/questionnaire.js?v=20260810-google-account-v7"></script>
     <style>
       #boot-fallback{max-width:760px;margin:48px auto;padding:28px;border:1px solid #e5e7eb;border-radius:18px;background:#fff;font-family:Arial,sans-serif;line-height:1.8;text-align:center;color:#172033}
       #boot-fallback h1{font-size:1.45rem;margin:0 0 10px;font-weight:700}
       #boot-fallback p{margin:0;color:#667085;font-weight:400}
+
+      /* Contrôle d'une participation par compte Google. */
+      .auth-shell{min-height:100vh}
+      .auth-card{max-width:620px;margin:28px auto;padding:32px;border:1px solid rgba(15,23,42,.10);border-radius:22px;background:#fff;box-shadow:0 18px 44px rgba(15,23,42,.08);text-align:center}
+      .auth-card h2{margin:10px 0 14px;font-size:1.55rem;color:#172033}
+      .auth-icon{display:grid;place-items:center;width:52px;height:52px;margin:0 auto;border-radius:50%;background:#f1f5ff;color:#1a73e8;font:700 1.55rem Arial,sans-serif}
+      .auth-help,.auth-alert p,.auth-config-error{max-width:500px;margin:0 auto 20px;color:#5c667a;line-height:1.9}
+      .google-signin-button{display:flex;justify-content:center;min-height:44px;margin-top:18px}
+      .auth-loading{display:flex;align-items:center;justify-content:center;gap:10px;min-height:48px;margin-top:18px;color:#344054;font-weight:700}
+      .auth-loading span{width:20px;height:20px;border:3px solid #d7dfec;border-top-color:#2563eb;border-radius:50%;animation:auth-spin .8s linear infinite}
+      .auth-alert{margin:16px 0 20px;padding:16px;border:1px solid #f5c2c7;border-radius:14px;background:#fff5f5;color:#8a1c1c}
+      .auth-alert strong{display:block;margin-bottom:4px}
+      .auth-alert p{margin-bottom:0;color:inherit}
+      .auth-alert-blocked{border-color:#f4b8b8;background:#fff1f1}
+      .auth-config-error{padding:12px;border-radius:12px;background:#fff7e6;color:#8a5a00}
+      @keyframes auth-spin{to{transform:rotate(360deg)}}
 
       /* Échelle Likert : 1–5 restent uniquement dans le rappel au-dessus. */
       html body .legend-grid > span{
@@ -70,6 +86,9 @@
       html body .likert-table thead th:nth-child(6)::after{content:"أوافق تمامًا" !important;}
 
       @media(max-width:760px){
+        .auth-card{margin:18px 12px;padding:25px 18px;border-radius:18px}
+        .auth-card h2{font-size:1.32rem}
+        .auth-help,.auth-alert p,.auth-config-error{font-size:.98rem;line-height:1.8}
         html body .legend-grid{grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:7px !important;}
         html body .legend-grid > span{font-size:14px !important;}
         html body .likert-table thead th:not(:first-child){min-width:78px !important;padding:.44rem .18rem !important;}
