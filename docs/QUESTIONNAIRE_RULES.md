@@ -1,16 +1,18 @@
 # Règles stables du questionnaire
 
-Le fichier canonique du site est `assets/questionnaire-final-20260807.js`.
+Le fichier canonique du site est `assets/questionnaire.js`.
 Toute modification doit partir de sa version la plus récente. Il ne faut jamais remplacer
 ce fichier par une copie ancienne ni placer une correction fonctionnelle uniquement dans
 un fichier correctif temporaire.
+`index.html` ne doit charger qu’un seul fichier JavaScript fonctionnel : `assets/questionnaire.js`.
 
 ## Règles validées
 
 - Le site ne demande pas l’adresse e-mail personnelle.
 - La légende Likert complète apparaît une seule fois par page concernée.
-- Les chiffres et libellés de l’échelle ne sont pas répétés dans les tableaux, y compris sur mobile.
-- Les cinq colonnes des tableaux conservent des libellés accessibles invisibles.
+- Les numéros 1 à 5 restent visibles dans les tableaux sur ordinateur et sur mobile.
+- La légende Likert complète apparaît une seule fois par page, sans masquer les colonnes du tableau.
+- La version mobile affiche le même contenu que la version ordinateur.
 - Le titre est `رابعًا: الأثر العام للبرنامج`, sans `المدرك`.
 - La section `القسم الرابع: فهم البرنامج` contient six questions numérotées.
 - Les positions validées des bonnes réponses sont : 2, 3, 4, 2, 3, 4.
