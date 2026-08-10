@@ -18,7 +18,7 @@ expect(source.includes('.likert-table{width:100%;min-width:0;table-layout:fixed;
 expect(source.includes('.likert-table thead{display:table-header-group}'), 'L’en-tête du tableau Likert doit rester visible sur mobile.');
 expect(source.includes('.likert-table tr{display:table-row}'), 'Les affirmations Likert doivent rester présentées en lignes de tableau.');
 expect(source.includes('.likert-table th:first-child,.likert-table td:first-child{display:table-cell;width:55%'), 'La colonne des affirmations doit garder une largeur lisible sur mobile.');
-expect(source.includes('.likert-table input{width:24px;height:24px;margin:0}'), 'Les boutons Likert mobiles doivent rester suffisamment grands.');
+expect(source.includes('.likert-table input{width:26px;height:26px;margin:0}'), 'Les boutons Likert mobiles doivent rester suffisamment grands.');
 expect(!source.includes('display:grid;grid-template-columns:repeat(5,1fr)'), 'La présentation mobile en cartes/grilles ne doit pas remplacer le tableau.');
 expect(!source.includes('.likert-table{min-width:660px}'), 'L’ancienne largeur mobile qui masquait les colonnes ne doit pas réapparaître.');
 
