@@ -31,7 +31,7 @@ expect(
 const publicFormId = '1FAIpQLSfIOkBS04JQVuTRE0npIB6QOJ6UPg0ckoBTqAdLG9PT3yUOkA';
 expect(source.includes(publicFormId + '/formResponse'), 'Le site doit envoyer vers le Google Form actif.');
 expect(source.includes(publicFormId + '/viewform'), 'Le lien public doit viser le Google Form actif.');
-expect(source.includes("2026-08-11-official-sources-v3"), 'La version du schéma doit correspondre au formulaire actuel.');
+expect(source.includes("2026-08-11-source-principale-v1"), 'La version du schéma doit correspondre au formulaire actuel.');
 
 for (const mapName of [
   'ENTRY_G2_BENEFICIARY',
@@ -80,7 +80,8 @@ expect(new Set(allEntryIds).size === allEntryIds.length, 'Chaque champ Google Fo
 
 expect(source.includes("q1:'299895912',q2:'1225420672'"), 'Les filtres Q1/Q2 doivent utiliser les identifiants actuels.');
 expect(source.includes("external_sources:'1040032',status:'1268123456'"), 'Les questions partagées du parcours non officiel doivent être actuelles.');
-expect(source.includes("official_sources:'1856677935',status:'739440927'"), 'Les questions partagées du parcours officiel doivent être actuelles.');
+expect(source.includes("official_sources:'1856677935',source_principale:"), 'La source principale doit être distincte des réponses multiples.');
+expect(source.includes("status:'739440927'"), 'Le statut partagé du parcours officiel doit être actuel.');
 
 expect(source.includes("const route=()=>val('q1')==='لا'?'g1':val('q2')==='لا'?'g2':'official'"), 'Le routage analytique G1/G2/officiel doit être conservé.');
 expect(source.includes("route()==='g1'?'g1':route()+'_'+(beneficiary()?'beneficiary':'other')"), 'Le routage d’envoi doit distinguer bénéficiaires et autres répondants.');
@@ -100,7 +101,7 @@ for (const history of [
   expect(source.includes(history), 'Historique de pages absent ou obsolète : ' + history);
 }
 
-const interactiveChannelsInstruction = 'يرجى الإجابة بناءً على معرفتكم أو تجربتكم مع قنوات التواصل المتاحة بشأن برنامج «دعم سكن»، مثل خدمات التواصل عبر منصة أو تطبيق «دعم سكن»، والموقع الإلكتروني للوزارة، ورقم الهاتف والبريد الإلكتروني المخصصين للدعم، وكذلك الحسابات الرسمية للوزارة على شبكات التواصل الاجتماعي.';
+const interactiveChannelsInstruction = 'يرجى الإجابة بناءً على معرفتكم أو تجربتكم مع قنوات التواصل الرسمية التي تتيح التفاعل بشأن برنامج «دعم سكن».';
 expect(source.includes(interactiveChannelsInstruction), 'La formulation validée sur les canaux interactifs doit être conservée mot pour mot.');
 expect(JSON.stringify(questionnaireData.officialSources) === JSON.stringify([
   ['official_daamsakane_web', 'المنصة الإلكترونية «دعم سكن» (DaamSakane.ma)'],
@@ -110,6 +111,51 @@ expect(JSON.stringify(questionnaireData.officialSources) === JSON.stringify([
   ['official_guides_publications', 'الدلائل والمطويات والبلاغات الرسمية المتعلقة بالبرنامج'],
   ['official_meetings_campaigns', 'اللقاءات أو الحملات والأنشطة التواصلية الرسمية المنظمة للتعريف بالبرنامج'],
 ]), 'Les six sources officielles d’information doivent être conservées dans leur ordre validé.');
+
+const sourcePrincipaleLogicSource = source.slice(
+  source.indexOf('const officialSources=['),
+  source.indexOf('const externalSources=')
+);
+const sourcePrincipaleLogic = Function(`
+  const state={a:{}};
+  const val=id=>state.a[id]??'';
+  const del=(...ids)=>ids.forEach(id=>delete state.a[id]);
+  ${sourcePrincipaleLogicSource}
+  return {state,officialSourceCodes,reconcileSourcePrincipale,officialSourceData,sourcePrincipaleLabel};
+`)();
+expect(JSON.stringify(sourcePrincipaleLogic.officialSourceCodes) === JSON.stringify({
+  official_daamsakane_web: 'daamsakane',
+  official_daamsakane_app: 'application',
+  official_ministry_web: 'ministere',
+  official_social: 'reseaux_sociaux',
+  official_guides_publications: 'documents_officiels',
+  official_meetings_campaigns: 'rencontres_officielles',
+}), 'Les codes analytiques de sourcePrincipale doivent rester stables.');
+
+const sourceState = sourcePrincipaleLogic.state.a;
+sourceState.official_daamsakane_web = '1';
+sourcePrincipaleLogic.reconcileSourcePrincipale();
+expect(sourceState.sourcePrincipale === 'daamsakane', 'Une source unique doit devenir automatiquement la source principale.');
+expect(sourcePrincipaleLogic.officialSourceData().infoDaamSakane === true, 'Le canal DaamSakane doit être exportable comme booléen.');
+sourceState.official_daamsakane_app = '1';
+delete sourceState.sourcePrincipale;
+sourcePrincipaleLogic.reconcileSourcePrincipale();
+expect(!sourceState.sourcePrincipale, 'Deux sources ou plus doivent exiger un choix principal explicite.');
+sourceState.sourcePrincipale = 'ministere';
+sourcePrincipaleLogic.reconcileSourcePrincipale();
+expect(!sourceState.sourcePrincipale, 'Une source principale non sélectionnée doit être réinitialisée.');
+sourceState.sourcePrincipale = 'application';
+sourcePrincipaleLogic.reconcileSourcePrincipale();
+expect(sourceState.sourcePrincipale === 'application', 'Une source principale encore sélectionnée doit être conservée.');
+delete sourceState.official_daamsakane_app;
+sourcePrincipaleLogic.reconcileSourcePrincipale();
+expect(sourceState.sourcePrincipale === 'daamsakane', 'Le retour à une source unique doit réaffecter automatiquement sourcePrincipale.');
+expect(sourcePrincipaleLogic.sourcePrincipaleLabel() === questionnaireData.officialSources[0][1], 'Le libellé envoyé à Google Forms doit correspondre au code analytique.');
+
+expect(source.includes("selected.map(([id,label])=>[officialSourceCodes[id],label])"), 'La question principale doit proposer uniquement les sources sélectionnées.');
+expect(source.includes("selectedOfficialSources().length>=2)ids.push('sourcePrincipale')"), 'La question principale doit être obligatoire lorsqu’elle apparaît.');
+expect(source.includes("add(ENTRY_OFFICIAL_SHARED.source_principale,sourcePrincipaleLabel())"), 'La source principale doit être envoyée dans un champ Google Forms séparé.');
+expect(/^\d+$/.test(String(maps.ENTRY_OFFICIAL_SHARED.source_principale || '')), 'L’identifiant Google Forms de source_principale doit être configuré avant publication.');
 expect(JSON.stringify(questionnaireData.contactChannels) === JSON.stringify([
   'منصة دعم سكن – DaamSakane.ma → عبر خدمة «اتصل بنا» على المنصة الرسمية.',
   'الموقع الرسمي للوزارة – mhpv.gov.ma → عبر نموذج الاتصال / خدمة التواصل على الموقع الرسمي للوزارة.',
@@ -123,6 +169,8 @@ const protectedTexts = [
   'س1. هل سبق لكم أن سمعتم ببرنامج الدعم المباشر للسكن؟',
   'س2. هل سبق لكم الاطلاع على معلومات حول برنامج الدعم المباشر للسكن عبر إحدى وسائل التواصل الرسمية للوزارة؟',
   'من خلال أي من وسائل التواصل الرسمية التالية اطلعتم على معلومات حول البرنامج؟',
+  'من بين وسائل التواصل الرسمية التي اخترتموها، ما هي الوسيلة الرئيسية التي اعتمدتم عليها للاطلاع على معلومات حول البرنامج؟',
+  'يرجى اختيار جواب واحد فقط.',
   'من خلال أي من المصادر التالية اطلعتم على معلومات حول البرنامج؟',
   'ما هي طبيعة علاقتكم الحالية ببرنامج الدعم المباشر للسكن؟',
   'في إطار إعداد بحث أكاديمي بسلك الدكتوراه، أضع بين أيديكم هذا الاستبيان، الذي يندرج ضمن دراسة حول التواصل العمومي المرتبط ببرنامج الدعم المباشر للسكن.',
@@ -173,9 +221,9 @@ expect(quiz.every((question, index) => question[1].startsWith((index + 1) + '. '
 expect(JSON.stringify(positions) === JSON.stringify([2, 3, 4, 2, 3, 4]), 'L’ordre validé des bonnes réponses doit être conservé.');
 
 expect((index.match(/questionnaire\.js\?v=/g) || []).length === 1, 'index.html doit charger un seul fichier questionnaire versionné.');
-expect(index.includes('questionnaire.js?v=20260811-official-sources-v13'), 'Le cache doit être invalidé pour cette version.');
+expect(index.includes('questionnaire.js?v=20260811-source-principale-v25'), 'Le cache doit être invalidé pour cette version.');
 expect(index.includes('/* Auth design v2 — lisible, rassurant et adapté au mobile. */'), 'Le design validé du contrôle Google doit être conservé.');
-expect(index.includes('.auth-card{width:calc(100% - 16px);margin:12px auto'), 'La carte de connexion doit rester adaptée aux petits écrans.');
+expect(index.includes('.auth-card{width:calc(100% - 20px);margin:10px auto 14px'), 'La carte de connexion doit rester adaptée aux petits écrans.');
 expect(index.includes('.auth-help::before'), 'Le repère visuel de confidentialité doit rester présent.');
 expect(index.includes('border:4px solid transparent;') && index.includes('linear-gradient(90deg,#4285f4 0 25%,#34a853 25% 50%,#fbbc05 50% 75%,#ea4335 75% 100%) border-box;'), 'La bordure épaisse aux couleurs de Google doit être conservée.');
 expect(source.includes('اضغط على زر «المواصلة باستخدام Google» للمتابعة.'), 'L’indication de clic du bouton Google doit rester présente.');
@@ -202,6 +250,13 @@ expect(authServer.includes('window.top.postMessage('), 'Apps Script doit renvoye
 expect(source.includes("form.method='POST'"), 'Le site doit transmettre le jeton au contrôle Apps Script par POST.');
 expect(!source.includes("AUTH_BRIDGE_URL+'?"), 'Le jeton Google ne doit jamais être placé dans l’URL Apps Script.');
 expect(!authServer.includes('GOCSPX-'), 'Le service ne doit contenir aucun code secret OAuth.');
+
+const sourcePrincipaleFormScript = fs.readFileSync('apps-script/ajouter-source-principale-information.gs', 'utf8');
+expect(sourcePrincipaleFormScript.includes("const FORM_ID = '1Q5pRbUvCAIlI556txfiM_z1qInuVQ4854IjOdVMUnLo'"), 'Le script doit cibler le Google Form actif.');
+expect(sourcePrincipaleFormScript.includes('const ITEM_SOURCES_OFFICIELLES_ID = 330113323'), 'La nouvelle question doit être placée après la question des sources officielles.');
+expect(sourcePrincipaleFormScript.includes('.setRequired(true)'), 'La question Google Forms de stockage doit être obligatoire dans le parcours officiel.');
+expect(sourcePrincipaleFormScript.includes('.toPrefilledUrl()'), 'Le script doit produire un identifiant entry fiable pour la connexion au site.');
+expect(sourcePrincipaleFormScript.includes("prefilledUrl.match(/[?&]entry\\.(\\d+)=/)"), 'Le script doit extraire le paramètre entry de la nouvelle question.');
 
 if (failures.length) {
   console.error('Régressions détectées :');
