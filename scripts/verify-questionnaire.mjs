@@ -221,7 +221,7 @@ expect(quiz.every((question, index) => question[1].startsWith((index + 1) + '. '
 expect(JSON.stringify(positions) === JSON.stringify([2, 3, 4, 2, 3, 4]), 'L’ordre validé des bonnes réponses doit être conservé.');
 
 expect((index.match(/questionnaire\.js\?v=/g) || []).length === 1, 'index.html doit charger un seul fichier questionnaire versionné.');
-expect(index.includes('questionnaire.js?v=20260811-source-principale-v25'), 'Le cache doit être invalidé pour cette version.');
+expect(index.includes('questionnaire.js?v=20260811-interaction-layout-v26'), 'Le cache doit être invalidé pour cette version.');
 expect(index.includes('/* Auth design v2 — lisible, rassurant et adapté au mobile. */'), 'Le design validé du contrôle Google doit être conservé.');
 expect(index.includes('.auth-card{width:calc(100% - 20px);margin:10px auto 14px'), 'La carte de connexion doit rester adaptée aux petits écrans.');
 expect(index.includes('.auth-help::before'), 'Le repère visuel de confidentialité doit rester présent.');

@@ -26,7 +26,7 @@
         };
       })();
     </script>
-    <script type="module" crossorigin src="/questionnaire-logement-maroc/assets/questionnaire.js?v=20260811-source-principale-v25"></script>
+    <script type="module" crossorigin src="/questionnaire-logement-maroc/assets/questionnaire.js?v=20260811-interaction-layout-v26"></script>
     <style>
       #boot-fallback{max-width:760px;margin:48px auto;padding:28px;border:1px solid #e5e7eb;border-radius:18px;background:#fff;font-family:Arial,sans-serif;line-height:1.8;text-align:center;color:#172033}
       #boot-fallback h1{font-size:1.45rem;margin:0 0 10px;font-weight:700}
@@ -183,11 +183,39 @@
       .auth-config-error{max-width:540px;margin:16px auto 0;padding:13px 16px;border:1px solid #f4d38d;border-radius:14px;background:#fff8e8;color:#825600;line-height:1.8}
       @keyframes auth-spin{to{transform:rotate(360deg)}}
 
-      .interaction-channels-card{display:block !important}
-      .interaction-channels-card>p{margin:0 !important;padding:0 !important;line-height:1.35 !important}
-      .interaction-channels-card .interaction-lead{display:inline !important;margin:0 !important;padding:0 !important;line-height:inherit !important;font-weight:800;color:var(--ink)}
-      .interaction-channels-card br{display:none !important}
-      .interaction-channels-card bdi{unicode-bidi:isolate}
+      .interaction-channels-card{
+        display:block !important;
+        max-width:850px;
+        margin-inline:auto;
+        padding:clamp(18px,2.8vw,25px) clamp(18px,3.2vw,30px) !important;
+        border-right:5px solid var(--gold) !important;
+        background:linear-gradient(135deg,#fff9ea 0%,var(--gold-pale) 100%) !important;
+        box-shadow:0 8px 24px rgba(79,61,24,.07);
+      }
+      .interaction-channels-card>p{
+        max-width:76ch;
+        margin:0 auto !important;
+        padding:0 !important;
+        color:var(--ink-soft);
+        font-size:1rem;
+        line-height:2 !important;
+        text-align:right;
+        text-wrap:pretty;
+      }
+      .interaction-channels-card .interaction-lead{
+        display:block !important;
+        margin:0 0 .75rem !important;
+        padding:0 0 .7rem !important;
+        border-bottom:1px solid rgba(198,154,71,.38);
+        color:var(--ink);
+        font-weight:800;
+        line-height:1.9 !important;
+      }
+      .interaction-channels-card bdi{
+        unicode-bidi:isolate;
+        color:var(--green-dark);
+        font-weight:700;
+      }
 
       /* Échelle Likert : 1–5 restent uniquement dans le rappel au-dessus. */
       html body .legend-grid > span{
@@ -235,7 +263,27 @@
         .auth-shell .hero-lead{font-size:.92rem;line-height:1.75;margin-bottom:9px}
         .auth-shell .privacy-note{margin-top:9px;padding:10px 12px}
         .auth-shell footer{display:none}
-        .interaction-channels-card>p{font-size:.94rem;line-height:1.35 !important}
+        .interaction-channels-card{
+          max-width:none;
+          margin-inline:0;
+          padding:16px 14px !important;
+          border-right-width:4px !important;
+          border-radius:16px !important;
+          box-shadow:0 5px 18px rgba(79,61,24,.06);
+        }
+        .interaction-channels-card>p{
+          max-width:none;
+          font-size:.94rem;
+          line-height:1.95 !important;
+          text-wrap:wrap;
+        }
+        .interaction-channels-card .interaction-lead{
+          margin-bottom:.65rem !important;
+          padding-bottom:.6rem !important;
+          font-size:.97rem;
+          line-height:1.85 !important;
+        }
+        .interaction-channels-card bdi{overflow-wrap:anywhere}
         .auth-card{width:calc(100% - 20px);margin:10px auto 14px;padding:24px 16px 20px;border-radius:19px}
         .auth-card h2{margin:10px 0 14px;font-size:1.34rem}
         .auth-icon{width:54px;height:54px;border-radius:16px;font-size:1.65rem}
@@ -267,6 +315,9 @@
         html body .legend-grid{display:none !important}
       }
       @media(max-width:480px){
+        .interaction-channels-card{padding:14px 12px !important}
+        .interaction-channels-card>p{font-size:.91rem;line-height:1.9 !important}
+        .interaction-channels-card .interaction-lead{font-size:.94rem;line-height:1.8 !important}
         .auth-card{width:calc(100% - 16px);margin:8px auto 10px;padding:20px 12px 16px;border-radius:17px}
         .auth-card h2{font-size:1.18rem}
         .auth-help{padding:12px 40px 12px 10px;font-size:.9rem}
