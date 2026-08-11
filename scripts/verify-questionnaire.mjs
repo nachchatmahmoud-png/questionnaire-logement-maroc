@@ -161,7 +161,7 @@ expect(index.includes('questionnaire.js?v=20260811-canaux-officiels-v9'), 'Le ca
 expect(index.includes('/* Auth design v2 — lisible, rassurant et adapté au mobile. */'), 'Le design validé du contrôle Google doit être conservé.');
 expect(index.includes('.auth-card{width:calc(100% - 16px);margin:12px auto'), 'La carte de connexion doit rester adaptée aux petits écrans.');
 expect(index.includes('.auth-help::before'), 'Le repère visuel de confidentialité doit rester présent.');
-expect(index.includes('border:3px solid #1a73e8;'), 'La bordure épaisse du bouton Google doit être conservée.');
+expect(index.includes('border:4px solid transparent;') && index.includes('linear-gradient(90deg,#4285f4 0 25%,#34a853 25% 50%,#fbbc05 50% 75%,#ea4335 75% 100%) border-box;'), 'La bordure épaisse aux couleurs de Google doit être conservée.');
 expect((index.match(/<script[^>]+src=/g) || []).length === 1, 'index.html doit charger un seul JavaScript fonctionnel.');
 
 expect(source.includes("const GOOGLE_CLIENT_ID='285878510024-7dhdojiucp6ff20m2snuro018t70c6s5.apps.googleusercontent.com'"), 'Le site doit utiliser le client Google public configuré.');
