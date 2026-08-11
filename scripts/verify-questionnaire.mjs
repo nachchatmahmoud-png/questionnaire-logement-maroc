@@ -24,7 +24,7 @@ const contentFingerprint = crypto
   .update(JSON.stringify(questionnaireData))
   .digest('hex');
 expect(
-  contentFingerprint === '3fef93b3a7385dcae7b71356daa84354e844afa90ef5014f1d43b3a312123b76',
+  contentFingerprint === 'a4eaad8e513eb12c666f7f03d6e6e4a6dd7e69d2e5040e7795ba0fd41a73c3a3',
   'Le contenu validé du questionnaire a été modifié sans mise à jour explicite de son empreinte.'
 );
 
@@ -218,7 +218,19 @@ const quiz = Function('return ' + source.slice(quizStart, quizEnd))();
 const positions = quiz.map(question => question[2].indexOf(question[3]) + 1);
 expect(quiz.length === 6, 'La compréhension doit contenir six questions.');
 expect(quiz.every((question, index) => question[1].startsWith((index + 1) + '. ')), 'Les questions de compréhension doivent être numérotées de 1 à 6.');
-expect(JSON.stringify(positions) === JSON.stringify([2, 4, 4, 3, 2, 2]), 'L’ordre validé des bonnes réponses doit être conservé.');
+expect(quiz.every(question => question[2].includes(question[3])), 'Chaque bonne réponse doit figurer parmi les choix proposés.');
+expect(JSON.stringify(positions) === JSON.stringify([2, 4, 3, 1, 2, 3]), 'L’ordre validé des bonnes réponses doit être conservé.');
+
+const comprehensionFormScript = fs.readFileSync('apps-script/remplacer-questions-comprehension.gs', 'utf8');
+const definitionsStart = comprehensionFormScript.indexOf('const definitions = ') + 'const definitions = '.length;
+const definitionsEnd = comprehensionFormScript.indexOf(';\n\n  const items', definitionsStart);
+const comprehensionDefinitions = Function('return ' + comprehensionFormScript.slice(definitionsStart, definitionsEnd))();
+expect(comprehensionDefinitions.length === 6, 'Le script Google Forms doit définir exactement six questions de compréhension.');
+quiz.forEach((question, index) => {
+  const definition = comprehensionDefinitions[index];
+  expect(definition?.titre === question[1], `Le titre ${index + 1} doit être identique sur le site et dans Google Forms.`);
+  expect(JSON.stringify(definition?.choix) === JSON.stringify(question[2]), `Les choix ${index + 1} doivent être identiques sur le site et dans Google Forms.`);
+});
 
 expect((index.match(/questionnaire\.js\?v=/g) || []).length === 1, 'index.html doit charger un seul fichier questionnaire versionné.');
 expect(index.includes('questionnaire.js?v=20260811-comprehension-v28'), 'Le cache doit être invalidé pour cette version.');
