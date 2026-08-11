@@ -24,7 +24,7 @@ const contentFingerprint = crypto
   .update(JSON.stringify(questionnaireData))
   .digest('hex');
 expect(
-  contentFingerprint === '21b17b1a0ebe7c4618c9507ea752c056fca2ba63da0d6344274dccf2fe4a5ab7',
+  contentFingerprint === '4dd589accdfcfc723874abe0cc818fa4fb6fae645911aeda6ffff5de4f42ddb2',
   'Le contenu validé du questionnaire a été modifié sans mise à jour explicite de son empreinte.'
 );
 
@@ -112,7 +112,7 @@ const protectedTexts = [
   'وتكتسي مشاركتكم أهمية كبيرة، لما ستوفره من معطيات أساسية تسهم في إغناء هذا البحث وتعزيز نتائجه من الناحية العلمية. لذلك، نرجو منكم الإجابة عن الأسئلة بكل موضوعية ودقة.',
   'جميع الأجوبة سرية، ولن تُستعمل إلا لأغراض البحث العلمي.',
   'هل سبق لكم استخدام إحدى القنوات الرسمية للتواصل أو التفاعل بشأن البرنامج، لطرح سؤال أو طلب توضيح أو تقديم ملاحظة أو مقترح أو شكاية؟',
-  'من خلال أي قناة تم آخر تواصل لكم بشأن البرنامج؟',
+  'عبر أي قناة رسمية تم آخر تواصل لكم بشأن برنامج الدعم المباشر للسكن؟',
   'هل توصلتم برد بشأن هذا التواصل؟',
   'ما أهم التغييرات أو الإجراءات التي تقترحونها لتحسين التواصل والتفاعل بين الوزارة والمواطنين بشأن برنامج الدعم المباشر للسكن؟',
 ];
@@ -156,7 +156,7 @@ expect(quiz.every((question, index) => question[1].startsWith((index + 1) + '. '
 expect(JSON.stringify(positions) === JSON.stringify([2, 3, 4, 2, 3, 4]), 'L’ordre validé des bonnes réponses doit être conservé.');
 
 expect((index.match(/questionnaire\.js\?v=/g) || []).length === 1, 'index.html doit charger un seul fichier questionnaire versionné.');
-expect(index.includes('questionnaire.js?v=20260810-google-account-v7'), 'Le cache doit être invalidé pour cette version.');
+expect(index.includes('questionnaire.js?v=20260811-canaux-officiels-v8'), 'Le cache doit être invalidé pour cette version.');
 expect((index.match(/<script[^>]+src=/g) || []).length === 1, 'index.html doit charger un seul JavaScript fonctionnel.');
 
 expect(source.includes("const GOOGLE_CLIENT_ID='285878510024-7dhdojiucp6ff20m2snuro018t70c6s5.apps.googleusercontent.com'"), 'Le site doit utiliser le client Google public configuré.');
