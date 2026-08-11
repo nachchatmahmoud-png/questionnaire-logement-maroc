@@ -3,7 +3,7 @@ const FORM_PUBLIC_URL='https://docs.google.com/forms/d/e/1FAIpQLSfIOkBS04JQVuTRE
 const GOOGLE_CLIENT_ID='285878510024-7dhdojiucp6ff20m2snuro018t70c6s5.apps.googleusercontent.com';
 const AUTH_BRIDGE_URL='https://script.google.com/macros/s/AKfycbxmwpYfo8bhwBmPPsKrIsqIfW4DQUxOxrwYavWgojHvLzR0e-TDK-DQj7t3LNeODRSv/exec';
 const AUTH_CHANNEL='questionnaire-logement-auth-v1';
-const SCHEMA_VERSION='2026-08-10-profils-g1-g5-v5-five-point-scales';
+const SCHEMA_VERSION='2026-08-11-contact-channels-identified-v1';
 const ENTRY_COMMON={
  q1:'299895912',q2:'1225420672',age:'1577939573',gender:'2068308268',education:'1330802393',housing:'1373868444',residence:'865830704',professional:'1061681182',region:'861634292',country:'1099313147'
 };
@@ -64,7 +64,14 @@ const submissionRoute=()=>route()==='g1'?'g1':route()+'_'+(beneficiary()?'benefi
 const officialSources=[['official_daamsakane_web','المنصة الإلكترونية «دعم سكن» (daamsakane.ma)'],['official_daamsakane_app','تطبيق «دعم سكن» على الهاتف المحمول'],['official_ministry_web','الموقع الإلكتروني الرسمي للوزارة'],['official_social','الصفحات أو الحسابات الرسمية للوزارة على شبكات التواصل الاجتماعي']];
 const externalSources=[['external_tv_radio','التلفزيون أو الإذاعة'],['external_press','الصحافة الإلكترونية أو الورقية'],['external_unofficial_social','مواقع أو صفحات غير رسمية على شبكات التواصل الاجتماعي'],['external_family','الأسرة أو الأصدقاء أو المعارف']];
 const statuses=[PERSONAL_BENEFICIARY,FAMILY_BENEFICIARY,'قدمت طلبًا وما زال قيد المعالجة','قدمت طلبًا ولم تتم الموافقة عليه','اطلعت على البرنامج ولم أتقدم بطلب للاستفادة منه'];
-const contactChannels=['خدمة «اتصل بنا» على منصة «دعم سكن»','خدمة التواصل أو نموذج الاتصال عبر الموقع الإلكتروني الرسمي للوزارة','البوابة الوطنية للشكايات «Chikaya.ma»','الرقم الهاتفي أو مركز الاتصال الرسمي المخصص للاستفسارات بشأن البرنامج','البريد الإلكتروني الرسمي المخصص للتواصل بشأن البرنامج','الحسابات الرسمية للوزارة على شبكات التواصل الاجتماعي، عبر الرسائل الخاصة أو التعليقات'];
+const contactChannels=[
+ 'منصة دعم سكن – DaamSakane.ma → عبر خدمة «اتصل بنا» على المنصة الرسمية.',
+ 'الموقع الرسمي للوزارة – mhpv.gov.ma → عبر نموذج الاتصال / خدمة التواصل على الموقع الرسمي للوزارة.',
+ 'البوابة الوطنية للشكايات – Chikaya.ma → عبر إيداع أو متابعة شكاية رسمية.',
+ 'الهاتف / مركز الاتصال الرسمي → عبر الرقم: +212 5 37 71 81 81',
+ 'البريد الإلكتروني الرسمي → عبر: contact@daamsakane.ma',
+ 'شبكات التواصل الاجتماعي الرسمية للوزارة → عبر Facebook أو Instagram أو باقي الحسابات الرسمية للوزارة، من خلال الرسائل الخاصة أو التعليقات.',
+];
 const quiz=[
  ['understanding_1','1. ما الذي يقدمه برنامج الدعم المباشر للسكن؟',['قرضاً بنكياً لاقتناء سكن','دعماً مالياً للمساعدة على اقتناء سكن','سكناً مجانياً','دعماً لأداء واجبات الكراء'],'دعماً مالياً للمساعدة على اقتناء سكن'],
  ['understanding_2','2. السكن الذي يتم اقتناؤه في إطار البرنامج يجب أن يكون:',['سكناً مخصصاً للكراء','سكناً ثانوياً','سكناً رئيسياً للمستفيد','محلاً للاستعمال المهني'],'سكناً رئيسياً للمستفيد'],

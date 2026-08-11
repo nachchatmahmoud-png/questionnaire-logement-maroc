@@ -24,14 +24,14 @@ const contentFingerprint = crypto
   .update(JSON.stringify(questionnaireData))
   .digest('hex');
 expect(
-  contentFingerprint === '510372b98fd8650e14786f8a2ef8edb3e71abe472d8402a986e29e3db166a87e',
+  contentFingerprint === '52b96d1c53b8630a691020e160c62651fe7dd0ea60fe50e1e8a58946b10fb487',
   'Le contenu validé du questionnaire a été modifié sans mise à jour explicite de son empreinte.'
 );
 
 const publicFormId = '1FAIpQLSfIOkBS04JQVuTRE0npIB6QOJ6UPg0ckoBTqAdLG9PT3yUOkA';
 expect(source.includes(publicFormId + '/formResponse'), 'Le site doit envoyer vers le Google Form actif.');
 expect(source.includes(publicFormId + '/viewform'), 'Le lien public doit viser le Google Form actif.');
-expect(source.includes("2026-08-10-profils-g1-g5-v5-five-point-scales"), 'La version du schéma doit correspondre au formulaire actuel.');
+expect(source.includes("2026-08-11-contact-channels-identified-v1"), 'La version du schéma doit correspondre au formulaire actuel.');
 
 for (const mapName of [
   'ENTRY_G2_BENEFICIARY',
@@ -102,6 +102,14 @@ for (const history of [
 
 const interactiveChannelsInstruction = 'يرجى الإجابة بناءً على معرفتكم أو تجربتكم مع قنوات التواصل المتاحة بشأن برنامج «دعم سكن»، مثل خدمات التواصل عبر منصة أو تطبيق «دعم سكن»، والموقع الإلكتروني للوزارة، ورقم الهاتف والبريد الإلكتروني المخصصين للدعم، وكذلك الحسابات الرسمية للوزارة على شبكات التواصل الاجتماعي.';
 expect(source.includes(interactiveChannelsInstruction), 'La formulation validée sur les canaux interactifs doit être conservée mot pour mot.');
+expect(JSON.stringify(questionnaireData.contactChannels) === JSON.stringify([
+  'منصة دعم سكن – DaamSakane.ma → عبر خدمة «اتصل بنا» على المنصة الرسمية.',
+  'الموقع الرسمي للوزارة – mhpv.gov.ma → عبر نموذج الاتصال / خدمة التواصل على الموقع الرسمي للوزارة.',
+  'البوابة الوطنية للشكايات – Chikaya.ma → عبر إيداع أو متابعة شكاية رسمية.',
+  'الهاتف / مركز الاتصال الرسمي → عبر الرقم: +212 5 37 71 81 81',
+  'البريد الإلكتروني الرسمي → عبر: contact@daamsakane.ma',
+  'شبكات التواصل الاجتماعي الرسمية للوزارة → عبر Facebook أو Instagram أو باقي الحسابات الرسمية للوزارة، من خلال الرسائل الخاصة أو التعليقات.',
+]), 'Les six canaux officiels identifiés doivent être conservés dans leur ordre validé.');
 expect(!source.includes('قناة رسمية أخرى للتواصل بشأن البرنامج، يرجى تحديدها: __________'), 'Le choix « autre canal » supprimé ne doit pas réapparaître.');
 const protectedTexts = [
   'س1. هل سبق لكم أن سمعتم ببرنامج الدعم المباشر للسكن؟',
@@ -157,7 +165,7 @@ expect(quiz.every((question, index) => question[1].startsWith((index + 1) + '. '
 expect(JSON.stringify(positions) === JSON.stringify([2, 3, 4, 2, 3, 4]), 'L’ordre validé des bonnes réponses doit être conservé.');
 
 expect((index.match(/questionnaire\.js\?v=/g) || []).length === 1, 'index.html doit charger un seul fichier questionnaire versionné.');
-expect(index.includes('questionnaire.js?v=20260811-google-continue-v10'), 'Le cache doit être invalidé pour cette version.');
+expect(index.includes('questionnaire.js?v=20260811-contact-channels-v11'), 'Le cache doit être invalidé pour cette version.');
 expect(index.includes('/* Auth design v2 — lisible, rassurant et adapté au mobile. */'), 'Le design validé du contrôle Google doit être conservé.');
 expect(index.includes('.auth-card{width:calc(100% - 16px);margin:12px auto'), 'La carte de connexion doit rester adaptée aux petits écrans.');
 expect(index.includes('.auth-help::before'), 'Le repère visuel de confidentialité doit rester présent.');
