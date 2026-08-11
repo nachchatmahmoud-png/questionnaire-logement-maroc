@@ -26,7 +26,7 @@
         };
       })();
     </script>
-    <script type="module" crossorigin src="/questionnaire-logement-maroc/assets/questionnaire.js?v=20260811-interactive-channels-v19"></script>
+    <script type="module" crossorigin src="/questionnaire-logement-maroc/assets/questionnaire.js?v=20260811-interactive-prose-v20"></script>
     <style>
       #boot-fallback{max-width:760px;margin:48px auto;padding:28px;border:1px solid #e5e7eb;border-radius:18px;background:#fff;font-family:Arial,sans-serif;line-height:1.8;text-align:center;color:#172033}
       #boot-fallback h1{font-size:1.45rem;margin:0 0 10px;font-weight:700}
@@ -184,11 +184,8 @@
       @keyframes auth-spin{to{transform:rotate(360deg)}}
 
       .interaction-channels-card>p{margin:0;line-height:1.9}
-      .official-channel-list{display:grid;gap:10px;margin:14px 0 0;padding:0 1.3rem 0 0;text-align:right}
-      .official-channel-list li{padding-inline-start:2px;line-height:1.9;color:var(--ink)}
-      .official-channel-list li::marker{color:#0f766e}
-      .official-channel-list strong{font-weight:800}
-      .official-channel-list bdi{unicode-bidi:isolate}
+      .interaction-channels-card>p+p{margin-top:12px}
+      .interaction-channels-card bdi{unicode-bidi:isolate}
 
       /* Échelle Likert : 1–5 restent uniquement dans le rappel au-dessus. */
       html body .legend-grid > span{
@@ -236,8 +233,8 @@
         .auth-shell .hero-lead{font-size:.92rem;line-height:1.75;margin-bottom:9px}
         .auth-shell .privacy-note{margin-top:9px;padding:10px 12px}
         .auth-shell footer{display:none}
-        .official-channel-list{gap:8px;margin-top:10px;padding-right:1rem}
-        .official-channel-list li{font-size:.92rem;line-height:1.75}
+        .interaction-channels-card>p{font-size:.94rem;line-height:1.8}
+        .interaction-channels-card>p+p{margin-top:10px}
         .auth-card{width:calc(100% - 20px);margin:10px auto 14px;padding:24px 16px 20px;border-radius:19px}
         .auth-card h2{margin:10px 0 14px;font-size:1.34rem}
         .auth-icon{width:54px;height:54px;border-radius:16px;font-size:1.65rem}
