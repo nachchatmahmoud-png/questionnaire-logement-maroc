@@ -26,7 +26,7 @@
         };
       })();
     </script>
-    <script type="module" crossorigin src="/questionnaire-logement-maroc/assets/questionnaire.js?v=20260811-canaux-officiels-v9"></script>
+    <script type="module" crossorigin src="/questionnaire-logement-maroc/assets/questionnaire.js?v=20260811-google-continue-v10"></script>
     <style>
       #boot-fallback{max-width:760px;margin:48px auto;padding:28px;border:1px solid #e5e7eb;border-radius:18px;background:#fff;font-family:Arial,sans-serif;line-height:1.8;text-align:center;color:#172033}
       #boot-fallback h1{font-size:1.45rem;margin:0 0 10px;font-weight:700}
@@ -134,6 +134,21 @@
         color:#16823b;
         font:800 .9rem/1 Arial,sans-serif;
       }
+      .auth-action-hint{
+        margin:4px auto 2px;
+        color:#253858;
+        font-size:1.02rem;
+        font-weight:800;
+        line-height:1.7;
+        text-align:center;
+      }
+      .auth-action-hint::before{
+        content:"☝";
+        display:inline-block;
+        margin-left:7px;
+        font-size:1.2rem;
+        vertical-align:-.08em;
+      }
       .google-signin-button{
         display:flex;
         align-items:center;
@@ -150,6 +165,7 @@
           linear-gradient(90deg,#4285f4 0 25%,#34a853 25% 50%,#fbbc05 50% 75%,#ea4335 75% 100%) border-box;
         box-shadow:0 10px 26px rgba(15,23,42,.12),0 4px 12px rgba(66,133,244,.12);
         transition:transform .2s ease,box-shadow .2s ease;
+        cursor:pointer;
       }
       .google-signin-button:hover,
       .google-signin-button:focus-within{
