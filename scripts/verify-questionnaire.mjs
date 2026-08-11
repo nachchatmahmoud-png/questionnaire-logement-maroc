@@ -172,6 +172,8 @@ expect(index.includes('.auth-help::before'), 'Le repère visuel de confidentiali
 expect(index.includes('border:4px solid transparent;') && index.includes('linear-gradient(90deg,#4285f4 0 25%,#34a853 25% 50%,#fbbc05 50% 75%,#ea4335 75% 100%) border-box;'), 'La bordure épaisse aux couleurs de Google doit être conservée.');
 expect(source.includes('اضغط على زر «المواصلة باستخدام Google» للمتابعة.'), 'L’indication de clic du bouton Google doit rester présente.');
 expect(index.includes('.auth-action-hint{'), 'La mise en forme de l’indication de clic doit être conservée.');
+expect(index.includes('.auth-action-hint::after{') && index.includes('content:"👇";'), 'Le doigt doit être affiché sous le texte et pointer vers le bouton Google.');
+expect(!index.includes('.auth-action-hint::before{'), 'Le doigt ne doit plus être affiché avant le texte.');
 expect((index.match(/<script[^>]+src=/g) || []).length === 1, 'index.html doit charger un seul JavaScript fonctionnel.');
 
 expect(source.includes("const GOOGLE_CLIENT_ID='285878510024-7dhdojiucp6ff20m2snuro018t70c6s5.apps.googleusercontent.com'"), 'Le site doit utiliser le client Google public configuré.');
