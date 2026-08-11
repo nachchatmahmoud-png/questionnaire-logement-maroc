@@ -24,14 +24,14 @@ const contentFingerprint = crypto
   .update(JSON.stringify(questionnaireData))
   .digest('hex');
 expect(
-  contentFingerprint === '52b96d1c53b8630a691020e160c62651fe7dd0ea60fe50e1e8a58946b10fb487',
+  contentFingerprint === 'ae4dfea8605ffafe4f542822af702749adce0f5fd9dc47472e1d02e283e28cd5',
   'Le contenu validé du questionnaire a été modifié sans mise à jour explicite de son empreinte.'
 );
 
 const publicFormId = '1FAIpQLSfIOkBS04JQVuTRE0npIB6QOJ6UPg0ckoBTqAdLG9PT3yUOkA';
 expect(source.includes(publicFormId + '/formResponse'), 'Le site doit envoyer vers le Google Form actif.');
 expect(source.includes(publicFormId + '/viewform'), 'Le lien public doit viser le Google Form actif.');
-expect(source.includes("2026-08-11-contact-channels-identified-v1"), 'La version du schéma doit correspondre au formulaire actuel.');
+expect(source.includes("2026-08-11-contact-channels-identified-v2"), 'La version du schéma doit correspondre au formulaire actuel.');
 
 for (const mapName of [
   'ENTRY_G2_BENEFICIARY',
@@ -106,7 +106,7 @@ expect(JSON.stringify(questionnaireData.contactChannels) === JSON.stringify([
   'منصة دعم سكن – DaamSakane.ma → عبر خدمة «اتصل بنا» على المنصة الرسمية.',
   'الموقع الرسمي للوزارة – mhpv.gov.ma → عبر نموذج الاتصال / خدمة التواصل على الموقع الرسمي للوزارة.',
   'البوابة الوطنية للشكايات – Chikaya.ma → عبر إيداع أو متابعة شكاية رسمية.',
-  'الهاتف / مركز الاتصال الرسمي → عبر الرقم: +212 5 37 71 81 81',
+  'الهاتف / مركز الاتصال الرسمي → عبر الرقم: \u200E+212 5 37 71 81 81',
   'البريد الإلكتروني الرسمي → عبر: contact@daamsakane.ma',
   'شبكات التواصل الاجتماعي الرسمية للوزارة → عبر Facebook أو Instagram أو باقي الحسابات الرسمية للوزارة، من خلال الرسائل الخاصة أو التعليقات.',
 ]), 'Les six canaux officiels identifiés doivent être conservés dans leur ordre validé.');
@@ -165,7 +165,7 @@ expect(quiz.every((question, index) => question[1].startsWith((index + 1) + '. '
 expect(JSON.stringify(positions) === JSON.stringify([2, 3, 4, 2, 3, 4]), 'L’ordre validé des bonnes réponses doit être conservé.');
 
 expect((index.match(/questionnaire\.js\?v=/g) || []).length === 1, 'index.html doit charger un seul fichier questionnaire versionné.');
-expect(index.includes('questionnaire.js?v=20260811-contact-channels-v11'), 'Le cache doit être invalidé pour cette version.');
+expect(index.includes('questionnaire.js?v=20260811-contact-channels-v12'), 'Le cache doit être invalidé pour cette version.');
 expect(index.includes('/* Auth design v2 — lisible, rassurant et adapté au mobile. */'), 'Le design validé du contrôle Google doit être conservé.');
 expect(index.includes('.auth-card{width:calc(100% - 16px);margin:12px auto'), 'La carte de connexion doit rester adaptée aux petits écrans.');
 expect(index.includes('.auth-help::before'), 'Le repère visuel de confidentialité doit rester présent.');
