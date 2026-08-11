@@ -24,14 +24,14 @@ const contentFingerprint = crypto
   .update(JSON.stringify(questionnaireData))
   .digest('hex');
 expect(
-  contentFingerprint === '5be6e0a0c347aa0a5966bc7b1d08f1ca4a6f40f036e4b8764ceb86c12136deca',
+  contentFingerprint === 'c7ecd2fcfaaf1a18f645fb7e036a4086f78ba3c1c0050877fe40fbd185ba256f',
   'Le contenu validé du questionnaire a été modifié sans mise à jour explicite de son empreinte.'
 );
 
 const publicFormId = '1FAIpQLSfIOkBS04JQVuTRE0npIB6QOJ6UPg0ckoBTqAdLG9PT3yUOkA';
 expect(source.includes(publicFormId + '/formResponse'), 'Le site doit envoyer vers le Google Form actif.');
 expect(source.includes(publicFormId + '/viewform'), 'Le lien public doit viser le Google Form actif.');
-expect(source.includes("2026-08-11-source-principale-v1"), 'La version du schéma doit correspondre au formulaire actuel.');
+expect(source.includes("2026-08-11-comprehension-v2"), 'La version du schéma doit correspondre au formulaire actuel.');
 
 for (const mapName of [
   'ENTRY_G2_BENEFICIARY',
@@ -218,10 +218,10 @@ const quiz = Function('return ' + source.slice(quizStart, quizEnd))();
 const positions = quiz.map(question => question[2].indexOf(question[3]) + 1);
 expect(quiz.length === 6, 'La compréhension doit contenir six questions.');
 expect(quiz.every((question, index) => question[1].startsWith((index + 1) + '. ')), 'Les questions de compréhension doivent être numérotées de 1 à 6.');
-expect(JSON.stringify(positions) === JSON.stringify([2, 3, 4, 2, 3, 4]), 'L’ordre validé des bonnes réponses doit être conservé.');
+expect(JSON.stringify(positions) === JSON.stringify([3, 4, 4, 3, 2, 2]), 'L’ordre validé des bonnes réponses doit être conservé.');
 
 expect((index.match(/questionnaire\.js\?v=/g) || []).length === 1, 'index.html doit charger un seul fichier questionnaire versionné.');
-expect(index.includes('questionnaire.js?v=20260811-interaction-layout-v26'), 'Le cache doit être invalidé pour cette version.');
+expect(index.includes('questionnaire.js?v=20260811-comprehension-v27'), 'Le cache doit être invalidé pour cette version.');
 expect(index.includes('/* Auth design v2 — lisible, rassurant et adapté au mobile. */'), 'Le design validé du contrôle Google doit être conservé.');
 expect(index.includes('.auth-card{width:calc(100% - 20px);margin:10px auto 14px'), 'La carte de connexion doit rester adaptée aux petits écrans.');
 expect(index.includes('.auth-help::before'), 'Le repère visuel de confidentialité doit rester présent.');
