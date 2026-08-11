@@ -198,7 +198,13 @@ function renderGoogleSignInButton(){
  const target=document.getElementById('google-signin-button');
  if(!target)return;
  target.innerHTML='';
- google.accounts.id.renderButton(target,{type:'standard',theme:'outline',size:'large',text:'continue_with',shape:'rectangular',logo_alignment:'left',locale:'ar',width:Math.min(360,Math.max(240,document.documentElement.clientWidth-72))});
+ const viewportWidth=document.documentElement.clientWidth;
+ const buttonWidth=viewportWidth<=480
+  ?Math.min(280,Math.max(220,viewportWidth-88))
+  :viewportWidth<=760
+   ?Math.min(320,Math.max(240,viewportWidth-96))
+   :Math.min(360,Math.max(240,viewportWidth-72));
+ google.accounts.id.renderButton(target,{type:'standard',theme:'outline',size:'large',text:'continue_with',shape:'rectangular',logo_alignment:'left',locale:'ar',width:buttonWidth});
 }
 async function handleGoogleCredential(response){
  const jeton=String(response?.credential||'');
