@@ -3,6 +3,8 @@
  * du Google Form, sans modifier les destinations de page existantes.
  *
  * Exécuter une seule fois : modifierCanauxContactOfficiels()
+ * Pour synchroniser aussi les sources officielles d’information :
+ * synchroniserChoixQuestionnaire()
  */
 function modifierCanauxContactOfficiels() {
   const FORM_ID = '1Q5pRbUvCAIlI556txfiM_z1qInuVQ4854IjOdVMUnLo';
@@ -80,4 +82,59 @@ function modifierCanauxContactOfficiels() {
       questions: resultat,
     })
   );
+}
+
+/**
+ * Met à jour les six choix de la question sur les sources officielles
+ * d’information consultées par le répondant.
+ */
+function modifierSourcesOfficiellesInformation() {
+  const FORM_ID = '1Q5pRbUvCAIlI556txfiM_z1qInuVQ4854IjOdVMUnLo';
+  const form = FormApp.openById(FORM_ID);
+  const QUESTION_ID = 1856677935;
+  const TITRE =
+    'من خلال أي من وسائل التواصل الرسمية التالية اطلعتم على معلومات حول البرنامج؟';
+  const CHOIX = [
+    'المنصة الإلكترونية «دعم سكن» (DaamSakane.ma)',
+    'تطبيق «دعم سكن» على الهاتف المحمول',
+    'الموقع الإلكتروني الرسمي للوزارة (mhpv.gov.ma)',
+    'الصفحات أو الحسابات الرسمية للوزارة على شبكات التواصل الاجتماعي',
+    'الدلائل والمطويات والبلاغات الرسمية المتعلقة بالبرنامج',
+    'اللقاءات أو الحملات والأنشطة التواصلية الرسمية المنظمة للتعريف بالبرنامج',
+  ];
+
+  let item = form.getItemById(QUESTION_ID);
+  if (!item || item.getType() !== FormApp.ItemType.CHECKBOX) {
+    item = form
+      .getItems(FormApp.ItemType.CHECKBOX)
+      .find(candidate => candidate.getTitle() === TITRE);
+  }
+  if (!item) {
+    throw new Error(
+      'Question des sources officielles introuvable (ID ' + QUESTION_ID + ')'
+    );
+  }
+
+  const question = item.asCheckboxItem();
+  question
+    .setTitle(TITRE)
+    .setChoices(CHOIX.map(valeur => question.createChoice(valeur)))
+    .setRequired(true);
+
+  console.log(
+    JSON.stringify({
+      status: 'sources_officielles_modifiees',
+      formEditUrl: form.getEditUrl(),
+      questionId: String(item.getId()),
+      choix: question.getChoices().map(choix => choix.getValue()),
+    })
+  );
+}
+
+/**
+ * Point d’entrée unique pour appliquer les deux séries de choix validées.
+ */
+function synchroniserChoixQuestionnaire() {
+  modifierCanauxContactOfficiels();
+  modifierSourcesOfficiellesInformation();
 }

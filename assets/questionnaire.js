@@ -3,7 +3,7 @@ const FORM_PUBLIC_URL='https://docs.google.com/forms/d/e/1FAIpQLSfIOkBS04JQVuTRE
 const GOOGLE_CLIENT_ID='285878510024-7dhdojiucp6ff20m2snuro018t70c6s5.apps.googleusercontent.com';
 const AUTH_BRIDGE_URL='https://script.google.com/macros/s/AKfycbxmwpYfo8bhwBmPPsKrIsqIfW4DQUxOxrwYavWgojHvLzR0e-TDK-DQj7t3LNeODRSv/exec';
 const AUTH_CHANNEL='questionnaire-logement-auth-v1';
-const SCHEMA_VERSION='2026-08-11-contact-channels-identified-v2';
+const SCHEMA_VERSION='2026-08-11-official-sources-v3';
 const ENTRY_COMMON={
  q1:'299895912',q2:'1225420672',age:'1577939573',gender:'2068308268',education:'1330802393',housing:'1373868444',residence:'865830704',professional:'1061681182',region:'861634292',country:'1099313147'
 };
@@ -61,7 +61,14 @@ const FAMILY_BENEFICIARY='استفاد أحد أفراد أسرتي من الب�
 const beneficiary=()=>val('status')===PERSONAL_BENEFICIARY;
 const route=()=>val('q1')==='لا'?'g1':val('q2')==='لا'?'g2':'official';
 const submissionRoute=()=>route()==='g1'?'g1':route()+'_'+(beneficiary()?'beneficiary':'other');
-const officialSources=[['official_daamsakane_web','المنصة الإلكترونية «دعم سكن» (daamsakane.ma)'],['official_daamsakane_app','تطبيق «دعم سكن» على الهاتف المحمول'],['official_ministry_web','الموقع الإلكتروني الرسمي للوزارة'],['official_social','الصفحات أو الحسابات الرسمية للوزارة على شبكات التواصل الاجتماعي']];
+const officialSources=[
+ ['official_daamsakane_web','المنصة الإلكترونية «دعم سكن» (DaamSakane.ma)'],
+ ['official_daamsakane_app','تطبيق «دعم سكن» على الهاتف المحمول'],
+ ['official_ministry_web','الموقع الإلكتروني الرسمي للوزارة (mhpv.gov.ma)'],
+ ['official_social','الصفحات أو الحسابات الرسمية للوزارة على شبكات التواصل الاجتماعي'],
+ ['official_guides_publications','الدلائل والمطويات والبلاغات الرسمية المتعلقة بالبرنامج'],
+ ['official_meetings_campaigns','اللقاءات أو الحملات والأنشطة التواصلية الرسمية المنظمة للتعريف بالبرنامج'],
+];
 const externalSources=[['external_tv_radio','التلفزيون أو الإذاعة'],['external_press','الصحافة الإلكترونية أو الورقية'],['external_unofficial_social','مواقع أو صفحات غير رسمية على شبكات التواصل الاجتماعي'],['external_family','الأسرة أو الأصدقاء أو المعارف']];
 const statuses=[PERSONAL_BENEFICIARY,FAMILY_BENEFICIARY,'قدمت طلبًا وما زال قيد المعالجة','قدمت طلبًا ولم تتم الموافقة عليه','اطلعت على البرنامج ولم أتقدم بطلب للاستفادة منه'];
 const contactChannels=[
