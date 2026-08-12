@@ -23,6 +23,8 @@ const CONTROLE_PARTICIPATION = Object.freeze({
   CHANNEL: 'questionnaire-logement-auth-v1',
   TOKENINFO_URL: 'https://oauth2.googleapis.com/tokeninfo?id_token=',
   ENTRY_ITEM_MAP_PROPERTY: 'FORM_ENTRY_ITEM_MAP_V1',
+  PROVENANCE_SECRET_PROPERTY: 'FORM_SUBMISSION_PROVENANCE_SECRET_V1',
+  PROVENANCE_TRIGGER_HANDLER: 'rejeterSoumissionDirecteNonAutorisee',
 });
 
 /**
@@ -39,6 +41,12 @@ function installerControleParticipationGoogle() {
       Utilities.getUuid() + Utilities.getUuid()
     );
   }
+  if (!proprietes.getProperty(CONTROLE_PARTICIPATION.PROVENANCE_SECRET_PROPERTY)) {
+    proprietes.setProperty(
+      CONTROLE_PARTICIPATION.PROVENANCE_SECRET_PROPERTY,
+      Utilities.getUuid() + Utilities.getUuid()
+    );
+  }
 
   const feuille = obtenirFeuilleControle_(true);
   protegerFeuilleControle_(feuille);
@@ -48,6 +56,7 @@ function installerControleParticipationGoogle() {
   const correspondance = actualiserCorrespondanceFormulaire_(formulaire);
   formulaire.setLimitOneResponsePerUser(true);
   formulaire.setShowLinkToRespondAgain(false);
+  installerDeclencheurProvenance_(formulaire);
 
   console.log('CONTROLE_PARTICIPATION_INSTALLE: oui');
   console.log('LIMITE_NATIVE_UNE_REPONSE: ' + formulaire.hasLimitOneResponsePerUser());
@@ -56,6 +65,7 @@ function installerControleParticipationGoogle() {
       obtenirEntryIdQuestion_(correspondance, questionReference)
   );
   console.log('NOM_FEUILLE_TECHNIQUE: ' + CONTROLE_PARTICIPATION.SHEET_NAME);
+  console.log('CONTROLE_ORIGINE_SOUMISSION: actif');
 }
 
 /**
@@ -260,7 +270,8 @@ function creerReponseDepuisCharge_(formulaire, questionReference, submissionId, 
   const correspondance = obtenirCorrespondanceFormulaire_(formulaire);
   const chargeComplete = Object.assign({}, charge);
   delete chargeComplete[String(questionReference.getId())];
-  chargeComplete[obtenirEntryIdQuestion_(correspondance, questionReference)] = submissionId;
+  chargeComplete[obtenirEntryIdQuestion_(correspondance, questionReference)] =
+    creerReferenceTechniqueSignee_(submissionId);
 
   Object.keys(chargeComplete).forEach(function (entryId) {
     const descripteurBrut = correspondance[entryId];
@@ -500,18 +511,30 @@ function obtenirFormulaire_() {
 
 function obtenirQuestionReferenceTechnique_(formulaire, creerSiAbsente) {
   const questions = formulaire.getItems(FormApp.ItemType.TEXT);
+  let question = null;
   for (let i = 0; i < questions.length; i += 1) {
     if (questions[i].getTitle() === CONTROLE_PARTICIPATION.SUBMISSION_ID_TITLE) {
-      return questions[i].asTextItem();
+      question = questions[i].asTextItem();
+      break;
     }
   }
 
-  if (!creerSiAbsente) return null;
-  return formulaire
-    .addTextItem()
-    .setTitle(CONTROLE_PARTICIPATION.SUBMISSION_ID_TITLE)
-    .setHelpText('حقل تقني يُملأ تلقائيًا من موقع الاستبيان للتحقق من تسجيل الإجابة.')
-    .setRequired(false);
+  if (!question && creerSiAbsente) {
+    question = formulaire.addTextItem().setTitle(CONTROLE_PARTICIPATION.SUBMISSION_ID_TITLE);
+  }
+  if (!question) return null;
+
+  if (creerSiAbsente) {
+    const validation = FormApp.createTextValidation()
+      .requireTextMatchesPattern('^site:[A-Za-z0-9_-]{16,128}:[A-Za-z0-9_-]{43}$')
+      .setHelpText('يُملأ هذا الحقل تلقائيًا عبر موقع الاستبيان الرسمي.')
+      .build();
+    question
+      .setHelpText('يُقبل إرسال الإجابات عبر موقع الاستبيان الرسمي فقط.')
+      .setRequired(true)
+      .setValidation(validation);
+  }
+  return question;
 }
 
 function trouverReponseConfirmee_(formulaire, questionReference, submissionId) {
@@ -520,11 +543,113 @@ function trouverReponseConfirmee_(formulaire, questionReference, submissionId) {
 
   for (let i = reponses.length - 1; i >= 0; i -= 1) {
     const reponseQuestion = reponses[i].getResponseForItem(questionReference);
-    if (reponseQuestion && String(reponseQuestion.getResponse() || '') === submissionId) {
+    const reference = reponseQuestion && String(reponseQuestion.getResponse() || '');
+    if (
+      reference === submissionId ||
+      extraireSubmissionIdReferenceSignee_(reference) === submissionId
+    ) {
       return reponses[i];
     }
   }
   return null;
+}
+
+function creerReferenceTechniqueSignee_(submissionId) {
+  const secret = PropertiesService.getScriptProperties().getProperty(
+    CONTROLE_PARTICIPATION.PROVENANCE_SECRET_PROPERTY
+  );
+  if (!secret) throw new Error('CONFIGURATION_MISSING');
+  const signature = Utilities.base64EncodeWebSafe(
+    Utilities.computeHmacSha256Signature(
+      String(submissionId),
+      secret,
+      Utilities.Charset.UTF_8
+    )
+  ).replace(/=+$/g, '');
+  return 'site:' + submissionId + ':' + signature;
+}
+
+function extraireSubmissionIdReferenceSignee_(reference) {
+  const resultat = String(reference || '').match(
+    /^site:([A-Za-z0-9_-]{16,128}):([A-Za-z0-9_-]{43})$/
+  );
+  if (!resultat) return '';
+  const submissionId = resultat[1];
+  return creerReferenceTechniqueSignee_(submissionId) === reference ? submissionId : '';
+}
+
+function installerDeclencheurProvenance_(formulaire) {
+  const existe = ScriptApp.getProjectTriggers().some(function (declencheur) {
+    return (
+      declencheur.getHandlerFunction() ===
+      CONTROLE_PARTICIPATION.PROVENANCE_TRIGGER_HANDLER
+    );
+  });
+  if (!existe) {
+    ScriptApp.newTrigger(CONTROLE_PARTICIPATION.PROVENANCE_TRIGGER_HANDLER)
+      .forForm(formulaire)
+      .onFormSubmit()
+      .create();
+  }
+}
+
+/**
+ * Supprime toute réponse envoyée directement au Google Form sans preuve
+ * cryptographique émise par le backend du site.
+ */
+function rejeterSoumissionDirecteNonAutorisee(e) {
+  const reponse = e && e.response;
+  if (!reponse) return;
+
+  const formulaire = obtenirFormulaire_();
+  const questionReference = obtenirQuestionReferenceTechnique_(formulaire, false);
+  const reponseReference =
+    questionReference && reponse.getResponseForItem(questionReference);
+  const reference = String(
+    (reponseReference && reponseReference.getResponse()) || ''
+  );
+
+  if (extraireSubmissionIdReferenceSignee_(reference)) return;
+
+  const responseId = String(reponse.getId() || '');
+  if (responseId) formulaire.deleteResponse(responseId);
+  supprimerLigneReponseDirecte_(reponse.getTimestamp(), reference);
+  console.log('SOUMISSION_DIRECTE_REJETEE: ' + responseId);
+}
+
+function supprimerLigneReponseDirecte_(horodatage, reference) {
+  const classeur = SpreadsheetApp.openById(CONTROLE_PARTICIPATION.SPREADSHEET_ID);
+  const feuille = classeur.getSheetByName(CONTROLE_PARTICIPATION.RESPONSE_SHEET_NAME);
+  if (!feuille || !(horodatage instanceof Date)) return;
+
+  for (let tentative = 0; tentative < 6; tentative += 1) {
+    SpreadsheetApp.flush();
+    const derniereLigne = feuille.getLastRow();
+    const derniereColonne = feuille.getLastColumn();
+    if (derniereLigne >= 2 && derniereColonne >= 1) {
+      const valeurs = feuille
+        .getRange(2, 1, derniereLigne - 1, derniereColonne)
+        .getValues();
+      const entetes = feuille.getRange(1, 1, 1, derniereColonne).getDisplayValues()[0];
+      const colonneReference = entetes.indexOf(CONTROLE_PARTICIPATION.SUBMISSION_ID_TITLE);
+      const lignes = [];
+      valeurs.forEach(function (ligne, index) {
+        const date = ligne[0];
+        const memeHorodatage =
+          date instanceof Date && Math.abs(date.getTime() - horodatage.getTime()) < 1000;
+        const memeReference =
+          colonneReference < 0 || String(ligne[colonneReference] || '') === reference;
+        if (memeHorodatage && memeReference) lignes.push(index + 2);
+      });
+      if (lignes.length === 1) {
+        feuille.deleteRow(lignes[0]);
+        SpreadsheetApp.flush();
+        return;
+      }
+    }
+    Utilities.sleep(500);
+  }
+  console.error('LIGNE_SOUMISSION_DIRECTE_INTROUVABLE');
 }
 
 function obtenirFeuilleControle_(mettreAJourEntetes) {
