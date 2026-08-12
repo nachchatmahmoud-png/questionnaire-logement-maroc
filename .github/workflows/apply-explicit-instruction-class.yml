@@ -34,7 +34,6 @@ jobs:
 
           js_path = Path('assets/questionnaire.js')
           js = js_path.read_text(encoding='utf-8')
-
           replacements = [
               ('class="question-help"', 'class="question-help instruction-text"'),
               ('<legend>${instruction}</legend>', '<legend class="instruction-text">${instruction}</legend>'),
@@ -50,40 +49,30 @@ jobs:
 
           html_path = Path('index.html')
           html = html_path.read_text(encoding='utf-8')
-
-          html = re.sub(
-              r'\s*/\* instruction-final-semantic-style-20260812 \*/.*?\n\s*}\n(?=</style>)',
-              '\n',
-              html,
-              flags=re.S,
+          html = re.sub(r'\s*/\* instruction-final-semantic-style-20260812 \*/.*?\n\s*}\n(?=</style>)', '\n', html, flags=re.S)
+          style = (
+              '\n      /* instruction-text-explicit-20260812-v1 */\n'
+              '      html body .instruction-text,\n'
+              '      html body .instruction-text *{\n'
+              '        color:#6b7280 !important;\n'
+              '        font-family:"Noto Sans Arabic",Tahoma,Arial,sans-serif !important;\n'
+              '        font-size:14px !important;\n'
+              '        font-weight:700 !important;\n'
+              '        font-style:normal !important;\n'
+              '        line-height:1.7 !important;\n'
+              '      }\n'
           )
-
-          style = '''
-      /* instruction-text-explicit-20260812-v1 */
-      html body .instruction-text,
-      html body .instruction-text *{
-        color:#6b7280 !important;
-        font-family:"Noto Sans Arabic",Tahoma,Arial,sans-serif !important;
-        font-size:14px !important;
-        font-weight:700 !important;
-        font-style:normal !important;
-        line-height:1.7 !important;
-      }
-'''
           if 'instruction-text-explicit-20260812-v1' not in html:
               html = html.replace('</style>', style + '</style>', 1)
-
-          html = html.replace(
-              '/assets/questionnaire.js?v=20260812-confirmation-v36',
-              '/assets/questionnaire.js?v=20260812-instructions-explicit-v37'
-          )
+          html = html.replace('/assets/questionnaire.js?v=20260812-confirmation-v36', '/assets/questionnaire.js?v=20260812-instructions-explicit-v37')
           html_path.write_text(html, encoding='utf-8')
           PY
 
       - name: Verify instruction markers
         shell: bash
         run: |
-          grep -q 'instruction-text' assets/questionnaire.js
+          grep -q 'class="question-help instruction-text"' assets/questionnaire.js
+          grep -q '<legend class="instruction-text">${instruction}</legend>' assets/questionnaire.js
           grep -q 'instruction-text-explicit-20260812-v1' index.html
           grep -q 'font-size:14px !important' index.html
 
