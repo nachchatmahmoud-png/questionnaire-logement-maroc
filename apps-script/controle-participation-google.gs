@@ -25,7 +25,7 @@ const CONTROLE_PARTICIPATION = Object.freeze({
   ENTRY_ITEM_MAP_PROPERTY: 'FORM_ENTRY_ITEM_MAP_V1',
   PROVENANCE_SECRET_PROPERTY: 'FORM_SUBMISSION_PROVENANCE_SECRET_V1',
   PROVENANCE_TRIGGER_HANDLER: 'rejeterSoumissionDirecteNonAutorisee',
-  QUESTIONNAIRE_UPDATE_PROPERTY: 'QUESTIONNAIRE_UPDATE_20260812_V2',
+  QUESTIONNAIRE_UPDATE_PROPERTY: 'QUESTIONNAIRE_UPDATE_20260813_V3',
 });
 
 const MISE_A_JOUR_QUESTIONNAIRE = Object.freeze({
@@ -37,9 +37,11 @@ const MISE_A_JOUR_QUESTIONNAIRE = Object.freeze({
     'الصحافة الإلكترونية أو الورقية',
     'اللقاءات أو الحملات التواصلية الميدانية',
   ],
-  NO_OFFICIAL_REASON_TITLE: 'س2-ب. ما السبب الرئيسي لعدم اطلاعكم على معلومات حول البرنامج عبر القنوات الرسمية للوزارة أو للبرنامج؟',
+  Q2_TITLE: 'س2. هل سبق أن اطلعتم على معلومات حول برنامج الدعم المباشر للسكن من خلال إحدى القنوات الرسمية للوزارة؟',
+  Q2_LEGACY_PREFIX: 'س2. هل سبق',
+  NO_OFFICIAL_REASON_TITLE: 'س2-ب. ما السبب الرئيسي لعدم اطلاعكم على معلومات حول البرنامج عبر القنوات الرسمية للوزارة؟',
   NO_OFFICIAL_REASON_HELP: 'يرجى اختيار جواب واحد فقط.',
-  NO_OFFICIAL_REASON_LEGACY_TITLES: ['ما السبب الرئيسي لعدم اطلاعكم على معلومات حول البرنامج عبر وسائل التواصل الرسمية للوزارة؟'],
+  NO_OFFICIAL_REASON_LEGACY_PREFIX: 'ما السبب الرئيسي لعدم اطلاعكم على معلومات حول البرنامج عبر ',
   NO_OFFICIAL_REASON_CHOICES: [
     'لم أكن أعلم بوجود قنوات رسمية توفر معلومات حول البرنامج.',
     'كنت أعلم بوجود قنوات رسمية، لكن لم يكن واضحًا لي ما هي القنوات أو الحسابات الرسمية المعتمدة.',
@@ -472,6 +474,25 @@ function garantirMiseAJourQuestionnaire_(formulaire, creerSiAbsent) {
       );
     }
 
+    questions.q2 = trouverQuestionUniqueParTitre_(
+    formulaire,
+    FormApp.ItemType.MULTIPLE_CHOICE,
+    MISE_A_JOUR_QUESTIONNAIRE.Q2_TITLE
+  );
+  if (!questions.q2) {
+    const anciennesQ2 = formulaire.getItems(FormApp.ItemType.MULTIPLE_CHOICE).filter(function (item) {
+      const titre = item.getTitle().trim();
+      return titre.indexOf(MISE_A_JOUR_QUESTIONNAIRE.Q2_LEGACY_PREFIX) === 0 &&
+        titre.indexOf('برنامج الدعم المباشر للسكن') !== -1;
+    });
+    if (anciennesQ2.length > 1) throw new Error('CONFIGURATION_MISSING');
+    if (anciennesQ2.length === 1) {
+      questions.q2 = anciennesQ2[0].asMultipleChoiceItem();
+      questions.q2.setTitle(MISE_A_JOUR_QUESTIONNAIRE.Q2_TITLE);
+      changementStructurel = true;
+    }
+  }
+
     questions.no_official_reason = trouverQuestionUniqueParTitre_(
       formulaire,
       FormApp.ItemType.MULTIPLE_CHOICE,
@@ -479,7 +500,9 @@ function garantirMiseAJourQuestionnaire_(formulaire, creerSiAbsent) {
     );
     if (!questions.no_official_reason) {
       const anciennesQ2b = formulaire.getItems(FormApp.ItemType.MULTIPLE_CHOICE).filter(function (item) {
-        return MISE_A_JOUR_QUESTIONNAIRE.NO_OFFICIAL_REASON_LEGACY_TITLES.indexOf(item.getTitle()) !== -1;
+        const titre = item.getTitle().trim();
+        const titreSansNumero = titre.replace(/^س2-ب\.\s*/, '');
+        return titreSansNumero.indexOf(MISE_A_JOUR_QUESTIONNAIRE.NO_OFFICIAL_REASON_LEGACY_PREFIX) === 0;
       });
       if (anciennesQ2b.length > 1) throw new Error('CONFIGURATION_MISSING');
       if (anciennesQ2b.length === 1) {
@@ -555,6 +578,7 @@ function garantirMiseAJourQuestionnaire_(formulaire, creerSiAbsent) {
 
     if (
       !questions.preferred_public_channel ||
+      !questions.q2 ||
       !questions.no_official_reason ||
       !questions.trust_general_common ||
       !questions.official_source_other_detail ||

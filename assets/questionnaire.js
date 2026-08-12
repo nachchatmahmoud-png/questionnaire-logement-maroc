@@ -59,7 +59,7 @@ const FAMILY_BENEFICIARY='استفاد أحد أفراد أسرتي من الب�
 const OFFICIAL_SOURCE_OTHER_ID='official_other';
 const EXTERNAL_SOURCE_OTHER_ID='external_other';
 const PUBLIC_CHANNEL_OTHER='وسيلة أخرى';
-const NO_OFFICIAL_REASON_OTHER='سبب آخر، يرجى التحديد: __________';
+const NO_OFFICIAL_REASON_OTHER='سبب آخر، يرجى التحديد:';
 const OTHER_CONTACT_CHANNEL='قناة رسمية أخرى';
 const beneficiary=()=>val('status')===PERSONAL_BENEFICIARY;
 const route=()=>val('q1')==='لا'?'g1':val('q2')==='لا'?'g2':'official';
@@ -179,7 +179,7 @@ function filters(){
   return h+`<div class="instruction-card compact"><p class="instruction-text">ستنتقلون بعد ذلك إلى قسم المعلومات العامة.</p></div>`;
  }
  if(val('q1')==='نعم'){
-  h+=radio('q2','س2. هل سبق لكم الاطلاع على معلومات حول برنامج الدعم المباشر للسكن عبر إحدى وسائل التواصل الرسمية للوزارة؟',['نعم','لا']);
+  h+=radio('q2','س2. هل سبق أن اطلعتم على معلومات حول برنامج الدعم المباشر للسكن من خلال إحدى القنوات الرسمية للوزارة؟',['نعم','لا']);
   if(val('q2')==='نعم'){
    let selected=selectedOfficialSources();
    h+=checks(officialSources,'من خلال أي من وسائل التواصل الرسمية التالية اطلعتم على معلومات حول البرنامج؟');
@@ -189,7 +189,7 @@ function filters(){
   if(val('q2')==='لا'){
    h+=checks(externalSources,'س2-أ. من خلال أي من المصادر التالية اطلعتم على معلومات حول البرنامج؟');
    if(val(EXTERNAL_SOURCE_OTHER_ID))h+=textField('external_other_detail','يرجى تحديد المصدر الآخر:','اكتبوا اسم المصدر الآخر');
-   h+=radio('no_official_reason','س2-ب. ما السبب الرئيسي لعدم اطلاعكم على معلومات حول البرنامج عبر القنوات الرسمية للوزارة أو للبرنامج؟',noOfficialReasons,true,'يرجى اختيار جواب واحد فقط.');
+   h+=radio('no_official_reason','س2-ب. ما السبب الرئيسي لعدم اطلاعكم على معلومات حول البرنامج عبر القنوات الرسمية للوزارة؟',noOfficialReasons,true,'يرجى اختيار جواب واحد فقط.');
    if(val('no_official_reason')===NO_OFFICIAL_REASON_OTHER)h+=textField('no_official_reason_other','يرجى تحديد السبب الآخر:','اكتبوا السبب الآخر');
   }
   if(val('q2'))h+=radio('status','س3. ما هي طبيعة علاقتكم الحالية ببرنامج الدعم المباشر للسكن؟',statuses);
