@@ -167,7 +167,7 @@ function steps(){
  return s;
 }
 function radio(id,label,options,required=true,help=''){return `<fieldset class="question-card"><legend>${esc(label)}${required?'<span class="required-mark"> *</span>':''}</legend>${help?`<p class="question-help instruction-text">${esc(help)}</p>`:''}<div class="standard-options">${options.map(o=>{let v=Array.isArray(o)?o[0]:o,t=Array.isArray(o)?o[1]:o;return `<label class="choice ${val(id)===v?'choice-selected':''}"><input type="radio" data-id="${esc(id)}" value="${esc(v)}" ${val(id)===v?'checked':''}><span>${esc(t)}</span></label>`}).join('')}</div></fieldset>`}
-function checks(items,instruction='يمكن اختيار أكثر من جواب.'){return `<fieldset class="question-card"><legend class="instruction-text">${instruction}</legend><div class="standard-options">${items.map(([id,t])=>`<label class="choice ${val(id)?'choice-selected':''}"><input type="checkbox" data-check="${id}" ${val(id)?'checked':''}><span>${esc(t)}</span></label>`).join('')}</div></fieldset>`}
+function checks(items,question,instruction='يمكن اختيار أكثر من جواب.'){return `<fieldset class="question-card"><legend>${esc(question)}</legend><p class="instruction-text">${esc(instruction)}</p><div class="standard-options">${items.map(([id,t])=>`<label class="choice ${val(id)?'choice-selected':''}"><input type="checkbox" data-check="${id}" ${val(id)?'checked':''}><span>${esc(t)}</span></label>`).join('')}</div></fieldset>`}
 function textField(id,label,placeholder){return `<fieldset class="question-card"><legend>${esc(label)} <span class="required-mark"> *</span></legend><input class="text-input" data-text="${esc(id)}" value="${esc(val(id))}" placeholder="${esc(placeholder)}"></fieldset>`}
 function scaleLegend(scale=SCALE){return `<div class="instruction-card"><strong class="instruction-text">يرجى تحديد درجة موافقتكم على العبارات التالية:</strong><div class="legend-grid">${scale.map(([n,t])=>`<span>${n===t?'':esc(n)+' — '}${esc(t)}</span>`).join('')}</div></div>`}
 function table(groups,scale=SCALE){return groups.map(([title,rows])=>`<section class="group-card"><div class="group-heading"><h3>${esc(title)}</h3></div><div class="likert-wrap"><table class="likert-table"><thead><tr><th>العبارة</th>${scale.map(([n,t])=>`<th title="${esc(t)}" aria-label="${esc(t)}">${esc(n)}</th>`).join('')}</tr></thead><tbody>${rows.map(([id,label])=>`<tr><td>${esc(label)}</td>${scale.map(([n,t])=>`<td><label data-label="${esc(t)}" aria-label="${esc(t)}"><input type="radio" data-id="${id}" value="${esc(n)}" ${val(id)===n?'checked':''}></label></td>`).join('')}</tr>`).join('')}</tbody></table></div></section>`).join('')}
@@ -182,12 +182,12 @@ function filters(){
   h+=radio('q2','س2. هل سبق لكم الاطلاع على معلومات حول برنامج الدعم المباشر للسكن عبر إحدى وسائل التواصل الرسمية للوزارة؟',['نعم','لا']);
   if(val('q2')==='نعم'){
    let selected=selectedOfficialSources();
-   h+=`<div class="group-card"><h3>من خلال أي من وسائل التواصل الرسمية التالية اطلعتم على معلومات حول البرنامج؟</h3>${checks(officialSources)}</div>`;
+   h+=checks(officialSources,'من خلال أي من وسائل التواصل الرسمية التالية اطلعتم على معلومات حول البرنامج؟');
    if(val(OFFICIAL_SOURCE_OTHER_ID))h+=textField('official_other_detail','يرجى تحديد المصدر الرسمي الآخر:','اكتبوا اسم المصدر الرسمي الآخر');
    if(selected.length>=2)h+=radio('sourcePrincipale','من بين وسائل التواصل الرسمية التي اخترتموها، ما هي الوسيلة الرئيسية التي اعتمدتم عليها للاطلاع على معلومات حول البرنامج؟',selected.map(([id,label])=>[officialSourceCodes[id],label]),true,'يرجى اختيار جواب واحد فقط.');
   }
   if(val('q2')==='لا'){
-   h+=`<div class="group-card"><h3>من خلال أي من المصادر التالية اطلعتم على معلومات حول البرنامج؟</h3>${checks(externalSources)}</div>`;
+   h+=checks(externalSources,'من خلال أي من المصادر التالية اطلعتم على معلومات حول البرنامج؟');
    if(val(EXTERNAL_SOURCE_OTHER_ID))h+=textField('external_other_detail','يرجى تحديد المصدر الآخر:','اكتبوا اسم المصدر الآخر');
    h+=radio('no_official_reason','ما السبب الرئيسي لعدم اطلاعكم على معلومات حول البرنامج عبر وسائل التواصل الرسمية للوزارة؟',noOfficialReasons,true,'يرجى اختيار جواب واحد فقط.');
    if(val('no_official_reason')===NO_OFFICIAL_REASON_OTHER)h+=textField('no_official_reason_other','يرجى تحديد السبب الآخر:','اكتبوا السبب الآخر');
