@@ -174,7 +174,7 @@ function table(groups,scale=SCALE){return groups.map(([title,rows])=>`<section c
 function filters(){
  let h=radio('q1','س1. هل سبق لكم أن سمعتم ببرنامج الدعم المباشر للسكن؟',['نعم','لا']);
  if(val('q1')==='لا'){
-  h+=radio('preferred_public_channel','عبر أي وسيلة تفضلون التوصل بمعلومات حول البرامج العمومية؟',publicCommunicationChannels,true,'يرجى اختيار الوسيلة المفضلة لديكم.');
+  h+=radio('preferred_public_channel','س1-أ. عبر أي وسيلة تفضلون التوصل بمعلومات حول البرامج العمومية؟',publicCommunicationChannels,true,'يرجى اختيار الوسيلة المفضلة لديكم.');
   if(val('preferred_public_channel')===PUBLIC_CHANNEL_OTHER)h+=textField('preferred_public_channel_other','يرجى تحديد الوسيلة الأخرى:','اكتبوا الوسيلة المفضلة لديكم');
   return h+`<div class="instruction-card compact"><p class="instruction-text">ستنتقلون بعد ذلك إلى قسم المعلومات العامة.</p></div>`;
  }
@@ -187,9 +187,9 @@ function filters(){
    if(selected.length>=2)h+=radio('sourcePrincipale','من بين وسائل التواصل الرسمية التي اخترتموها، ما هي الوسيلة الرئيسية التي اعتمدتم عليها للاطلاع على معلومات حول البرنامج؟',selected.map(([id,label])=>[officialSourceCodes[id],label]),true,'يرجى اختيار جواب واحد فقط.');
   }
   if(val('q2')==='لا'){
-   h+=checks(externalSources,'من خلال أي من المصادر التالية اطلعتم على معلومات حول البرنامج؟');
+   h+=checks(externalSources,'س2-أ. من خلال أي من المصادر التالية اطلعتم على معلومات حول البرنامج؟');
    if(val(EXTERNAL_SOURCE_OTHER_ID))h+=textField('external_other_detail','يرجى تحديد المصدر الآخر:','اكتبوا اسم المصدر الآخر');
-   h+=radio('no_official_reason','ما السبب الرئيسي لعدم اطلاعكم على معلومات حول البرنامج عبر وسائل التواصل الرسمية للوزارة؟',noOfficialReasons,true,'يرجى اختيار جواب واحد فقط.');
+   h+=radio('no_official_reason','س2-ب. ما السبب الرئيسي لعدم اطلاعكم على معلومات حول البرنامج عبر وسائل التواصل الرسمية للوزارة؟',noOfficialReasons,true,'يرجى اختيار جواب واحد فقط.');
    if(val('no_official_reason')===NO_OFFICIAL_REASON_OTHER)h+=textField('no_official_reason_other','يرجى تحديد السبب الآخر:','اكتبوا السبب الآخر');
   }
   if(val('q2'))h+=radio('status','س3. ما هي طبيعة علاقتكم الحالية ببرنامج الدعم المباشر للسكن؟',statuses);
