@@ -259,6 +259,7 @@ function creerReponseDepuisCharge_(formulaire, questionReference, submissionId, 
 
   const correspondance = obtenirCorrespondanceFormulaire_(formulaire);
   const chargeComplete = Object.assign({}, charge);
+  delete chargeComplete[String(questionReference.getId())];
   chargeComplete[obtenirEntryIdQuestion_(correspondance, questionReference)] = submissionId;
 
   Object.keys(chargeComplete).forEach(function (entryId) {
