@@ -1,7 +1,7 @@
 const GOOGLE_CLIENT_ID='285878510024-7dhdojiucp6ff20m2snuro018t70c6s5.apps.googleusercontent.com';
 const AUTH_BRIDGE_URL='https://script.google.com/macros/s/AKfycbzta5bsE3ImUaM-qNHnqXCv_qa2MjDmtRwnDXBjHi3tcmDXaxy3oVFIco_u-9gvq6ZK3A/exec';
 const AUTH_CHANNEL='questionnaire-logement-auth-v1';
-const SCHEMA_VERSION='2026-08-12-parcours-v4';
+const SCHEMA_VERSION='2026-08-12-parcours-v5';
 const ENTRY_COMMON={
  q1:'299895912',q2:'1225420672',age:'1577939573',gender:'2068308268',education:'1330802393',housing:'1373868444',residence:'865830704',professional:'1061681182',region:'861634292',country:'1099313147'
 };
@@ -384,10 +384,14 @@ async function submit(){
  addCommon('q1',val('q1'));
  if(val('q1')==='نعم')addCommon('q2',val('q2'));
  if(route()==='official'){
-  officialSources.forEach(([id,label])=>{if(val(id))add(ENTRY_OFFICIAL_SHARED.official_sources,id===OFFICIAL_SOURCE_OTHER_ID?String(val('official_other_detail')).trim():label);});
-  add(ENTRY_OFFICIAL_SHARED.source_principale,sourcePrincipaleLabel());
+  officialSources.forEach(([id,label])=>{if(val(id))add(ENTRY_OFFICIAL_SHARED.official_sources,label);});
+  if(val(OFFICIAL_SOURCE_OTHER_ID))supplemental.official_source_other_detail=String(val('official_other_detail')).trim();
+  add(ENTRY_OFFICIAL_SHARED.source_principale,val('sourcePrincipale')===officialSourceCodes[OFFICIAL_SOURCE_OTHER_ID]?'مصدر رسمي آخر':sourcePrincipaleLabel());
  }
- if(route()==='g2')externalSources.forEach(([id,label])=>{if(val(id))add(ENTRY_G2_SHARED.external_sources,id===EXTERNAL_SOURCE_OTHER_ID?String(val('external_other_detail')).trim():label);});
+ if(route()==='g2'){
+  externalSources.forEach(([id,label])=>{if(val(id))add(ENTRY_G2_SHARED.external_sources,label);});
+  if(val(EXTERNAL_SOURCE_OTHER_ID))supplemental.external_source_other_detail=String(val('external_other_detail')).trim();
+ }
  if(route()!=='g1')add(shared.status,val('status'));
  [
   'info_1','info_2','info_3','info_4','info_5','info_6','info_7','info_8','info_9','info_10','info_11','info_12','info_13','transparency_global',
@@ -404,7 +408,8 @@ async function submit(){
  if(route()!=='g1')supplemental.trust_general_common=scaleValue(val('trust_general_common'));
  if(route()!=='g1'){
   addKey('contact_reel',val('contact_reel'));
-  addKey('canal_dernier_contact',val('canal_dernier_contact')===OTHER_CONTACT_CHANNEL?String(val('contact_channel_other_detail')).trim():val('canal_dernier_contact'));
+  addKey('canal_dernier_contact',val('canal_dernier_contact'));
+  if(val('canal_dernier_contact')===OTHER_CONTACT_CHANNEL)supplemental.contact_channel_other_detail=String(val('contact_channel_other_detail')).trim();
   addKey('reponse_recue',val('reponse_recue'));
   quiz.forEach(([id])=>addKey(id,val(id)));
   addKey('suggestion',val('suggestion'));
