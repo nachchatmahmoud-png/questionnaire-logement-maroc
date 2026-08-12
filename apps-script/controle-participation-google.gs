@@ -1,21 +1,24 @@
 /**
- * Contrôle « un compte Google = une participation ».
+ * Contrôle « un compte Google = une participation » et confirmation d'envoi.
  *
  * Installation :
  * 1. Coller ce fichier dans le projet Apps Script associé au questionnaire.
  * 2. Exécuter installerControleParticipationGoogle() une seule fois.
- * 3. Déployer comme application Web : exécuter en tant que propriétaire,
+ * 3. Redéployer l'application Web : exécuter en tant que propriétaire,
  *    accès autorisé à « Tout le monde ».
- * 4. Reporter l'URL /exec dans AUTH_BRIDGE_URL du site.
+ * 4. Reporter l'URL /exec dans AUTH_BRIDGE_URL du site si elle a changé.
  *
- * Le code secret OAuth n'est jamais utilisé. L'adresse du propriétaire est
- * conservée dans les propriétés privées du script uniquement pour les tests.
+ * L'adresse Google n'est jamais enregistrée. Seule une empreinte salée et
+ * irréversible du compte est conservée dans la feuille technique masquée.
  */
 
 const CONTROLE_PARTICIPATION = Object.freeze({
   CLIENT_ID: '285878510024-7dhdojiucp6ff20m2snuro018t70c6s5.apps.googleusercontent.com',
   SPREADSHEET_ID: '1VcNjC6_eF-9GiKALC7lVvgE1q_F3RM6CJUcs4RKyt-Q',
+  RESPONSE_SHEET_NAME: 'Réponses au formulaire',
   SHEET_NAME: 'Contrôle participations',
+  SUBMISSION_ID_TITLE: 'مرجع تقني للتحقق من تسجيل الإجابة',
+  CONFIRMATION_WINDOW_MS: 30 * 60 * 1000,
   SITE_ORIGIN: 'https://nachchatmahmoud-png.github.io',
   CHANNEL: 'questionnaire-logement-auth-v1',
   TOKENINFO_URL: 'https://oauth2.googleapis.com/tokeninfo?id_token=',
@@ -23,17 +26,11 @@ const CONTROLE_PARTICIPATION = Object.freeze({
 
 /**
  * À exécuter manuellement une seule fois par le propriétaire du projet.
- * Crée la feuille technique, un sel privé et l'exception de test privée.
+ * Crée la feuille technique, le sel privé et la question de confirmation,
+ * puis active la limite native d'une réponse par compte Google.
  */
 function installerControleParticipationGoogle() {
   const proprietes = PropertiesService.getScriptProperties();
-  const adresseProprietaire = String(Session.getEffectiveUser().getEmail() || '')
-    .trim()
-    .toLowerCase();
-
-  if (!adresseProprietaire) {
-    throw new Error("Impossible d'identifier le propriétaire. Exécutez cette fonction depuis votre propre compte Google.");
-  }
 
   if (!proprietes.getProperty('PARTICIPATION_HASH_SALT')) {
     proprietes.setProperty(
@@ -42,14 +39,17 @@ function installerControleParticipationGoogle() {
     );
   }
 
-  // Cette adresse reste privée dans Apps Script et n'est jamais publiée sur GitHub.
-  proprietes.setProperty('PARTICIPATION_TEST_EMAIL', adresseProprietaire);
-
-  const feuille = obtenirFeuilleControle_();
+  const feuille = obtenirFeuilleControle_(true);
   protegerFeuilleControle_(feuille);
 
+  const formulaire = obtenirFormulaire_();
+  const questionReference = obtenirQuestionReferenceTechnique_(formulaire, true);
+  formulaire.setLimitOneResponsePerUser(true);
+  formulaire.setShowLinkToRespondAgain(false);
+
   console.log('CONTROLE_PARTICIPATION_INSTALLE: oui');
-  console.log('COMPTE_TEST_CONFIGURE: oui');
+  console.log('LIMITE_NATIVE_UNE_REPONSE: ' + formulaire.hasLimitOneResponsePerUser());
+  console.log('QUESTION_REFERENCE_ENTRY_ID: ' + questionReference.getId());
   console.log('NOM_FEUILLE_TECHNIQUE: ' + CONTROLE_PARTICIPATION.SHEET_NAME);
 }
 
@@ -67,8 +67,6 @@ function autoriserEtTesterServiceGoogle() {
   console.log('URL_FETCH_AUTORISE: oui');
   console.log('CODE_TEST_TOKENINFO: ' + code);
 
-  // Google doit refuser le faux jeton avec HTTP 400 : cela confirme que
-  // l'appel externe fonctionne et que l'autorisation est bien accordée.
   if (code !== 400) {
     throw new Error('Réponse inattendue du service Google Tokeninfo : ' + code);
   }
@@ -94,6 +92,7 @@ function doPost(e) {
     ? verifierParticipationGoogle({
         idToken: String(parametres.idToken || ''),
         action: String(parametres.action || ''),
+        submissionId: String(parametres.submissionId || ''),
       })
     : resultatRefus_('invalid_request');
 
@@ -115,16 +114,16 @@ function doPost(e) {
 }
 
 /**
- * Appelée uniquement par la page intermédiaire Apps Script.
- * action=check : vérifie si le compte peut participer.
- * action=claim : réserve définitivement la participation avant l'envoi du formulaire.
+ * action=check : vérifie le compte et renvoie l'identifiant du champ technique.
+ * action=confirm : confirme que Google Forms a réellement enregistré la réponse,
+ *                  puis marque le compte comme ayant participé.
  */
 function verifierParticipationGoogle(requete) {
   try {
     const action = String((requete && requete.action) || '');
     const jeton = String((requete && requete.idToken) || '');
 
-    if (action !== 'check' && action !== 'claim') {
+    if (action !== 'check' && action !== 'confirm') {
       return resultatRefus_('invalid_action');
     }
 
@@ -132,39 +131,57 @@ function verifierParticipationGoogle(requete) {
     if (!identite) {
       return resultatRefus_('reauthentication_required');
     }
-    const proprietes = PropertiesService.getScriptProperties();
-    const adresseTest = String(proprietes.getProperty('PARTICIPATION_TEST_EMAIL') || '')
-      .trim()
-      .toLowerCase();
-    const estCompteTest = Boolean(adresseTest) && identite.email === adresseTest;
 
-    if (estCompteTest) {
-      return { ok: true, allowed: true, exempt: true, reason: 'test_account' };
+    const formulaire = obtenirFormulaire_();
+    const questionReference = obtenirQuestionReferenceTechnique_(formulaire, false);
+    if (!questionReference || !formulaire.hasLimitOneResponsePerUser()) {
+      return resultatRefus_('configuration_error');
     }
 
     const empreinte = creerEmpreinteCompte_(identite.sub);
+    const feuille = obtenirFeuilleControle_();
+    const participation = lireParticipation_(feuille, empreinte);
+    const submissionEntryId = String(questionReference.getId());
 
     if (action === 'check') {
-      const dejaUtilise = participationExiste_(obtenirFeuilleControle_(), empreinte);
       return {
         ok: true,
-        allowed: !dejaUtilise,
+        allowed: !participation,
         exempt: false,
-        reason: dejaUtilise ? 'already_submitted' : 'eligible',
+        reason: participation ? 'already_submitted' : 'eligible',
+        submissionEntryId: submissionEntryId,
       };
+    }
+
+    const submissionId = String((requete && requete.submissionId) || '');
+    if (!/^[A-Za-z0-9_-]{16,128}$/.test(submissionId)) {
+      return resultatRefus_('invalid_submission_id');
     }
 
     const verrou = LockService.getScriptLock();
     verrou.waitLock(20000);
     try {
-      const feuille = obtenirFeuilleControle_();
-      if (participationExiste_(feuille, empreinte)) {
+      const participationVerrouillee = lireParticipation_(feuille, empreinte);
+      if (participationVerrouillee) {
+        if (participationVerrouillee.submissionId === submissionId) {
+          return {
+            ok: true,
+            allowed: true,
+            exempt: false,
+            reason: 'already_confirmed',
+          };
+        }
         return resultatRefus_('already_submitted');
       }
 
-      feuille.appendRow([empreinte, new Date()]);
+      const reponse = trouverReponseConfirmee_(formulaire, questionReference, submissionId);
+      if (!reponse) {
+        return resultatRefus_('submission_not_found');
+      }
+
+      feuille.appendRow([empreinte, new Date(), submissionId, String(reponse.getId() || '')]);
       SpreadsheetApp.flush();
-      return { ok: true, allowed: true, exempt: false, reason: 'claimed' };
+      return { ok: true, allowed: true, exempt: false, reason: 'confirmed' };
     } finally {
       verrou.releaseLock();
     }
@@ -213,10 +230,7 @@ function verifierJetonGoogle_(jeton) {
     return null;
   }
 
-  return {
-    sub: String(donnees.sub),
-    email: String(donnees.email || '').trim().toLowerCase(),
-  };
+  return { sub: String(donnees.sub) };
 }
 
 function creerEmpreinteCompte_(sub) {
@@ -231,16 +245,61 @@ function creerEmpreinteCompte_(sub) {
   return Utilities.base64EncodeWebSafe(octets).replace(/=+$/g, '');
 }
 
-function obtenirFeuilleControle_() {
+function obtenirFormulaire_() {
+  const classeur = SpreadsheetApp.openById(CONTROLE_PARTICIPATION.SPREADSHEET_ID);
+  const feuilleReponses = classeur.getSheetByName(CONTROLE_PARTICIPATION.RESPONSE_SHEET_NAME);
+  const formUrl = feuilleReponses && feuilleReponses.getFormUrl();
+  if (!formUrl) throw new Error('CONFIGURATION_MISSING');
+  return FormApp.openByUrl(formUrl);
+}
+
+function obtenirQuestionReferenceTechnique_(formulaire, creerSiAbsente) {
+  const questions = formulaire.getItems(FormApp.ItemType.TEXT);
+  for (let i = 0; i < questions.length; i += 1) {
+    if (questions[i].getTitle() === CONTROLE_PARTICIPATION.SUBMISSION_ID_TITLE) {
+      return questions[i].asTextItem();
+    }
+  }
+
+  if (!creerSiAbsente) return null;
+  return formulaire
+    .addTextItem()
+    .setTitle(CONTROLE_PARTICIPATION.SUBMISSION_ID_TITLE)
+    .setHelpText('حقل تقني يُملأ تلقائيًا من موقع الاستبيان للتحقق من تسجيل الإجابة.')
+    .setRequired(false);
+}
+
+function trouverReponseConfirmee_(formulaire, questionReference, submissionId) {
+  const depuis = new Date(Date.now() - CONTROLE_PARTICIPATION.CONFIRMATION_WINDOW_MS);
+  const reponses = formulaire.getResponses(depuis);
+
+  for (let i = reponses.length - 1; i >= 0; i -= 1) {
+    const reponseQuestion = reponses[i].getResponseForItem(questionReference);
+    if (reponseQuestion && String(reponseQuestion.getResponse() || '') === submissionId) {
+      return reponses[i];
+    }
+  }
+  return null;
+}
+
+function obtenirFeuilleControle_(mettreAJourEntetes) {
   const classeur = SpreadsheetApp.openById(CONTROLE_PARTICIPATION.SPREADSHEET_ID);
   let feuille = classeur.getSheetByName(CONTROLE_PARTICIPATION.SHEET_NAME);
+  let feuilleCreee = false;
 
   if (!feuille) {
     feuille = classeur.insertSheet(CONTROLE_PARTICIPATION.SHEET_NAME);
-    feuille.getRange(1, 1, 1, 2).setValues([
-      ['Empreinte anonyme du compte', 'Date de participation'],
-    ]);
     feuille.setFrozenRows(1);
+    feuilleCreee = true;
+  }
+
+  if (feuilleCreee || mettreAJourEntetes) {
+    feuille.getRange(1, 1, 1, 4).setValues([[
+      'Empreinte anonyme du compte',
+      'Date de participation',
+      "Identifiant technique de l'envoi",
+      'Identifiant de la réponse Google Forms',
+    ]]);
   }
 
   if (!feuille.isSheetHidden()) feuille.hideSheet();
@@ -255,17 +314,22 @@ function protegerFeuilleControle_(feuille) {
   protection.setWarningOnly(true);
 }
 
-function participationExiste_(feuille, empreinte) {
+function lireParticipation_(feuille, empreinte) {
   const derniereLigne = feuille.getLastRow();
-  if (derniereLigne < 2) return false;
+  if (derniereLigne < 2) return null;
 
-  return Boolean(
-    feuille
-      .getRange(2, 1, derniereLigne - 1, 1)
-      .createTextFinder(empreinte)
-      .matchEntireCell(true)
-      .findNext()
-  );
+  const cellule = feuille
+    .getRange(2, 1, derniereLigne - 1, 1)
+    .createTextFinder(empreinte)
+    .matchEntireCell(true)
+    .findNext();
+  if (!cellule) return null;
+
+  const valeurs = feuille.getRange(cellule.getRow(), 1, 1, 4).getValues()[0];
+  return {
+    submissionId: String(valeurs[2] || ''),
+    responseId: String(valeurs[3] || ''),
+  };
 }
 
 function resultatRefus_(raison) {
