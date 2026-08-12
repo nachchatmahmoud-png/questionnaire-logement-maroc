@@ -1,7 +1,7 @@
 const FORM_ACTION='https://docs.google.com/forms/d/e/1FAIpQLSfIOkBS04JQVuTRE0npIB6QOJ6UPg0ckoBTqAdLG9PT3yUOkA/formResponse';
 const FORM_PUBLIC_URL='https://docs.google.com/forms/d/e/1FAIpQLSfIOkBS04JQVuTRE0npIB6QOJ6UPg0ckoBTqAdLG9PT3yUOkA/viewform';
 const GOOGLE_CLIENT_ID='285878510024-7dhdojiucp6ff20m2snuro018t70c6s5.apps.googleusercontent.com';
-const AUTH_BRIDGE_URL='https://script.google.com/macros/s/AKfycbxmwpYfo8bhwBmPPsKrIsqIfW4DQUxOxrwYavWgojHvLzR0e-TDK-DQj7t3LNeODRSv/exec';
+const AUTH_BRIDGE_URL='https://script.google.com/macros/s/AKfycbzta5bsE3ImUaM-qNHnqXCv_qa2MjDmtRwnDXBjHi3tcmDXaxy3oVFIco_u-9gvq6ZK3A/exec';
 const AUTH_CHANNEL='questionnaire-logement-auth-v1';
 const SCHEMA_VERSION='2026-08-11-comprehension-v3';
 const ENTRY_COMMON={
@@ -50,8 +50,8 @@ const ENTRY_OFFICIAL_OTHER={
  impact_general_1:'157757540',impact_general_2:'222082286',impact_general_3:'50030157',success_global:'1505158683',suggestion:'217452855'
 };
 const SCALE=[['1','لا أوافق إطلاقًا'],['2','لا أوافق'],['3','لا أوافق ولا أعارض'],['4','أوافق'],['5','أوافق تمامًا']];
-const state={a:{},step:'filters',intro:true,error:'',sending:false,done:false};
-const auth={allowed:false,idToken:'',checking:false,blocked:false,error:'',gisReady:false};
+const state={a:{},step:'filters',intro:true,error:'',sending:false,done:false,pendingSubmissionId:''};
+const auth={allowed:false,idToken:'',checking:false,blocked:false,error:'',gisReady:false,submissionEntryId:''};
 const authRequests=new Map();
 const $=s=>document.querySelector(s); const esc=(s='')=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const val=id=>state.a[id]??''; const set=(id,v)=>{state.a[id]=v;state.error='';};
@@ -244,12 +244,13 @@ async function handleGoogleCredential(response){
  auth.checking=true;auth.error='';auth.blocked=false;render();
  try{
   const resultat=await callAuthBridge('check',jeton);
-  if(resultat?.allowed){auth.allowed=true;auth.idToken=jeton;auth.blocked=false;auth.error='';}
-  else{auth.allowed=false;auth.idToken='';auth.blocked=resultat?.reason==='already_submitted';auth.error=auth.blocked?'':'تعذر تأكيد صلاحية الحساب. يرجى إعادة المحاولة.';}
- }catch(_){auth.allowed=false;auth.idToken='';auth.error='تعذر الاتصال بخدمة التحقق. يرجى إعادة المحاولة بعد لحظات.';}
+  const entryId=String(resultat?.submissionEntryId||'');
+  if(resultat?.allowed&&/^\d+$/.test(entryId)){auth.allowed=true;auth.idToken=jeton;auth.submissionEntryId=entryId;auth.blocked=false;auth.error='';}
+  else{auth.allowed=false;auth.idToken='';auth.submissionEntryId='';auth.blocked=resultat?.reason==='already_submitted';auth.error=auth.blocked?'':resultat?.reason==='configuration_error'?'خدمة الإرسال قيد الإعداد. يرجى المحاولة لاحقًا.':'تعذر تأكيد صلاحية الحساب. يرجى إعادة المحاولة.';}
+ }catch(_){auth.allowed=false;auth.idToken='';auth.submissionEntryId='';auth.error='تعذر الاتصال بخدمة التحقق. يرجى إعادة المحاولة بعد لحظات.';}
  finally{auth.checking=false;render();}
 }
-function callAuthBridge(action,idToken){
+function callAuthBridge(action,idToken,extra={}){
  const requestId=authRequestId();
  return new Promise((resolve,reject)=>{
   const frame=document.createElement('iframe');
@@ -266,6 +267,7 @@ function callAuthBridge(action,idToken){
   form.style.display='none';
   const add=(name,value)=>{const input=document.createElement('input');input.type='hidden';input.name=name;input.value=value;form.appendChild(input);};
   add('requestId',requestId);add('action',action);add('idToken',idToken);
+  Object.entries(extra).forEach(([name,value])=>add(name,String(value??'')));
   const cleanup=()=>{form.remove();frame.remove();};
   const timer=setTimeout(()=>{authRequests.delete(requestId);cleanup();reject(new Error('request_timeout'));},25000);
   authRequests.set(requestId,{resolve:result=>{clearTimeout(timer);cleanup();resolve(result);}});
@@ -284,22 +286,48 @@ window.addEventListener('message',event=>{
   pending.resolve(message.result||{ok:false,allowed:false,reason:'server_error'});
  }
 });
+const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+async function confirmSubmission(submissionId){
+ let lastResult={ok:false,allowed:false,reason:'submission_not_found'};
+ for(let attempt=0;attempt<6;attempt+=1){
+  if(attempt)await wait(900+attempt*700);
+  try{lastResult=await callAuthBridge('confirm',auth.idToken,{submissionId});}
+  catch(_){if(attempt===5)throw _;continue;}
+  if(lastResult?.allowed||lastResult?.reason!=='submission_not_found')return lastResult;
+ }
+ return lastResult;
+}
+function handleSubmissionRefusal(resultat){
+ state.sending=false;
+ if(resultat?.reason==='already_submitted'){
+  auth.allowed=false;auth.idToken='';auth.submissionEntryId='';auth.blocked=true;auth.error='';render();return;
+ }
+ if(resultat?.reason==='reauthentication_required'){
+  auth.allowed=false;auth.idToken='';auth.submissionEntryId='';auth.blocked=false;auth.error='انتهت جلسة تسجيل الدخول. يرجى تسجيل الدخول مجددًا، وستبقى إجاباتكم محفوظة في هذه الصفحة.';render();return;
+ }
+ state.error=state.pendingSubmissionId
+  ?'لم يؤكد Google Forms تسجيل الإجابات بعد. لم نعرض رسالة نجاح. اضغطوا على زر التحقق مرة أخرى، وستبقى إجاباتكم محفوظة.'
+  :'تعذر تأكيد صلاحية الحساب. لم تُرسل إجاباتكم، ويمكنكم إعادة المحاولة.';
+ render();
+}
 async function submit(){
  if(!valid())return render();
  state.sending=true;render();
- let autorisation;
- try{autorisation=await callAuthBridge('claim',auth.idToken);}
- catch(_){state.sending=false;state.error='تعذر التحقق من المشاركة قبل الإرسال. لم تُرسل إجاباتكم، ويمكنكم إعادة المحاولة.';render();return;}
- if(!autorisation?.allowed){
-  state.sending=false;
-  if(autorisation?.reason==='already_submitted'){
-   auth.allowed=false;auth.idToken='';auth.blocked=true;auth.error='';render();return;
-  }
-  if(autorisation?.reason==='reauthentication_required'){
-   auth.allowed=false;auth.idToken='';auth.blocked=false;auth.error='انتهت جلسة تسجيل الدخول. يرجى تسجيل الدخول مجددًا، وستبقى إجاباتكم محفوظة في هذه الصفحة.';render();return;
-  }
-  state.error='تعذر تأكيد صلاحية الحساب. لم تُرسل إجاباتكم، ويمكنكم إعادة المحاولة.';render();return;
+ if(state.pendingSubmissionId){
+  try{
+   const confirmation=await confirmSubmission(state.pendingSubmissionId);
+   if(confirmation?.allowed){state.pendingSubmissionId='';state.done=true;state.sending=false;state.error='';render();return;}
+   handleSubmissionRefusal(confirmation);return;
+  }catch(_){state.sending=false;state.error='تعذر الاتصال بخدمة التأكيد. لم نعرض رسالة نجاح، ويمكنكم التحقق مجددًا دون فقدان إجاباتكم.';render();return;}
  }
+ let autorisation;
+ try{autorisation=await callAuthBridge('check',auth.idToken);}
+ catch(_){state.sending=false;state.error='تعذر التحقق من المشاركة قبل الإرسال. لم تُرسل إجاباتكم، ويمكنكم إعادة المحاولة.';render();return;}
+ const entryId=String(autorisation?.submissionEntryId||'');
+ if(!autorisation?.allowed||!/^\d+$/.test(entryId)){handleSubmissionRefusal(autorisation);return;}
+ auth.submissionEntryId=entryId;
+ const submissionId=authRequestId().replace(/-/g,'');
+ state.pendingSubmissionId=submissionId;
  let form=document.createElement('form');form.method='POST';form.action=FORM_ACTION;form.target='google-form-response';form.style.display='none';
  let add=(id,v)=>{if(!id||v===undefined||v===null||v==='')return;let i=document.createElement('input');i.name='entry.'+id;i.value=v;form.appendChild(i)};
  let addRaw=(name,v)=>{let i=document.createElement('input');i.name=name;i.value=v;form.appendChild(i)};
@@ -333,6 +361,7 @@ async function submit(){
   addKey('suggestion',val('suggestion'));
  }
  ['age','gender','education','housing','residence','region','country','professional'].forEach(k=>addCommon(k,val(k)));
+ add(auth.submissionEntryId,submissionId);
  let pages=[0];
  if(routeName==='g1')pages.push(46);
  if(routeName==='g2_beneficiary'){
@@ -358,14 +387,21 @@ async function submit(){
  pages.push(val('residence')==='داخل المغرب'?47:48);
  addRaw('fvv','1');
  addRaw('pageHistory',pages.join(','));
- let completed=false;
- let finish=()=>{if(completed)return;completed=true;state.done=true;state.sending=false;render();};
  let responseFrame=document.querySelector('iframe[name="google-form-response"]');
- if(responseFrame)responseFrame.addEventListener('load',finish,{once:true});
+ const frameLoaded=new Promise(resolve=>{
+  const timer=setTimeout(resolve,6000);
+  if(responseFrame)responseFrame.addEventListener('load',()=>{clearTimeout(timer);resolve();},{once:true});
+ });
  document.body.appendChild(form);form.submit();
- setTimeout(finish,8000);
+ await frameLoaded;
+ form.remove();
+ try{
+  const confirmation=await confirmSubmission(submissionId);
+  if(confirmation?.allowed){state.pendingSubmissionId='';state.done=true;state.sending=false;state.error='';render();return;}
+  handleSubmissionRefusal(confirmation);
+ }catch(_){state.sending=false;state.error='تعذر الاتصال بخدمة التأكيد. لم نعرض رسالة نجاح، ويمكنكم التحقق مجددًا دون فقدان إجاباتكم.';render();}
 }
-function nav(){let ss=steps(),i=ss.indexOf(state.step);return `<nav class="form-actions">${i>0?'<button class="secondary-button" id="prev" type="button">السابق</button>':'<span></span>'}${i<ss.length-1?'<button class="primary-button" id="next" type="button">التالي</button>':`<button class="primary-button submit-button" id="submit" type="button" ${state.sending?'disabled':''}>${state.sending?'جارٍ إرسال الإجابات…':'إرسال الإجابات'}</button>`}</nav>`;}
+function nav(){let ss=steps(),i=ss.indexOf(state.step),label=state.sending?'جارٍ التحقق من تسجيل الإجابات…':state.pendingSubmissionId?'التحقق من تسجيل الإجابات':'إرسال الإجابات';return `<nav class="form-actions">${i>0?'<button class="secondary-button" id="prev" type="button">السابق</button>':'<span></span>'}${i<ss.length-1?'<button class="primary-button" id="next" type="button">التالي</button>':`<button class="primary-button submit-button" id="submit" type="button" ${state.sending?'disabled':''}>${label}</button>`}</nav>`;}
 function render(){if(!auth.allowed){renderAuthGate();return;}if(state.done){$('#root').innerHTML=`<main class="site-shell" dir="rtl"><section class="success-card"><div class="success-icon">✓</div><p class="eyebrow">نهاية الاستبيان</p><h1>شكرًا جزيلًا على مشاركتكم</h1><p>تم تسجيل إجاباتكم بنجاح، ولن تُستعمل إلا لأغراض البحث العلمي.</p></section></main>`;return;}let ss=steps(),i=Math.max(ss.indexOf(state.step),0),pct=(i+1)/ss.length*100,title=currentStepTitle(state.step);$('#root').innerHTML=`<main class="site-shell" dir="rtl"><header class="hero"><div class="hero-accent"></div><p class="eyebrow">بحث أكاديمي بسلك الدكتوراه</p><h1>استبيان حول التواصل العمومي المرتبط ببرنامج الدعم المباشر للسكن</h1><p class="hero-lead"><span class="hero-lead-desktop">في إطار إعداد بحث أكاديمي بسلك الدكتوراه، أضع بين أيديكم هذا الاستبيان، الذي يندرج ضمن دراسة حول التواصل العمومي المرتبط ببرنامج الدعم المباشر للسكن.</span><span class="hero-lead-mobile">ندعوكم للمشاركة في هذا الاستبيان الأكاديمي حول التواصل العمومي المرتبط ببرنامج الدعم المباشر للسكن.</span></p><div class="privacy-note"><span>◉</span><p>جميع الأجوبة سرية، ولن تُستعمل إلا لأغراض البحث العلمي.</p></div><button class="intro-toggle" id="intro-toggle" type="button">${state.intro?'إخفاء مقدمة الاستبيان':'عرض مقدمة الاستبيان'} <span>${state.intro?'−':'+'}</span></button>${state.intro?`<div class="intro-copy"><p>وتكتسي مشاركتكم أهمية كبيرة، لما ستوفره من معطيات أساسية تسهم في إغناء هذا البحث وتعزيز نتائجه من الناحية العلمية. لذلك، نرجو منكم الإجابة عن الأسئلة بكل موضوعية ودقة.</p><details><summary>توضيحات</summary><div class="definition-list"><p><strong>الوزارة:</strong> وزارة إعداد التراب الوطني والتعمير والإسكان وسياسة المدينة.</p><p><strong>وسائل التواصل الرسمية للوزارة:</strong> يقصد بها مجموع القنوات والوسائط التي تعتمدها الوزارة رسمياً للتواصل العمومي بشأن برنامج الدعم المباشر للسكن، سواء لنشر المعلومات المتعلقة بأهدافه وشروط الاستفادة منه وإجراءاته ومستجداته، أو لتيسير الولوج إلى المعطيات والخدمات المرتبطة به. وتشمل، على الخصوص، الموقع الإلكتروني للوزارة، ومنصة «دعم سكن» وتطبيقها، والحسابات الرسمية على شبكات التواصل الاجتماعي، والبلاغات والمنشورات الرسمية. ولا تفترض هذه الوسائل، بالضرورة، إتاحة تواصل مباشر بين المواطن والوزارة.</p><p><strong>وسائل التواصل الرسمية التي تتيح التفاعل:</strong> يقصد بها القنوات الرسمية التي تمكّن المواطنين من التواصل مع الوزارة بشأن برنامج الدعم المباشر للسكن، من خلال توجيه الاستفسارات وطلب التوضيحات وتقديم الملاحظات أو المقترحات أو الشكايات، مع إمكانية تلقي جواب أو تتبع مآل الطلبات والشكايات المقدمة. وتشمل، على الخصوص، خدمات التواصل والمساعدة عبر منصة «دعم سكن» وتطبيقها، والبريد الإلكتروني ورقم المساعدة المخصصين للبرنامج، والبوابة الوطنية للشكايات، وخدمات المراسلة عبر الحسابات الرسمية للوزارة على شبكات التواصل الاجتماعي.</p></div></details></div>`:''}</header><section class="progress-panel"><div class="progress-copy"><span>المرحلة ${i+1}</span><strong>${esc(title)}</strong><span dir="ltr">${i+1} / ${ss.length}</span></div><div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div></section><section id="questionnaire-form" class="form-section"><div class="section-heading"><p>الاستبيان</p><h2>${esc(title)}</h2></div>${state.error?`<div class="error-message" role="alert">${esc(state.error)}</div>`:''}${section()}${nav()}</section><iframe name="google-form-response" class="submission-frame" title="إرسال الاستبيان"></iframe><footer><p>شكرًا لتعاونكم ومساهمتكم في هذا البحث العلمي.</p></footer></main>`;bind();}
 function bind(){document.querySelectorAll('input[type=radio][data-id]').forEach(x=>x.onchange=()=>{let id=x.dataset.id;set(id,x.value);if(id==='q1'&&x.value!=='نعم')del('q2','status','sourcePrincipale',...officialSources.map(z=>z[0]),...externalSources.map(z=>z[0]));if(id==='q2'){del('status','sourcePrincipale');if(x.value==='نعم')del(...externalSources.map(z=>z[0]));else del(...officialSources.map(z=>z[0]));}if(id==='status'&&!beneficiary())del(...G.satisfaction[0][1].map(r=>r[0]),...G.personalImpact[0][1].map(r=>r[0]));if(id==='contact_reel'&&x.value==='لا')del('canal_dernier_contact','reponse_recue',...G.response[0][1].map(r=>r[0]));if(id==='reponse_recue'&&x.value==='لا')del(...G.response[0][1].map(r=>r[0]));if(id==='residence'){if(x.value==='داخل المغرب')del('country');else del('region');}render();});document.querySelectorAll('input[type=checkbox][data-check]').forEach(x=>x.onchange=()=>{let id=x.dataset.check;set(id,x.checked?'1':'');if(officialSourceCodes[id])reconcileSourcePrincipale();render();});let s=$('#suggestion');if(s)s.oninput=()=>set('suggestion',s.value);let r=$('#region-select');if(r)r.onchange=()=>{set('region',r.value);render();};let c=$('#country-input');if(c)c.oninput=()=>set('country',c.value);let it=$('#intro-toggle');if(it)it.onclick=()=>{state.intro=!state.intro;render();};let n=$('#next');if(n)n.onclick=()=>{if(!valid())return render();let ss=steps(),i=ss.indexOf(state.step);state.step=ss[i+1];state.error='';render();scrollToForm();};let p=$('#prev');if(p)p.onclick=()=>{let ss=steps(),i=ss.indexOf(state.step);state.step=ss[i-1];state.error='';render();scrollToForm();};let sub=$('#submit');if(sub)sub.onclick=submit;}
 function scrollToForm(){requestAnimationFrame(()=>$('#questionnaire-form')?.scrollIntoView({behavior:'smooth',block:'start'}));}
