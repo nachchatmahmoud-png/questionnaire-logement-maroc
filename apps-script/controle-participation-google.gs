@@ -25,6 +25,39 @@ const CONTROLE_PARTICIPATION = Object.freeze({
   ENTRY_ITEM_MAP_PROPERTY: 'FORM_ENTRY_ITEM_MAP_V1',
   PROVENANCE_SECRET_PROPERTY: 'FORM_SUBMISSION_PROVENANCE_SECRET_V1',
   PROVENANCE_TRIGGER_HANDLER: 'rejeterSoumissionDirecteNonAutorisee',
+  QUESTIONNAIRE_UPDATE_PROPERTY: 'QUESTIONNAIRE_UPDATE_20260812_V1',
+});
+
+const MISE_A_JOUR_QUESTIONNAIRE = Object.freeze({
+  PREFERRED_CHANNEL_TITLE: 'عبر أي وسيلة تفضلون التوصل بمعلومات حول البرامج العمومية؟',
+  PREFERRED_CHANNEL_CHOICES: [
+    'التلفزيون أو الإذاعة',
+    'المواقع الإلكترونية الرسمية للإدارات والمؤسسات العمومية',
+    'الصفحات والحسابات الرسمية على شبكات التواصل الاجتماعي',
+    'الصحافة الإلكترونية أو الورقية',
+    'اللقاءات أو الحملات التواصلية الميدانية',
+  ],
+  NO_OFFICIAL_REASON_TITLE: 'ما السبب الرئيسي لعدم اطلاعكم على معلومات حول البرنامج عبر وسائل التواصل الرسمية للوزارة؟',
+  NO_OFFICIAL_REASON_CHOICES: [
+    'لم أكن أعرف وسائل التواصل الرسمية للوزارة.',
+    'لم أبحث عن معلومات حول البرنامج عبر هذه الوسائل.',
+    'اعتمدت على مصادر أخرى بدت لي كافية.',
+    'واجهت صعوبة في الوصول إلى وسائل التواصل الرسمية.',
+    'لم أجد المعلومات التي كنت أبحث عنها عبر هذه الوسائل.',
+    'لا أستخدم هذه الوسائل عادةً.',
+  ],
+  TRUST_COMMON_TITLE: 'الثقة العامة المشتركة بين مسارات الاستبيان',
+  TRUST_COMMON_ROW: 'بصفة عامة، أثق في الوزارة فيما يتعلق بتدبير برنامج الدعم المباشر للسكن.',
+  LIKERT_COLUMNS: [
+    '1 — لا أوافق إطلاقًا',
+    '2 — لا أوافق',
+    '3 — لا أوافق ولا أعارض',
+    '4 — أوافق',
+    '5 — أوافق تمامًا',
+  ],
+  OFFICIAL_SOURCES_TITLE: 'من خلال أي من وسائل التواصل الرسمية التالية اطلعتم على معلومات حول البرنامج؟',
+  EXTERNAL_SOURCES_TITLE: 'من خلال أي من المصادر التالية اطلعتم على معلومات حول البرنامج؟',
+  PRIMARY_SOURCE_TITLE: 'من بين وسائل التواصل الرسمية التي اخترتموها، ما هي الوسيلة الرئيسية التي اعتمدتم عليها للاطلاع على معلومات حول البرنامج؟',
 });
 
 /**
@@ -53,6 +86,7 @@ function installerControleParticipationGoogle() {
 
   const formulaire = obtenirFormulaire_();
   const questionReference = obtenirQuestionReferenceTechnique_(formulaire, true);
+  garantirMiseAJourQuestionnaire_(formulaire, true);
   const correspondance = actualiserCorrespondanceFormulaire_(formulaire);
   formulaire.setLimitOneResponsePerUser(true);
   formulaire.setShowLinkToRespondAgain(false);
@@ -66,6 +100,19 @@ function installerControleParticipationGoogle() {
   );
   console.log('NOM_FEUILLE_TECHNIQUE: ' + CONTROLE_PARTICIPATION.SHEET_NAME);
   console.log('CONTROLE_ORIGINE_SOUMISSION: actif');
+}
+
+/**
+ * À exécuter manuellement si l'on souhaite préparer les nouveaux champs avant
+ * la première participation. Le backend effectue aussi cette opération de
+ * manière idempotente lors de la première vérification après redéploiement.
+ */
+function installerMiseAJourQuestionnaire20260812() {
+  const formulaire = obtenirFormulaire_();
+  garantirMiseAJourQuestionnaire_(formulaire, true);
+  const correspondance = actualiserCorrespondanceFormulaire_(formulaire);
+  console.log('MISE_A_JOUR_QUESTIONNAIRE_20260812: oui');
+  console.log('CORRESPONDANCE_ENTRY_ITEM_ACTUALISEE: ' + Object.keys(correspondance).length);
 }
 
 /**
@@ -109,6 +156,8 @@ function doPost(e) {
         action: String(parametres.action || ''),
         submissionId: String(parametres.submissionId || ''),
         payload: String(parametres.payload || ''),
+        supplemental: String(parametres.supplemental || ''),
+        schemaVersion: String(parametres.schemaVersion || ''),
       })
     : resultatRefus_('invalid_request');
 
@@ -150,6 +199,7 @@ function verifierParticipationGoogle(requete) {
     }
 
     const formulaire = obtenirFormulaire_();
+    garantirMiseAJourQuestionnaire_(formulaire, true);
     const questionReference = obtenirQuestionReferenceTechnique_(formulaire, false);
     if (!questionReference || !formulaire.hasLimitOneResponsePerUser()) {
       return resultatRefus_('configuration_error');
@@ -195,11 +245,21 @@ function verifierParticipationGoogle(requete) {
       let reponse = trouverReponseConfirmee_(formulaire, questionReference, submissionId);
       if (!reponse && action === 'submit') {
         const charge = parserChargeReponses_(String((requete && requete.payload) || ''));
+        const supplementaires = parserReponsesSupplementaires_(
+          String((requete && requete.supplemental) || '')
+        );
+        if (
+          String((requete && requete.schemaVersion) || '') === '2026-08-12-parcours-v4' &&
+          !Object.keys(supplementaires).length
+        ) {
+          throw new Error('INVALID_ANSWERS');
+        }
         reponse = creerReponseDepuisCharge_(
           formulaire,
           questionReference,
           submissionId,
-          charge
+          charge,
+          supplementaires
         );
       }
       if (!reponse) return resultatRefus_('submission_not_found');
@@ -258,7 +318,37 @@ function parserChargeReponses_(texte) {
   return charge;
 }
 
-function creerReponseDepuisCharge_(formulaire, questionReference, submissionId, charge) {
+function parserReponsesSupplementaires_(texte) {
+  if (!texte) return {};
+  if (texte.length > 12000) throw new Error('INVALID_ANSWERS');
+
+  let donnees;
+  try {
+    donnees = JSON.parse(texte);
+  } catch (_) {
+    throw new Error('INVALID_ANSWERS');
+  }
+  if (!donnees || Array.isArray(donnees) || typeof donnees !== 'object') {
+    throw new Error('INVALID_ANSWERS');
+  }
+
+  const autorisees = {
+    preferred_public_channel: true,
+    no_official_reason: true,
+    trust_general_common: true,
+  };
+  const resultat = {};
+  Object.keys(donnees).forEach(function (cle) {
+    if (!autorisees[cle]) throw new Error('INVALID_ANSWERS');
+    const valeur = String(donnees[cle] == null ? '' : donnees[cle]).trim();
+    if (!valeur || valeur.length > 500) throw new Error('INVALID_ANSWERS');
+    resultat[cle] = valeur;
+  });
+  if (!Object.keys(resultat).length) throw new Error('INVALID_ANSWERS');
+  return resultat;
+}
+
+function creerReponseDepuisCharge_(formulaire, questionReference, submissionId, charge, supplementaires) {
   const reponse = formulaire.createResponse();
   const items = formulaire.getItems();
   const itemsParId = {};
@@ -336,7 +426,197 @@ function creerReponseDepuisCharge_(formulaire, questionReference, submissionId, 
     }
   });
 
+  ajouterReponsesSupplementaires_(reponse, formulaire, supplementaires || {});
+
   return reponse.submit();
+}
+
+function garantirMiseAJourQuestionnaire_(formulaire, creerSiAbsent) {
+  const verrou = LockService.getScriptLock();
+  verrou.waitLock(20000);
+  try {
+    let changementStructurel = false;
+    const questions = {};
+
+    questions.preferred_public_channel = trouverQuestionUniqueParTitre_(
+      formulaire,
+      FormApp.ItemType.MULTIPLE_CHOICE,
+      MISE_A_JOUR_QUESTIONNAIRE.PREFERRED_CHANNEL_TITLE
+    );
+    if (!questions.preferred_public_channel && creerSiAbsent) {
+      questions.preferred_public_channel = formulaire.addMultipleChoiceItem();
+      questions.preferred_public_channel.setTitle(
+        MISE_A_JOUR_QUESTIONNAIRE.PREFERRED_CHANNEL_TITLE
+      );
+      changementStructurel = true;
+    }
+    if (questions.preferred_public_channel) {
+      configurerQuestionChoixUnique_(
+        questions.preferred_public_channel,
+        MISE_A_JOUR_QUESTIONNAIRE.PREFERRED_CHANNEL_CHOICES
+      );
+    }
+
+    questions.no_official_reason = trouverQuestionUniqueParTitre_(
+      formulaire,
+      FormApp.ItemType.MULTIPLE_CHOICE,
+      MISE_A_JOUR_QUESTIONNAIRE.NO_OFFICIAL_REASON_TITLE
+    );
+    if (!questions.no_official_reason && creerSiAbsent) {
+      questions.no_official_reason = formulaire.addMultipleChoiceItem();
+      questions.no_official_reason.setTitle(
+        MISE_A_JOUR_QUESTIONNAIRE.NO_OFFICIAL_REASON_TITLE
+      );
+      changementStructurel = true;
+    }
+    if (questions.no_official_reason) {
+      configurerQuestionChoixUnique_(
+        questions.no_official_reason,
+        MISE_A_JOUR_QUESTIONNAIRE.NO_OFFICIAL_REASON_CHOICES
+      );
+    }
+
+    questions.trust_general_common = trouverQuestionUniqueParTitre_(
+      formulaire,
+      FormApp.ItemType.GRID,
+      MISE_A_JOUR_QUESTIONNAIRE.TRUST_COMMON_TITLE
+    );
+    if (!questions.trust_general_common && creerSiAbsent) {
+      questions.trust_general_common = formulaire.addGridItem();
+      questions.trust_general_common.setTitle(
+        MISE_A_JOUR_QUESTIONNAIRE.TRUST_COMMON_TITLE
+      );
+      changementStructurel = true;
+    }
+    if (questions.trust_general_common) {
+      const lignes = questions.trust_general_common.getRows();
+      const colonnes = questions.trust_general_common.getColumns();
+      if (
+        JSON.stringify(lignes) !== JSON.stringify([MISE_A_JOUR_QUESTIONNAIRE.TRUST_COMMON_ROW]) ||
+        JSON.stringify(colonnes) !== JSON.stringify(MISE_A_JOUR_QUESTIONNAIRE.LIKERT_COLUMNS)
+      ) {
+        questions.trust_general_common
+          .setRows([MISE_A_JOUR_QUESTIONNAIRE.TRUST_COMMON_ROW])
+          .setColumns(MISE_A_JOUR_QUESTIONNAIRE.LIKERT_COLUMNS);
+      }
+      questions.trust_general_common.setRequired(false);
+    }
+
+    activerOptionsAutres_(formulaire);
+
+    if (
+      !questions.preferred_public_channel ||
+      !questions.no_official_reason ||
+      !questions.trust_general_common
+    ) {
+      throw new Error('CONFIGURATION_MISSING');
+    }
+
+    if (changementStructurel) actualiserCorrespondanceFormulaire_(formulaire);
+    PropertiesService.getScriptProperties().setProperty(
+      CONTROLE_PARTICIPATION.QUESTIONNAIRE_UPDATE_PROPERTY,
+      'installed'
+    );
+    return questions;
+  } finally {
+    verrou.releaseLock();
+  }
+}
+
+function trouverQuestionUniqueParTitre_(formulaire, type, titre) {
+  const trouvees = formulaire.getItems(type).filter(function (item) {
+    return item.getTitle() === titre;
+  });
+  if (trouvees.length > 1) throw new Error('CONFIGURATION_MISSING');
+  if (!trouvees.length) return null;
+  if (type === FormApp.ItemType.MULTIPLE_CHOICE) return trouvees[0].asMultipleChoiceItem();
+  if (type === FormApp.ItemType.GRID) return trouvees[0].asGridItem();
+  return trouvees[0];
+}
+
+function configurerQuestionChoixUnique_(question, choix) {
+  const actuels = question.getChoices().map(function (element) {
+    return element.getValue();
+  });
+  if (JSON.stringify(actuels) !== JSON.stringify(choix)) {
+    question.setChoiceValues(choix);
+  }
+  question.showOtherOption(true).setRequired(false);
+}
+
+function activerOptionsAutres_(formulaire) {
+  formulaire.getItems(FormApp.ItemType.CHECKBOX).forEach(function (item) {
+    const titre = item.getTitle().trim();
+    if (
+      titre === MISE_A_JOUR_QUESTIONNAIRE.OFFICIAL_SOURCES_TITLE ||
+      titre === MISE_A_JOUR_QUESTIONNAIRE.EXTERNAL_SOURCES_TITLE
+    ) {
+      item.asCheckboxItem().showOtherOption(true);
+    }
+  });
+
+  formulaire.getItems(FormApp.ItemType.MULTIPLE_CHOICE).forEach(function (item) {
+    const titre = item.getTitle().trim();
+    if (
+      titre === MISE_A_JOUR_QUESTIONNAIRE.PRIMARY_SOURCE_TITLE ||
+      (titre.indexOf('قناة') !== -1 && titre.indexOf('آخر تواصل') !== -1)
+    ) {
+      item.asMultipleChoiceItem().showOtherOption(true);
+    }
+  });
+}
+
+function ajouterReponsesSupplementaires_(reponse, formulaire, donnees) {
+  if (!Object.keys(donnees).length) return;
+  const preference = String(donnees.preferred_public_channel || '');
+  const raison = String(donnees.no_official_reason || '');
+  const confiance = String(donnees.trust_general_common || '');
+  if (preference && (raison || confiance)) throw new Error('INVALID_ANSWERS');
+  if (raison && !confiance) throw new Error('INVALID_ANSWERS');
+  if (!preference && !confiance) throw new Error('INVALID_ANSWERS');
+
+  const questions = {
+    preferred_public_channel: trouverQuestionUniqueParTitre_(
+      formulaire,
+      FormApp.ItemType.MULTIPLE_CHOICE,
+      MISE_A_JOUR_QUESTIONNAIRE.PREFERRED_CHANNEL_TITLE
+    ),
+    no_official_reason: trouverQuestionUniqueParTitre_(
+      formulaire,
+      FormApp.ItemType.MULTIPLE_CHOICE,
+      MISE_A_JOUR_QUESTIONNAIRE.NO_OFFICIAL_REASON_TITLE
+    ),
+    trust_general_common: trouverQuestionUniqueParTitre_(
+      formulaire,
+      FormApp.ItemType.GRID,
+      MISE_A_JOUR_QUESTIONNAIRE.TRUST_COMMON_TITLE
+    ),
+  };
+  if (
+    !questions.preferred_public_channel ||
+    !questions.no_official_reason ||
+    !questions.trust_general_common
+  ) {
+    throw new Error('CONFIGURATION_MISSING');
+  }
+  if (preference) {
+    reponse.withItemResponse(
+      questions.preferred_public_channel.createResponse(preference)
+    );
+  }
+  if (raison) {
+    reponse.withItemResponse(
+      questions.no_official_reason.createResponse(raison)
+    );
+  }
+  if (confiance) {
+    if (MISE_A_JOUR_QUESTIONNAIRE.LIKERT_COLUMNS.indexOf(confiance) === -1) {
+      throw new Error('INVALID_ANSWERS');
+    }
+    reponse.withItemResponse(
+      questions.trust_general_common.createResponse([confiance])
+    );
+  }
 }
 
 function obtenirCorrespondanceFormulaire_(formulaire) {
