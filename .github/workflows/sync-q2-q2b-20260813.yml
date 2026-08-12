@@ -125,12 +125,18 @@ jobs:
           )
           index.write_text(html, encoding='utf-8')
 
-          # Contrôle ciblé : aucune ancienne formulation de Q2/Q2-b ne doit subsister.
+          # Contrôle ciblé des fichiers applicatifs, sans inclure ce workflow
+          # qui contient volontairement les anciennes chaînes comme règles de migration.
+          scan_roots = [Path('assets'), Path('apps-script'), Path('scripts'), Path('index.html')]
           violations = []
-          for path in Path('.').rglob('*'):
-              if not path.is_file() or '.git' in path.parts:
-                  continue
-              if path.suffix.lower() not in {'.js', '.mjs', '.gs', '.html', '.md', '.yml', '.yaml'}:
+          files = []
+          for root in scan_roots:
+              if root.is_file():
+                  files.append(root)
+              elif root.exists():
+                  files.extend(p for p in root.rglob('*') if p.is_file())
+          for path in files:
+              if path.suffix.lower() not in {'.js', '.mjs', '.gs', '.html', '.md'}:
                   continue
               data = path.read_text(encoding='utf-8', errors='ignore')
               for line_no, line in enumerate(data.splitlines(), 1):
