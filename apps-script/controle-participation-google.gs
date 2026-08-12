@@ -22,6 +22,7 @@ const CONTROLE_PARTICIPATION = Object.freeze({
   SITE_ORIGIN: 'https://nachchatmahmoud-png.github.io',
   CHANNEL: 'questionnaire-logement-auth-v1',
   TOKENINFO_URL: 'https://oauth2.googleapis.com/tokeninfo?id_token=',
+  ENTRY_ITEM_MAP_PROPERTY: 'FORM_ENTRY_ITEM_MAP_V1',
 });
 
 /**
@@ -44,12 +45,16 @@ function installerControleParticipationGoogle() {
 
   const formulaire = obtenirFormulaire_();
   const questionReference = obtenirQuestionReferenceTechnique_(formulaire, true);
+  const correspondance = actualiserCorrespondanceFormulaire_(formulaire);
   formulaire.setLimitOneResponsePerUser(true);
   formulaire.setShowLinkToRespondAgain(false);
 
   console.log('CONTROLE_PARTICIPATION_INSTALLE: oui');
   console.log('LIMITE_NATIVE_UNE_REPONSE: ' + formulaire.hasLimitOneResponsePerUser());
-  console.log('QUESTION_REFERENCE_ENTRY_ID: ' + questionReference.getId());
+  console.log(
+    'QUESTION_REFERENCE_ENTRY_ID: ' +
+      obtenirEntryIdQuestion_(correspondance, questionReference)
+  );
   console.log('NOM_FEUILLE_TECHNIQUE: ' + CONTROLE_PARTICIPATION.SHEET_NAME);
 }
 
@@ -93,6 +98,7 @@ function doPost(e) {
         idToken: String(parametres.idToken || ''),
         action: String(parametres.action || ''),
         submissionId: String(parametres.submissionId || ''),
+        payload: String(parametres.payload || ''),
       })
     : resultatRefus_('invalid_request');
 
@@ -115,15 +121,16 @@ function doPost(e) {
 
 /**
  * action=check : vérifie le compte et renvoie l'identifiant du champ technique.
- * action=confirm : confirme que Google Forms a réellement enregistré la réponse,
- *                  puis marque le compte comme ayant participé.
+ * action=submit : crée la réponse côté serveur après vérification du compte,
+ *                 puis marque le compte comme ayant participé.
+ * action=confirm : compatibilité avec les envois de l'ancienne version.
  */
 function verifierParticipationGoogle(requete) {
   try {
     const action = String((requete && requete.action) || '');
     const jeton = String((requete && requete.idToken) || '');
 
-    if (action !== 'check' && action !== 'confirm') {
+    if (action !== 'check' && action !== 'confirm' && action !== 'submit') {
       return resultatRefus_('invalid_action');
     }
 
@@ -141,7 +148,8 @@ function verifierParticipationGoogle(requete) {
     const empreinte = creerEmpreinteCompte_(identite.sub);
     const feuille = obtenirFeuilleControle_();
     const participation = lireParticipation_(feuille, empreinte);
-    const submissionEntryId = String(questionReference.getId());
+    const correspondance = obtenirCorrespondanceFormulaire_(formulaire);
+    const submissionEntryId = obtenirEntryIdQuestion_(correspondance, questionReference);
 
     if (action === 'check') {
       return {
@@ -174,14 +182,26 @@ function verifierParticipationGoogle(requete) {
         return resultatRefus_('already_submitted');
       }
 
-      const reponse = trouverReponseConfirmee_(formulaire, questionReference, submissionId);
-      if (!reponse) {
-        return resultatRefus_('submission_not_found');
+      let reponse = trouverReponseConfirmee_(formulaire, questionReference, submissionId);
+      if (!reponse && action === 'submit') {
+        const charge = parserChargeReponses_(String((requete && requete.payload) || ''));
+        reponse = creerReponseDepuisCharge_(
+          formulaire,
+          questionReference,
+          submissionId,
+          charge
+        );
       }
+      if (!reponse) return resultatRefus_('submission_not_found');
 
       feuille.appendRow([empreinte, new Date(), submissionId, String(reponse.getId() || '')]);
       SpreadsheetApp.flush();
-      return { ok: true, allowed: true, exempt: false, reason: 'confirmed' };
+      return {
+        ok: true,
+        allowed: true,
+        exempt: false,
+        reason: action === 'submit' ? 'submitted' : 'confirmed',
+      };
     } finally {
       verrou.releaseLock();
     }
@@ -190,8 +210,232 @@ function verifierParticipationGoogle(requete) {
     const message = String((erreur && erreur.message) || '');
     if (message.indexOf('TOKEN_SERVICE_UNAVAILABLE') !== -1) return resultatRefus_('token_service_unavailable');
     if (message.indexOf('CONFIGURATION_MISSING') !== -1) return resultatRefus_('configuration_error');
+    if (message.indexOf('INVALID_ANSWERS') !== -1) return resultatRefus_('invalid_answers');
     return resultatRefus_('server_error');
   }
+}
+
+function parserChargeReponses_(texte) {
+  if (!texte || texte.length > 120000) throw new Error('INVALID_ANSWERS');
+
+  let donnees;
+  try {
+    donnees = JSON.parse(texte);
+  } catch (_) {
+    throw new Error('INVALID_ANSWERS');
+  }
+
+  if (!donnees || Array.isArray(donnees) || typeof donnees !== 'object') {
+    throw new Error('INVALID_ANSWERS');
+  }
+
+  const ids = Object.keys(donnees);
+  if (!ids.length || ids.length > 250) throw new Error('INVALID_ANSWERS');
+
+  const charge = {};
+  ids.forEach(function (id) {
+    if (!/^\d+$/.test(id)) throw new Error('INVALID_ANSWERS');
+    const valeur = donnees[id];
+    const valeurs = Array.isArray(valeur) ? valeur : [valeur];
+    if (!valeurs.length || valeurs.length > 30) throw new Error('INVALID_ANSWERS');
+    const nettoyees = valeurs.map(function (element) {
+      const texteElement = String(element == null ? '' : element);
+      if (!texteElement || texteElement.length > 4000) throw new Error('INVALID_ANSWERS');
+      return texteElement;
+    });
+    charge[id] = Array.isArray(valeur) ? nettoyees : nettoyees[0];
+  });
+  return charge;
+}
+
+function creerReponseDepuisCharge_(formulaire, questionReference, submissionId, charge) {
+  const reponse = formulaire.createResponse();
+  const items = formulaire.getItems();
+  const itemsParId = {};
+  const reponsesGroupees = {};
+  items.forEach(function (item) {
+    itemsParId[String(item.getId())] = item;
+  });
+
+  const correspondance = obtenirCorrespondanceFormulaire_(formulaire);
+  const chargeComplete = Object.assign({}, charge);
+  chargeComplete[obtenirEntryIdQuestion_(correspondance, questionReference)] = submissionId;
+
+  Object.keys(chargeComplete).forEach(function (entryId) {
+    const descripteurBrut = correspondance[entryId];
+    const descripteur =
+      descripteurBrut && typeof descripteurBrut === 'object'
+        ? descripteurBrut
+        : { itemId: String(descripteurBrut || '') };
+    const itemId = String(descripteur.itemId || '');
+    const item = itemsParId[itemId];
+    if (!item) throw new Error('INVALID_ANSWERS');
+
+    const valeur = chargeComplete[entryId];
+    const type = item.getType();
+    let reponseItem;
+
+    if (type === FormApp.ItemType.GRID || type === FormApp.ItemType.CHECKBOX_GRID) {
+      if (!Number.isInteger(Number(descripteur.rowIndex))) throw new Error('INVALID_ANSWERS');
+      if (!reponsesGroupees[itemId]) reponsesGroupees[itemId] = { item: item, lignes: {} };
+      reponsesGroupees[itemId].lignes[Number(descripteur.rowIndex)] = valeur;
+      return;
+    }
+
+    if (type === FormApp.ItemType.TEXT) {
+      reponseItem = item.asTextItem().createResponse(String(valeur));
+    } else if (type === FormApp.ItemType.PARAGRAPH_TEXT) {
+      reponseItem = item.asParagraphTextItem().createResponse(String(valeur));
+    } else if (type === FormApp.ItemType.MULTIPLE_CHOICE) {
+      reponseItem = item.asMultipleChoiceItem().createResponse(String(valeur));
+    } else if (type === FormApp.ItemType.LIST) {
+      reponseItem = item.asListItem().createResponse(String(valeur));
+    } else if (type === FormApp.ItemType.CHECKBOX) {
+      const choix = Array.isArray(valeur) ? valeur : [String(valeur)];
+      reponseItem = item.asCheckboxItem().createResponse(choix);
+    } else if (type === FormApp.ItemType.SCALE) {
+      const note = Number(String(valeur).match(/^\d+/)?.[0] || NaN);
+      if (!Number.isFinite(note)) throw new Error('INVALID_ANSWERS');
+      reponseItem = item.asScaleItem().createResponse(note);
+    } else {
+      throw new Error('INVALID_ANSWERS');
+    }
+
+    reponse.withItemResponse(reponseItem);
+  });
+
+  Object.keys(reponsesGroupees).forEach(function (itemId) {
+    const groupe = reponsesGroupees[itemId];
+    const item = groupe.item;
+    if (item.getType() === FormApp.ItemType.GRID) {
+      const lignes = item.asGridItem().getRows().map(function (_, index) {
+        const valeur = groupe.lignes[index];
+        if (!valeur) throw new Error('INVALID_ANSWERS');
+        return String(valeur);
+      });
+      reponse.withItemResponse(item.asGridItem().createResponse(lignes));
+    } else {
+      const lignes = item.asCheckboxGridItem().getRows().map(function (_, index) {
+        const valeur = groupe.lignes[index];
+        if (!valeur) throw new Error('INVALID_ANSWERS');
+        return Array.isArray(valeur) ? valeur.map(String) : [String(valeur)];
+      });
+      reponse.withItemResponse(item.asCheckboxGridItem().createResponse(lignes));
+    }
+  });
+
+  return reponse.submit();
+}
+
+function obtenirCorrespondanceFormulaire_(formulaire) {
+  const proprietes = PropertiesService.getScriptProperties();
+  const memorisee = proprietes.getProperty(CONTROLE_PARTICIPATION.ENTRY_ITEM_MAP_PROPERTY);
+  if (memorisee) {
+    try {
+      const correspondance = JSON.parse(memorisee);
+      if (correspondance && typeof correspondance === 'object') return correspondance;
+    } catch (_) {}
+  }
+  return actualiserCorrespondanceFormulaire_(formulaire);
+}
+
+function actualiserCorrespondanceFormulaire() {
+  const correspondance = actualiserCorrespondanceFormulaire_(obtenirFormulaire_());
+  console.log('CORRESPONDANCE_ENTRY_ITEM_ACTUALISEE: ' + Object.keys(correspondance).length);
+}
+
+function actualiserCorrespondanceFormulaire_(formulaire) {
+  const correspondance = {};
+  formulaire.getItems().forEach(function (item) {
+    const reponseExemple = creerReponseExemplePourCorrespondance_(item);
+    if (!reponseExemple) return;
+
+    const url = formulaire
+      .createResponse()
+      .withItemResponse(reponseExemple)
+      .toPrefilledUrl();
+    const entryIds = extraireEntryIds_(url);
+    if (item.getType() === FormApp.ItemType.GRID || item.getType() === FormApp.ItemType.CHECKBOX_GRID) {
+      entryIds.forEach(function (entryId, rowIndex) {
+        correspondance[entryId] = {
+          itemId: String(item.getId()),
+          rowIndex: rowIndex,
+        };
+      });
+    } else if (entryIds.length) {
+      correspondance[entryIds[0]] = { itemId: String(item.getId()) };
+    }
+  });
+
+  PropertiesService.getScriptProperties().setProperty(
+    CONTROLE_PARTICIPATION.ENTRY_ITEM_MAP_PROPERTY,
+    JSON.stringify(correspondance)
+  );
+  return correspondance;
+}
+
+function creerReponseExemplePourCorrespondance_(item) {
+  const type = item.getType();
+  if (type === FormApp.ItemType.TEXT) {
+    return item.asTextItem().createResponse('mapping-' + item.getId());
+  }
+  if (type === FormApp.ItemType.PARAGRAPH_TEXT) {
+    return item.asParagraphTextItem().createResponse('mapping-' + item.getId());
+  }
+  if (type === FormApp.ItemType.MULTIPLE_CHOICE) {
+    const choix = item.asMultipleChoiceItem().getChoices();
+    return choix.length ? item.asMultipleChoiceItem().createResponse(choix[0].getValue()) : null;
+  }
+  if (type === FormApp.ItemType.LIST) {
+    const choix = item.asListItem().getChoices();
+    return choix.length ? item.asListItem().createResponse(choix[0].getValue()) : null;
+  }
+  if (type === FormApp.ItemType.CHECKBOX) {
+    const choix = item.asCheckboxItem().getChoices();
+    return choix.length ? item.asCheckboxItem().createResponse([choix[0].getValue()]) : null;
+  }
+  if (type === FormApp.ItemType.SCALE) {
+    const question = item.asScaleItem();
+    return question.createResponse(question.getLowerBound());
+  }
+  if (type === FormApp.ItemType.GRID) {
+    const question = item.asGridItem();
+    const colonnes = question.getColumns();
+    return colonnes.length
+      ? question.createResponse(question.getRows().map(function () { return colonnes[0]; }))
+      : null;
+  }
+  if (type === FormApp.ItemType.CHECKBOX_GRID) {
+    const question = item.asCheckboxGridItem();
+    const colonnes = question.getColumns();
+    return colonnes.length
+      ? question.createResponse(question.getRows().map(function () { return [colonnes[0]]; }))
+      : null;
+  }
+  return null;
+}
+
+function extraireEntryIds_(url) {
+  const ids = [];
+  const expression = /[?&]entry\.(\d+)=/g;
+  const texte = String(url || '');
+  let resultat;
+  while ((resultat = expression.exec(texte)) !== null) ids.push(resultat[1]);
+  return ids;
+}
+
+function obtenirEntryIdQuestion_(correspondance, question) {
+  const itemId = String(question.getId());
+  const entryId = Object.keys(correspondance).find(function (id) {
+    const descripteur = correspondance[id];
+    return String(
+      descripteur && typeof descripteur === 'object'
+        ? descripteur.itemId
+        : descripteur
+    ) === itemId;
+  });
+  if (!entryId) throw new Error('CONFIGURATION_MISSING');
+  return entryId;
 }
 
 function verifierJetonGoogle_(jeton) {
