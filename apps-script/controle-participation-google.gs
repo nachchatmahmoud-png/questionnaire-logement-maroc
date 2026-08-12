@@ -58,6 +58,12 @@ const MISE_A_JOUR_QUESTIONNAIRE = Object.freeze({
   OFFICIAL_SOURCES_TITLE: 'من خلال أي من وسائل التواصل الرسمية التالية اطلعتم على معلومات حول البرنامج؟',
   EXTERNAL_SOURCES_TITLE: 'من خلال أي من المصادر التالية اطلعتم على معلومات حول البرنامج؟',
   PRIMARY_SOURCE_TITLE: 'من بين وسائل التواصل الرسمية التي اخترتموها، ما هي الوسيلة الرئيسية التي اعتمدتم عليها للاطلاع على معلومات حول البرنامج؟',
+  OFFICIAL_SOURCE_OTHER_VALUE: 'مصدر رسمي آخر',
+  EXTERNAL_SOURCE_OTHER_VALUE: 'مصدر آخر',
+  CONTACT_CHANNEL_OTHER_VALUE: 'قناة رسمية أخرى',
+  OFFICIAL_SOURCE_OTHER_DETAIL_TITLE: 'المصدر الرسمي الآخر (يرجى التحديد)',
+  EXTERNAL_SOURCE_OTHER_DETAIL_TITLE: 'المصدر الآخر (يرجى التحديد)',
+  CONTACT_CHANNEL_OTHER_DETAIL_TITLE: 'القناة الرسمية الأخرى لآخر تواصل (يرجى التحديد)',
 });
 
 /**
@@ -249,7 +255,9 @@ function verifierParticipationGoogle(requete) {
           String((requete && requete.supplemental) || '')
         );
         if (
-          String((requete && requete.schemaVersion) || '') === '2026-08-12-parcours-v4' &&
+          /^2026-08-12-parcours-v[45]$/.test(
+            String((requete && requete.schemaVersion) || '')
+          ) &&
           !Object.keys(supplementaires).length
         ) {
           throw new Error('INVALID_ANSWERS');
@@ -336,6 +344,9 @@ function parserReponsesSupplementaires_(texte) {
     preferred_public_channel: true,
     no_official_reason: true,
     trust_general_common: true,
+    official_source_other_detail: true,
+    external_source_other_detail: true,
+    contact_channel_other_detail: true,
   };
   const resultat = {};
   Object.keys(donnees).forEach(function (cle) {
@@ -502,12 +513,34 @@ function garantirMiseAJourQuestionnaire_(formulaire, creerSiAbsent) {
       questions.trust_general_common.setRequired(false);
     }
 
+    [
+      ['official_source_other_detail', MISE_A_JOUR_QUESTIONNAIRE.OFFICIAL_SOURCE_OTHER_DETAIL_TITLE],
+      ['external_source_other_detail', MISE_A_JOUR_QUESTIONNAIRE.EXTERNAL_SOURCE_OTHER_DETAIL_TITLE],
+      ['contact_channel_other_detail', MISE_A_JOUR_QUESTIONNAIRE.CONTACT_CHANNEL_OTHER_DETAIL_TITLE],
+    ].forEach(function (definition) {
+      const cle = definition[0];
+      const titre = definition[1];
+      questions[cle] = trouverQuestionUniqueParTitre_(
+        formulaire,
+        FormApp.ItemType.TEXT,
+        titre
+      );
+      if (!questions[cle] && creerSiAbsent) {
+        questions[cle] = formulaire.addTextItem().setTitle(titre);
+        changementStructurel = true;
+      }
+      if (questions[cle]) questions[cle].setRequired(false);
+    });
+
     activerOptionsAutres_(formulaire);
 
     if (
       !questions.preferred_public_channel ||
       !questions.no_official_reason ||
-      !questions.trust_general_common
+      !questions.trust_general_common ||
+      !questions.official_source_other_detail ||
+      !questions.external_source_other_detail ||
+      !questions.contact_channel_other_detail
     ) {
       throw new Error('CONFIGURATION_MISSING');
     }
@@ -551,7 +584,10 @@ function activerOptionsAutres_(formulaire) {
       titre === MISE_A_JOUR_QUESTIONNAIRE.OFFICIAL_SOURCES_TITLE ||
       titre === MISE_A_JOUR_QUESTIONNAIRE.EXTERNAL_SOURCES_TITLE
     ) {
-      item.asCheckboxItem().showOtherOption(true);
+      const valeur = titre === MISE_A_JOUR_QUESTIONNAIRE.OFFICIAL_SOURCES_TITLE
+        ? MISE_A_JOUR_QUESTIONNAIRE.OFFICIAL_SOURCE_OTHER_VALUE
+        : MISE_A_JOUR_QUESTIONNAIRE.EXTERNAL_SOURCE_OTHER_VALUE;
+      garantirChoixAutreExplicite_(item.asCheckboxItem(), valeur, false);
     }
   });
 
@@ -561,9 +597,43 @@ function activerOptionsAutres_(formulaire) {
       titre === MISE_A_JOUR_QUESTIONNAIRE.PRIMARY_SOURCE_TITLE ||
       (titre.indexOf('قناة') !== -1 && titre.indexOf('آخر تواصل') !== -1)
     ) {
-      item.asMultipleChoiceItem().showOtherOption(true);
+      const valeur = titre === MISE_A_JOUR_QUESTIONNAIRE.PRIMARY_SOURCE_TITLE
+        ? MISE_A_JOUR_QUESTIONNAIRE.OFFICIAL_SOURCE_OTHER_VALUE
+        : MISE_A_JOUR_QUESTIONNAIRE.CONTACT_CHANNEL_OTHER_VALUE;
+      garantirChoixAutreExplicite_(item.asMultipleChoiceItem(), valeur, true);
     }
   });
+}
+
+/**
+ * Ajoute une option « autre » explicite sans utiliser l'option native de Forms.
+ * L'option native est incompatible avec les questions qui pilotent une section.
+ */
+function garantirChoixAutreExplicite_(question, valeur, choixUnique) {
+  try {
+    question.showOtherOption(false);
+  } catch (_) {}
+
+  const choix = question.getChoices();
+  if (choix.some(function (element) { return element.getValue() === valeur; })) return;
+
+  if (!choixUnique) {
+    question.setChoiceValues(
+      choix.map(function (element) { return element.getValue(); }).concat([valeur])
+    );
+    return;
+  }
+
+  let navigation = false;
+  choix.forEach(function (element) {
+    try {
+      if (element.getGotoPage() || element.getPageNavigationType()) navigation = true;
+    } catch (_) {}
+  });
+  const choixAutre = navigation
+    ? question.createChoice(valeur, FormApp.PageNavigationType.CONTINUE)
+    : question.createChoice(valeur);
+  question.setChoices(choix.concat([choixAutre]));
 }
 
 function ajouterReponsesSupplementaires_(reponse, formulaire, donnees) {
@@ -571,9 +641,16 @@ function ajouterReponsesSupplementaires_(reponse, formulaire, donnees) {
   const preference = String(donnees.preferred_public_channel || '');
   const raison = String(donnees.no_official_reason || '');
   const confiance = String(donnees.trust_general_common || '');
-  if (preference && (raison || confiance)) throw new Error('INVALID_ANSWERS');
+  const detailOfficiel = String(donnees.official_source_other_detail || '');
+  const detailExterne = String(donnees.external_source_other_detail || '');
+  const detailContact = String(donnees.contact_channel_other_detail || '');
+  if (preference && (raison || confiance || detailOfficiel || detailExterne || detailContact)) {
+    throw new Error('INVALID_ANSWERS');
+  }
   if (raison && !confiance) throw new Error('INVALID_ANSWERS');
   if (!preference && !confiance) throw new Error('INVALID_ANSWERS');
+  if (detailOfficiel && raison) throw new Error('INVALID_ANSWERS');
+  if (detailExterne && !raison) throw new Error('INVALID_ANSWERS');
 
   const questions = {
     preferred_public_channel: trouverQuestionUniqueParTitre_(
@@ -591,11 +668,29 @@ function ajouterReponsesSupplementaires_(reponse, formulaire, donnees) {
       FormApp.ItemType.GRID,
       MISE_A_JOUR_QUESTIONNAIRE.TRUST_COMMON_TITLE
     ),
+    official_source_other_detail: trouverQuestionUniqueParTitre_(
+      formulaire,
+      FormApp.ItemType.TEXT,
+      MISE_A_JOUR_QUESTIONNAIRE.OFFICIAL_SOURCE_OTHER_DETAIL_TITLE
+    ),
+    external_source_other_detail: trouverQuestionUniqueParTitre_(
+      formulaire,
+      FormApp.ItemType.TEXT,
+      MISE_A_JOUR_QUESTIONNAIRE.EXTERNAL_SOURCE_OTHER_DETAIL_TITLE
+    ),
+    contact_channel_other_detail: trouverQuestionUniqueParTitre_(
+      formulaire,
+      FormApp.ItemType.TEXT,
+      MISE_A_JOUR_QUESTIONNAIRE.CONTACT_CHANNEL_OTHER_DETAIL_TITLE
+    ),
   };
   if (
     !questions.preferred_public_channel ||
     !questions.no_official_reason ||
-    !questions.trust_general_common
+    !questions.trust_general_common ||
+    !questions.official_source_other_detail ||
+    !questions.external_source_other_detail ||
+    !questions.contact_channel_other_detail
   ) {
     throw new Error('CONFIGURATION_MISSING');
   }
@@ -615,6 +710,21 @@ function ajouterReponsesSupplementaires_(reponse, formulaire, donnees) {
     }
     reponse.withItemResponse(
       questions.trust_general_common.createResponse([confiance])
+    );
+  }
+  if (detailOfficiel) {
+    reponse.withItemResponse(
+      questions.official_source_other_detail.createResponse(detailOfficiel)
+    );
+  }
+  if (detailExterne) {
+    reponse.withItemResponse(
+      questions.external_source_other_detail.createResponse(detailExterne)
+    );
+  }
+  if (detailContact) {
+    reponse.withItemResponse(
+      questions.contact_channel_other_detail.createResponse(detailContact)
     );
   }
 }
