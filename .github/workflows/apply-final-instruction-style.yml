@@ -1,0 +1,46 @@
+name: Apply final instruction style
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/apply-final-instruction-style.yml
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  patch-and-deploy:
+    runs-on: ubuntu-latest
+    environment: github-pages
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Apply final instruction style
+        shell: bash
+        run: |
+          python -c "from pathlib import Path; p=Path('index.html'); s=p.read_text(encoding='utf-8'); marker='instruction-final-semantic-style-20260812'; block='''\n      /* instruction-final-semantic-style-20260812 */\n      html body .question-help,\n      html body fieldset.question-card:has(input[type=\\\"checkbox\\\"]) > legend,\n      html body .instruction-card:has(.legend-grid) > strong,\n      html body .instruction-card > p,\n      html body .interaction-channels-card .interaction-lead,\n      html body .interaction-channels-card bdi{\n        color:#6b7280 !important;\n        font-family:\\\"Noto Sans Arabic\\\",Tahoma,Arial,sans-serif !important;\n        font-size:14px !important;\n        font-weight:700 !important;\n        font-style:normal !important;\n        line-height:1.7 !important;\n      }\n'''; s=s if marker in s else s.replace('</style>',block+'</style>',1); p.write_text(s,encoding='utf-8')"
+
+      - name: Commit patch
+        shell: bash
+        run: |
+          rm .github/workflows/apply-final-instruction-style.yml
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add index.html .github/workflows/apply-final-instruction-style.yml
+          git commit -m "Style all questionnaire instructions smaller and gray"
+          git push
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: Deploy
+        uses: actions/deploy-pages@v4
