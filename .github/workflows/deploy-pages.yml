@@ -25,8 +25,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Vérifier le contenu protégé
-        run: node scripts/verify-questionnaire.mjs
+      - name: Vérifier le verrou mobile et ordinateur
+        run: node scripts/verify-ui-lock.mjs
 
   deploy:
     needs: validation
