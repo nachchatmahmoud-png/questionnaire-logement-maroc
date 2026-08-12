@@ -1,0 +1,110 @@
+name: Apply explicit instruction classes
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/apply-explicit-instruction-class.yml
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-explicit-instructions
+  cancel-in-progress: true
+
+jobs:
+  patch-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Mark real instructions explicitly
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          js_path = Path('assets/questionnaire.js')
+          js = js_path.read_text(encoding='utf-8')
+
+          replacements = [
+              ('class="question-help"', 'class="question-help instruction-text"'),
+              ('<legend>${instruction}</legend>', '<legend class="instruction-text">${instruction}</legend>'),
+              ('<strong>يرجى تحديد درجة موافقتكم على العبارات التالية:</strong>', '<strong class="instruction-text">يرجى تحديد درجة موافقتكم على العبارات التالية:</strong>'),
+              ('<div class="instruction-card interaction-channels-card"><p>', '<div class="instruction-card interaction-channels-card"><p class="instruction-text">'),
+              ('<div class="instruction-card compact"><p>', '<div class="instruction-card compact"><p class="instruction-text">'),
+              ('<strong>فهم البرنامج</strong><p>', '<strong>فهم البرنامج</strong><p class="instruction-text">'),
+              ('<strong>المعلومات العامة</strong><p>', '<strong>المعلومات العامة</strong><p class="instruction-text">'),
+          ]
+          for old, new in replacements:
+              js = js.replace(old, new)
+          js_path.write_text(js, encoding='utf-8')
+
+          html_path = Path('index.html')
+          html = html_path.read_text(encoding='utf-8')
+
+          html = re.sub(
+              r'\s*/\* instruction-final-semantic-style-20260812 \*/.*?\n\s*}\n(?=</style>)',
+              '\n',
+              html,
+              flags=re.S,
+          )
+
+          style = '''
+      /* instruction-text-explicit-20260812-v1 */
+      html body .instruction-text,
+      html body .instruction-text *{
+        color:#6b7280 !important;
+        font-family:"Noto Sans Arabic",Tahoma,Arial,sans-serif !important;
+        font-size:14px !important;
+        font-weight:700 !important;
+        font-style:normal !important;
+        line-height:1.7 !important;
+      }
+'''
+          if 'instruction-text-explicit-20260812-v1' not in html:
+              html = html.replace('</style>', style + '</style>', 1)
+
+          html = html.replace(
+              '/assets/questionnaire.js?v=20260812-confirmation-v36',
+              '/assets/questionnaire.js?v=20260812-instructions-explicit-v37'
+          )
+          html_path.write_text(html, encoding='utf-8')
+          PY
+
+      - name: Verify instruction markers
+        shell: bash
+        run: |
+          grep -q 'instruction-text' assets/questionnaire.js
+          grep -q 'instruction-text-explicit-20260812-v1' index.html
+          grep -q 'font-size:14px !important' index.html
+
+      - name: Commit patch
+        shell: bash
+        run: |
+          rm .github/workflows/apply-explicit-instruction-class.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/questionnaire.js index.html .github/workflows/apply-explicit-instruction-class.yml
+          git commit -m 'Mark instructions explicitly and style them smaller gray'
+          git push
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
