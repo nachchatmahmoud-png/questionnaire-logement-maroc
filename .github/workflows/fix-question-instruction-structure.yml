@@ -1,0 +1,91 @@
+name: Fix question instruction structure
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/fix-question-instruction-structure.yml
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-question-instruction-structure
+  cancel-in-progress: true
+
+jobs:
+  patch-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Normalize question and instruction markup
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          js_path = Path('assets/questionnaire.js')
+          js = js_path.read_text(encoding='utf-8')
+
+          new_checks = '''function checks(items,question,instruction='يمكن اختيار أكثر من جواب.'){return `<fieldset class="question-card"><legend>${esc(question)}</legend><p class="instruction-text">${esc(instruction)}</p><div class="standard-options">${items.map(([id,t])=>`<label class="choice ${val(id)?'choice-selected':''}"><input type="checkbox" data-check="${id}" ${val(id)?'checked':''}><span>${esc(t)}</span></label>`).join('')}</div></fieldset>`}'''
+          js, count = re.subn(r"function checks\(.*?\nfunction textField", new_checks + "\nfunction textField", js, count=1, flags=re.S)
+          if count != 1:
+              raise SystemExit('checks function not replaced')
+
+          q_official = 'من خلال أي من وسائل التواصل الرسمية التالية اطلعتم على معلومات حول البرنامج؟'
+          q_external = 'من خلال أي من المصادر التالية اطلعتم على معلومات حول البرنامج؟'
+          old_official = f'h+=`<div class="group-card"><h3>{q_official}</h3>${{checks(officialSources)}}</div>`;'
+          old_external = f'h+=`<div class="group-card"><h3>{q_external}</h3>${{checks(externalSources)}}</div>`;'
+          if old_official not in js or old_external not in js:
+              raise SystemExit('checkbox question wrappers not found')
+          js = js.replace(old_official, f"h+=checks(officialSources,'{q_official}');", 1)
+          js = js.replace(old_external, f"h+=checks(externalSources,'{q_external}');", 1)
+          js_path.write_text(js, encoding='utf-8')
+
+          html_path = Path('index.html')
+          html = html_path.read_text(encoding='utf-8')
+          html = re.sub(r'\n\s*/\* question-instruction-spacing-20260812-v1 \*/.*?(?=\n</style>)', '', html, flags=re.S)
+          style = '\n      /* question-instruction-spacing-20260812-v2 */\n      html body .question-card > legend:has(+ .instruction-text){margin-bottom:0 !important;}\n      html body .question-card > legend + .instruction-text{display:block !important;margin:6px 0 12px !important;}\n      html body .instruction-card > strong:not(.instruction-text) + .instruction-text{margin-top:6px !important;}\n'
+          if 'question-instruction-spacing-20260812-v2' not in html:
+              html = html.replace('</style>', style + '</style>', 1)
+          html = html.replace('/assets/questionnaire.js?v=20260812-instructions-explicit-v37','/assets/questionnaire.js?v=20260812-instructions-spacing-v38')
+          html_path.write_text(html, encoding='utf-8')
+          PY
+
+      - name: Verify structure and spacing
+        shell: bash
+        run: |
+          grep -q "function checks(items,question" assets/questionnaire.js
+          grep -q "checks(officialSources,'من خلال أي من وسائل التواصل الرسمية" assets/questionnaire.js
+          grep -q "checks(externalSources,'من خلال أي من المصادر التالية" assets/questionnaire.js
+          grep -q 'question-instruction-spacing-20260812-v2' index.html
+          grep -q 'margin:6px 0 12px' index.html
+
+      - name: Commit patch
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/questionnaire.js index.html
+          git commit -m 'Normalize question and instruction spacing structure'
+          git push
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
