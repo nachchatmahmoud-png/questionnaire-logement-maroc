@@ -1,0 +1,47 @@
+name: Fix q2a explicit black
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/fix-q2a-explicit-black.yml
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-q2a-explicit-black
+  cancel-in-progress: true
+
+jobs:
+  patch-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Apply explicit black question title
+        run: echo 'CmZyb20gcGF0aGxpYiBpbXBvcnQgUGF0aAoKanNfcGF0aD1QYXRoKCJhc3NldHMvcXVlc3Rpb25uYWlyZS5qcyIpCmpzPWpzX3BhdGgucmVhZF90ZXh0KGVuY29kaW5nPSJ1dGYtOCIpCm9sZD0nPGZpZWxkc2V0IGNsYXNzPVwicXVlc3Rpb24tY2FyZFwiPjxsZWdlbmQ+JHtlc2MocXVlc3Rpb24pfTwvbGVnZW5kPjxwIGNsYXNzPVwiaW5zdHJ1Y3Rpb24tdGV4dFwiPicKbmV3PSc8ZmllbGRzZXQgY2xhc3M9XCJxdWVzdGlvbi1jYXJkXCI+PGxlZ2VuZCBjbGFzcz1cInF1ZXN0aW9uLXRpdGxlIGNoZWNrYm94LXF1ZXN0aW9uLXRpdGxlXCI+JHtlc2MocXVlc3Rpb24pfTwvbGVnZW5kPjxwIGNsYXNzPVwiaW5zdHJ1Y3Rpb24tdGV4dFwiPicKaWYgb2xkIG5vdCBpbiBqczoKICAgIHJhaXNlIFN5c3RlbUV4aXQoImNoZWNrcyBsZWdlbmQgcGF0dGVybiBub3QgZm91bmQiKQpqcz1qcy5yZXBsYWNlKG9sZCxuZXcsMSkKanNfcGF0aC53cml0ZV90ZXh0KGpzLGVuY29kaW5nPSJ1dGYtOCIpCgpodG1sX3BhdGg9UGF0aCgiaW5kZXguaHRtbCIpCmh0bWw9aHRtbF9wYXRoLnJlYWRfdGV4dChlbmNvZGluZz0idXRmLTgiKQpodG1sPWh0bWwucmVwbGFjZSgnY29sb3I6dmFyKC0taW5rKSAhaW1wb3J0YW50OycsJ2NvbG9yOiMxMTE4MjcgIWltcG9ydGFudDsnLDEpCm1hcmtlcj0nY2hlY2tib3gtcXVlc3Rpb24tdGl0bGUtZXhwbGljaXQtMjAyNjA4MTInCnN0eWxlPSdcbiAgICAgIC8qIGNoZWNrYm94LXF1ZXN0aW9uLXRpdGxlLWV4cGxpY2l0LTIwMjYwODEyICovXG4gICAgICBodG1sIGJvZHkgLmNoZWNrYm94LXF1ZXN0aW9uLXRpdGxle1xuICAgICAgICBjb2xvcjojMTExODI3ICFpbXBvcnRhbnQ7XG4gICAgICAgIGZvbnQtc2l6ZToxNnB4ICFpbXBvcnRhbnQ7XG4gICAgICAgIGZvbnQtd2VpZ2h0OjcwMCAhaW1wb3J0YW50O1xuICAgICAgICBmb250LWZhbWlseToiTm90byBTYW5zIEFyYWJpYyIsVGFob21hLEFyaWFsLHNhbnMtc2VyaWYgIWltcG9ydGFudDtcbiAgICAgIH1cbicKaWYgbWFya2VyIG5vdCBpbiBodG1sOgogICAgaHRtbD1odG1sLnJlcGxhY2UoJzwvc3R5bGU+JyxzdHlsZSsnPC9zdHlsZT4nLDEpCmh0bWw9aHRtbC5yZXBsYWNlKCcvYXNzZXRzL3F1ZXN0aW9ubmFpcmUuanM/dj0yMDI2MDgxMi1pbnN0cnVjdGlvbnMtc3BhY2luZy12MzgnLCcvYXNzZXRzL3F1ZXN0aW9ubmFpcmUuanM/dj0yMDI2MDgxMi1xdWVzdGlvbi1ibGFjay12MzknKQpodG1sX3BhdGgud3JpdGVfdGV4dChodG1sLGVuY29kaW5nPSJ1dGYtOCIpCg==' | base64 -d | python
+      - name: Verify
+        run: |
+          grep -q 'checkbox-question-title' assets/questionnaire.js
+          grep -q 'color:#111827 !important' index.html
+          grep -q 'question-black-v39' index.html
+      - name: Commit patch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          rm .github/workflows/fix-q2a-explicit-black.yml
+          git add assets/questionnaire.js index.html .github/workflows/fix-q2a-explicit-black.yml
+          git commit -m 'Make checkbox question titles explicitly black'
+          git push
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
