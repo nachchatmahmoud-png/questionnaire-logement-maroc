@@ -276,7 +276,8 @@ function callAuthBridge(action,idToken,extra={}){
  });
 }
 window.addEventListener('message',event=>{
- if(!/^https:\/\/[-a-z0-9]+-script\.googleusercontent\.com$/.test(event.origin))return;
+ const origineGoogleValide=event.origin==='https://script.google.com'||/^https:\/\/[-a-z0-9]+-script\.googleusercontent\.com$/.test(event.origin);
+ if(!origineGoogleValide)return;
  const message=event.data||{};
  if(message.channel!==AUTH_CHANNEL)return;
  if(message.type==='response'&&message.requestId){
