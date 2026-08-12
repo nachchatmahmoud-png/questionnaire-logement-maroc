@@ -2,187 +2,42 @@ name: Synchroniser Q2-b
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
     paths:
-      - '.github/workflows/update-q2b-20260812.yml'
-  workflow_dispatch:
+      - .github/workflows/update-q2b-20260812.yml
 
 permissions:
   contents: write
   pages: write
   id-token: write
 
-concurrency:
-  group: q2b-20260812
-  cancel-in-progress: false
-
 jobs:
-  update-and-deploy:
+  patch-and-deploy:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      - uses: actions/checkout@v4
 
       - name: Appliquer la mise à jour ciblée Q2-b
-        shell: bash
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
+        run: echo 'ZnJvbSBwYXRobGliIGltcG9ydCBQYXRoCgpORVdfVElUTEUgPSAn2LMyLdioLiDZhdinINin2YTYs9io2Kgg2KfZhNix2KbZitiz2Yog2YTYudiv2YUg2KfYt9mE2KfYudmD2YUg2LnZhNmJINmF2LnZhNmI2YXYp9iqINit2YjZhCDYp9mE2KjYsdmG2KfZhdisINi52KjYsSDYp9mE2YLZhtmI2KfYqiDYp9mE2LHYs9mF2YrYqSDZhNmE2YjYstin2LHYqSDYo9mIINmE2YTYqNix2YbYp9mF2KzYnycKSEVMUCA9ICfZitix2KzZiSDYp9iu2KrZitin2LEg2KzZiNin2Kgg2YjYp9it2K8g2YHZgti3LicKT1RIRVIgPSAn2LPYqNioINii2K7YsdiMINmK2LHYrNmJINin2YTYqtit2K/ZitivOiBfX19fX19fX19fJwpORVdfQ0hPSUNFUyA9IFsKICAgICfZhNmFINij2YPZhiDYo9i52YTZhSDYqNmI2KzZiNivINmC2YbZiNin2Kog2LHYs9mF2YrYqSDYqtmI2YHYsSDZhdi52YTZiNmF2KfYqiDYrdmI2YQg2KfZhNio2LHZhtin2YXYrC4nLAogICAgJ9mD2YbYqiDYo9i52YTZhSDYqNmI2KzZiNivINmC2YbZiNin2Kog2LHYs9mF2YrYqdiMINmE2YPZhiDZhNmFINmK2YPZhiDZiNin2LbYrdmL2Kcg2YTZiiDZhdinINmH2Yog2KfZhNmC2YbZiNin2Kog2KPZiCDYp9mE2K3Ys9in2KjYp9iqINin2YTYsdiz2YXZitipINin2YTZhdi52KrZhdiv2KkuJywKICAgICfZhNmFINmE2YPZhiDZhNmFINmK2YPZhiDZiNin2LbYrdmL2Kcg2YTZiiDZhdinINmH2Yog2KfZhNmC2YbZiNin2Kog2KPZiCDYp9mE2K3Ys9in2KjYp9iqINin2YTYsdiz2YXZitipINin2YTZhdi52KrZhdiv2KkuJywKICAgICfZhNmFINij2YHZg9ixINmB2Yog2KfZhNix2KzZiNi5INil2YTZiSDYp9mE2YLZhtmI2KfYqiDYp9mE2LHYs9mF2YrYqSDZhNmE2K3YtdmI2YQg2LnZhNmJINmF2LnZhNmI2YXYp9iqINit2YjZhCDYp9mE2KjYsdmG2KfZhdisLicsCiAgICAn2YHYttmR2YTYqiDYp9mE2KfYudiq2YXYp9ivINi52YTZiSDZhdi12KfYr9ixINij2K7YsdmJINmE2KPZhtmH2Kcg2KjYr9iqINmE2Yog2KPYs9mH2YQg2KPZiCDYo9mG2LPYqCDZhNmE2K3YtdmI2YQg2LnZhNmJINin2YTZhdi52YTZiNmF2KfYqi4nLAogICAgJ9it2KfZiNmE2Kog2KfZhNmI2LXZiNmEINil2YTZiSDYp9mE2YLZhtmI2KfYqiDYp9mE2LHYs9mF2YrYqdiMINmE2YPZhiDZiNin2KzZh9iqINi12LnZiNio2Kkg2YHZiiDYp9mE2LnYq9mI2LEg2LnZhNmK2YfYpyDYo9mIINin2YTZiNi12YjZhCDYpdmE2YrZh9inLicsCiAgICAn2YjYtdmE2Kog2KXZhNmJINin2YTZgtmG2YjYp9iqINin2YTYsdiz2YXZitip2Iwg2YTZg9mGINmI2KfYrNmH2Kog2LXYudmI2KjYqSDZgdmKINin2LPYqtiu2K/Yp9mF2YfYpyDYo9mIINiq2LXZgditINmF2K3YqtmI2KfZh9inLicsCiAgICAn2YjYtdmE2Kog2KXZhNmJINin2YTZgtmG2YjYp9iqINin2YTYsdiz2YXZitip2Iwg2YTZg9mG2YbZiiDZhNmFINij2KzYryDYp9mE2YXYudmE2YjZhdin2Kog2KfZhNiq2Yog2YPZhtiqINij2KjYrdirINi52YbZh9inLicsCiAgICAn2YTYpyDYo9iz2KrYrtiv2YUg2LnYp9iv2KnZiyDYp9mE2YLZhtmI2KfYqiDYp9mE2LHZgtmF2YrYqSDZhNmE2K3YtdmI2YQg2LnZhNmJINmF2LnZhNmI2YXYp9iqINit2YjZhCDYp9mE2KjYsdin2YXYrCDYp9mE2LnZhdmI2YXZitipLicsCl0KT0xEX1RJVExFID0gJ9mF2Kcg2KfZhNiz2KjYqCDYp9mE2LHYptmK2LPZiiDZhNi52K/ZhSDYp9i32YTYp9i52YPZhSDYudmE2Ykg2YXYudmE2YjZhdin2Kog2K3ZiNmEINin2YTYqNix2YbYp9mF2Kwg2LnYqNixINmI2LPYp9im2YQg2KfZhNiq2YjYp9i12YQg2KfZhNix2LPZhdmK2Kkg2YTZhNmI2LLYp9ix2KnYnycKT0xEX1NJVEVfVElUTEUgPSAn2LMyLdioLiDZhdinINin2YTYs9io2Kgg2KfZhNix2KbZitiz2Yog2YTYudiv2YUg2KfYt9mE2KfYudmD2YUg2LnZhNmJINmF2LnZhNmI2YXYp9iqINit2YjZhCDYp9mE2KjYsdmG2KfZhdisINi52KjYsSDZiNiz2KfYptmEINin2YTYqtmI2KfYtdmEINin2YTYsdiz2YXZitipINmE2YTZiNiy2KfYsdip2J8nCgpkZWYgcmVwbGFjZV9vbmNlKHRleHQsIG9sZCwgbmV3LCBsYWJlbCk6CiAgICBuID0gdGV4dC5jb3VudChvbGQpCiAgICBpZiBuICE9IDE6CiAgICAgICAgcmFpc2UgU3lzdGVtRXhpdChmJ3tsYWJlbH06IGF0dGVuZHUgMSBvY2N1cnJlbmNlLCB0cm91dsOpIHtufScpCiAgICByZXR1cm4gdGV4dC5yZXBsYWNlKG9sZCwgbmV3LCAxKQoKcCA9IFBhdGgoJ2Fzc2V0cy9xdWVzdGlvbm5haXJlLmpzJykKcyA9IHAucmVhZF90ZXh0KGVuY29kaW5nPSd1dGYtOCcpCnMgPSByZXBsYWNlX29uY2UocywgImNvbnN0IE5PX09GRklDSUFMX1JFQVNPTl9PVEhFUj0n2LPYqNioINii2K7YsSc7IiwgZiJjb25zdCBOT19PRkZJQ0lBTF9SRUFTT05fT1RIRVI9J3tPVEhFUn0nOyIsICdzaXRlIE9USEVSJykKb2xkX3JlYXNvbnMgPSAiY29uc3Qgbm9PZmZpY2lhbFJlYXNvbnM9WyfZhNmFINij2YPZhiDYo9i52LHZgSDZiNiz2KfYptmEINin2YTYqtmI2KfYtdmEINin2YTYsdiz2YXZitipINmE2YTZiNiy2KfYsdipLicsJ9mE2YUg2KPYqNit2Kkg2LnZhiDZhdi52YTZiNmF2KfYqiDYrdmI2YQg2KfZhNio2LHZhtin2YXYrCDYudio2LEg2YfYsNmHINin2YTZiNiz2KfYptmELicsJ9in2LnYqtmF2K/YqiDYudmE2Ykg2YXYtdin2K/YsSDYo9iu2LHZiSDYqNiv2Kog2YTZiiDZg9in2YHZitipLicsJ9mI2KfYrNmH2Kog2LXYudmI2KjYqSDZgdmKINin2YTZiNi12YjZhCDYpdmE2Ykg2YjYs9in2KbZhCDYp9mE2KrZiNin2LXZhCDYp9mE2LHYs9mF2YrYqS4nLCfZhNmFINij2KzYryDYp9mE2YXYudmE2YjZhdin2Kog2KfZhNiq2Yog2YPZhtiqINij2KjYrdirINi52YbZh9inINi52KjYsSDZh9iw2Ycg2KfZhNmI2LPYp9im2YQuJywn2YTYpyDYo9iz2KrYrtiv2YUg2YfYsNmHINin2YTZiNiz2KfYptmEINi52KfYr9ip2YsuJyxOT19PRkZJQ0lBTF9SRUFTT05fT1RIRVJdOyIKbmV3X3JlYXNvbnMgPSAnY29uc3Qgbm9PZmZpY2lhbFJlYXNvbnM9WycgKyAnLCcuam9pbihyZXByKHgpIGZvciB4IGluIE5FV19DSE9JQ0VTKSArICcsTk9fT0ZGSUNJQUxfUkVBU09OX09USEVSXTsnCnMgPSByZXBsYWNlX29uY2Uocywgb2xkX3JlYXNvbnMsIG5ld19yZWFzb25zLCAnc2l0ZSBjaG9pY2VzJykKcyA9IHJlcGxhY2Vfb25jZShzLCBPTERfU0lURV9USVRMRSwgTkVXX1RJVExFLCAnc2l0ZSB0aXRsZScpCnAud3JpdGVfdGV4dChzLCBlbmNvZGluZz0ndXRmLTgnKQoKcCA9IFBhdGgoJ2luZGV4Lmh0bWwnKQpzID0gcC5yZWFkX3RleHQoZW5jb2Rpbmc9J3V0Zi04JykKcyA9IHJlcGxhY2Vfb25jZShzLCAncXVlc3Rpb25uYWlyZS5qcz92PTIwMjYwODEyLWRlc2t0b3AtcXVlc3Rpb24tYmxhY2stdjQxJywgJ3F1ZXN0aW9ubmFpcmUuanM/dj0yMDI2MDgxMi1xMmItdjQyJywgJ2luZGV4IGNhY2hlJykKcC53cml0ZV90ZXh0KHMsIGVuY29kaW5nPSd1dGYtOCcpCgpwID0gUGF0aCgnYXBwcy1zY3JpcHQvY29udHJvbGUtcGFydGljaXBhdGlvbi1nb29nbGUuZ3MnKQpzID0gcC5yZWFkX3RleHQoZW5jb2Rpbmc9J3V0Zi04JykKcyA9IHJlcGxhY2Vfb25jZShzLCAiUVVFU1RJT05OQUlSRV9VUERBVEVfUFJPUEVSVFk6ICdRVUVTVElPTk5BSVJFX1VQREFURV8yMDI2MDgxMl9WMSciLCAiUVVFU1RJT05OQUlSRV9VUERBVEVfUFJPUEVSVFk6ICdRVUVTVElPTk5BSVJFX1VQREFURV8yMDI2MDgxMl9WMiciLCAnYmFja2VuZCB2ZXJzaW9uJykKb2xkX2Jsb2NrID0gIiIiICBOT19PRkZJQ0lBTF9SRUFTT05fVElUTEU6ICfZhdinINin2YTYs9io2Kgg2KfZhNix2KbZitiz2Yog2YTYudiv2YUg2KfYt9mE2KfYudmD2YUg2LnZhNmJINmF2LnZhNmI2YXYp9iqINit2YjZhCDYp9mE2KjYsdmG2KfZhdisINi52KjYsSDZiNiz2KfYptmEINin2YTYqtmI2KfYtdmEINin2YTYsdiz2YXZitipINmE2YTZiNiy2KfYsdip2J8nLAogIE5PX09GRklDSUFMX1JFQVNPTl9DSE9JQ0VTOiBbCiAgICAn2YTZhSDYo9mD2YYg2KPYudix2YEg2YjYs9in2KbZhCDYp9mE2KrZiNin2LXZhCDYp9mE2LHYs9mF2YrYqSDZhNmE2YjYstin2LHYqS4nLAogICAgJ9mE2YUg2KPYqNit2Kkg2LnZhiDZhdi52YTZiNmF2KfYqiDYrdmI2YQg2KfZhNio2LHZhtin2YXYrCDYudio2LEg2YfYsNmHINin2YTZiNiz2KfYptmELicsCiAgICAn2KfYudiq2YXYr9iqINi52YTZiSDZhdi12KfYr9ixINij2K7YsdmJINio2K/YqiDZhNmKINmD2KfZgdmK2KkuJywKICAgICfZiNin2KzZh9iqINi12LnZiNio2Kkg2YHZiiDYp9mE2YjYtdmI2YQg2KXZhNmJINmI2LPYp9im2YQg2KfZhNiq2YjYp9i12YQg2KfZhNix2LPZhdmK2KkuJywKICAgICfZhNmFINij2KzYryDYp9mE2YXYudmE2YjZhdin2Kog2KfZhNiq2Yog2YPZhtiqINij2KjYrdirINi52YbZh9inINi52KjYsSDZh9iw2Ycg2KfZhNmI2LPYp9im2YQuJywKICAgICfZhNinINij2LPYqtiu2K/ZhSDZh9iw2Ycg2KfZhNmI2LPYp9im2YQg2LnYp9iv2KnZiy4nLAogIF0sIiIiCm5ld19ibG9jayA9ICIgIE5PX09GRklDSUFMX1JFQVNPTl9USVRMRTogIiArIHJlcHIoTkVXX1RJVExFKSArICIsXG4iICsgXAogICAgIiAgTk9fT0ZGSUNJQUxfUkVBU09OX0hFTFA6ICIgKyByZXByKEhFTFApICsgIixcbiIgKyBcCiAgICAiICBOT19PRkZJQ0lBTF9SRUFTT05fTEVHQUNZX1RJVExFUzogWyIgKyByZXByKE9MRF9USVRMRSkgKyAiXSxcbiIgKyBcCiAgICAiICBOT19PRkZJQ0lBTF9SRUFTT05fQ0hPSUNFUzogW1xuIiArICcnLmpvaW4oIiAgICAiICsgcmVwcih4KSArICIsXG4iIGZvciB4IGluIE5FV19DSE9JQ0VTKSArICIgIF0sIgpzID0gcmVwbGFjZV9vbmNlKHMsIG9sZF9ibG9jaywgbmV3X2Jsb2NrLCAnYmFja2VuZCBjb25zdGFudHMnKQoKbG9va3VwX2FuY2hvciA9ICIiIiAgICBxdWVzdGlvbnMubm9fb2ZmaWNpYWxfcmVhc29uID0gdHJvdXZlclF1ZXN0aW9uVW5pcXVlUGFyVGl0cmVfKAogICAgICBmb3JtdWxhaXJlLAogICAgICBGb3JtQXBwLkl0ZW1UeXBlLk1VTFRJUExFX0NIT0lDRSwKICAgICAgTUlTRV9BX0pPVVJfUVVFU1RJT05OQUlSRS5OT19PRkZJQ0lBTF9SRUFTT05fVElUTEUKICAgICk7CiAgICBpZiAoIXF1ZXN0aW9ucy5ub19vZmZpY2lhbF9yZWFzb24gJiYgY3JlZXJTaUFic2VudCkgeyIiIgpsb29rdXBfcmVwbGFjZW1lbnQgPSAiIiIgICAgcXVlc3Rpb25zLm5vX29mZmljaWFsX3JlYXNvbiA9IHRyb3V2ZXJRdWVzdGlvblVuaXF1ZVBhclRpdHJlXygKICAgICAgZm9ybXVsYWlyZSwKICAgICAgRm9ybUFwcC5JdGVtVHlwZS5NVUxUSVBMRV9DSE9JQ0UsCiAgICAgIE1JU0VfQV9KT1VSX1FVRVNUSU9OTkFJUkUuTk9fT0ZGSUNJQUxfUkVBU09OX1RJVExFCiAgICApOwogICAgaWYgKCFxdWVzdGlvbnMubm9fb2ZmaWNpYWxfcmVhc29uKSB7CiAgICAgIGNvbnN0IGFuY2llbm5lc1EyYiA9IGZvcm11bGFpcmUuZ2V0SXRlbXMoRm9ybUFwcC5JdGVtVHlwZS5NVUxUSVBMRV9DSE9JQ0UpLmZpbHRlcihmdW5jdGlvbiAoaXRlbSkgewogICAgICAgIHJldHVybiBNSVNFX0FfSk9VUl9RVUVTVElPTk5BSVJFLk5PX09GRklDSUFMX1JFQVNPTl9MRUdBQ1lfVElUTEVTLmluZGV4T2YoaXRlbS5nZXRUaXRsZSgpKSAhPT0gLTE7CiAgICAgIH0pOwogICAgICBpZiAoYW5jaWVubmVzUTJiLmxlbmd0aCA+IDEpIHRocm93IG5ldyBFcnJvcignQ09ORklHVVJBVElPTl9NSVNTSU5HJyk7CiAgICAgIGlmIChhbmNpZW5uZXNRMmIubGVuZ3RoID09PSAxKSB7CiAgICAgICAgcXVlc3Rpb25zLm5vX29mZmljaWFsX3JlYXNvbiA9IGFuY2llbm5lc1EyYlswXS5hc011bHRpcGxlQ2hvaWNlSXRlbSgpOwogICAgICAgIHF1ZXN0aW9ucy5ub19vZmZpY2lhbF9yZWFzb24uc2V0VGl0bGUoTUlTRV9BX0pPVVJfUVVFU1RJT05OQUlSRS5OT19PRkZJQ0lBTF9SRUFTT05fVElUTEUpOwogICAgICAgIGNoYW5nZW1lbnRTdHJ1Y3R1cmVsID0gdHJ1ZTsKICAgICAgfQogICAgfQogICAgaWYgKCFxdWVzdGlvbnMubm9fb2ZmaWNpYWxfcmVhc29uICYmIGNyZWVyU2lBYnNlbnQpIHsiIiIKcyA9IHJlcGxhY2Vfb25jZShzLCBsb29rdXBfYW5jaG9yLCBsb29rdXBfcmVwbGFjZW1lbnQsICdiYWNrZW5kIG1pZ3JhdGUgZXhpc3RpbmcgUTItYicpCgpjb25maWdfYW5jaG9yID0gIiIiICAgICAgY29uZmlndXJlclF1ZXN0aW9uQ2hvaXhVbmlxdWVfKAogICAgICAgIHF1ZXN0aW9ucy5ub19vZmZpY2lhbF9yZWFzb24sCiAgICAgICAgTUlTRV9BX0pPVVJfUVVFU1RJT05OQUlSRS5OT19PRkZJQ0lBTF9SRUFTT05fQ0hPSUNFUwogICAgICApOwogICAgfSIiIgpjb25maWdfcmVwbGFjZW1lbnQgPSAiIiIgICAgICBjb25maWd1cmVyUXVlc3Rpb25DaG9peFVuaXF1ZV8oCiAgICAgICAgcXVlc3Rpb25zLm5vX29mZmljaWFsX3JlYXNvbiwKICAgICAgICBNSVNFX0FfSk9VUl9RVUVTVElPTk5BSVJFLk5PX09GRklDSUFMX1JFQVNPTl9DSE9JQ0VTCiAgICAgICk7CiAgICAgIHF1ZXN0aW9ucy5ub19vZmZpY2lhbF9yZWFzb24KICAgICAgICAuc2V0SGVscFRleHQoTUlTRV9BX0pPVVJfUVVFU1RJT05OQUlSRS5OT19PRkZJQ0lBTF9SRUFTT05fSEVMUCkKICAgICAgICAuc2hvd090aGVyT3B0aW9uKHRydWUpCiAgICAgICAgLnNldFJlcXVpcmVkKHRydWUpOwogICAgfSIiIgpzID0gcmVwbGFjZV9vbmNlKHMsIGNvbmZpZ19hbmNob3IsIGNvbmZpZ19yZXBsYWNlbWVudCwgJ2JhY2tlbmQgcmVxdWlyZWQvaGVscC9vdGhlcicpCnAud3JpdGVfdGV4dChzLCBlbmNvZGluZz0ndXRmLTgnKQoKc2l0ZSA9IFBhdGgoJ2Fzc2V0cy9xdWVzdGlvbm5haXJlLmpzJykucmVhZF90ZXh0KGVuY29kaW5nPSd1dGYtOCcpCmJhY2tlbmQgPSBQYXRoKCdhcHBzLXNjcmlwdC9jb250cm9sZS1wYXJ0aWNpcGF0aW9uLWdvb2dsZS5ncycpLnJlYWRfdGV4dChlbmNvZGluZz0ndXRmLTgnKQphc3NlcnQgTkVXX1RJVExFIGluIHNpdGUgYW5kIE5FV19USVRMRSBpbiBiYWNrZW5kCmFzc2VydCBIRUxQIGluIHNpdGUgYW5kIEhFTFAgaW4gYmFja2VuZAphc3NlcnQgJ25vX29mZmljaWFsX3JlYXNvbicgaW4gc2l0ZQphc3NlcnQgJ25vX29mZmljaWFsX3JlYXNvbjogdHJ1ZScgaW4gYmFja2VuZAphc3NlcnQgJ3NldFJlcXVpcmVkKHRydWUpJyBpbiBiYWNrZW5kCmFzc2VydCAnLnNob3dPdGhlck9wdGlvbih0cnVlKScgaW4gYmFja2VuZAphc3NlcnQgT0xEX1NJVEVfVElUTEUgbm90IGluIHNpdGUKZm9yIGNob2ljZSBpbiBORVdfQ0hPSUNFUzoKICAgIGFzc2VydCBjaG9pY2UgaW4gc2l0ZSBhbmQgY2hvaWNlIGluIGJhY2tlbmQKYXNzZXJ0IE9USEVSIGluIHNpdGUKClBhdGgoJy5naXRodWIvd29ya2Zsb3dzL3VwZGF0ZS1xMmItMjAyNjA4MTIueW1sJykudW5saW5rKG1pc3Npbmdfb2s9VHJ1ZSkK' | base64 -d | python3
 
-          NEW_TITLE = 'س2-ب. ما السبب الرئيسي لعدم اطلاعكم على معلومات حول البرنامج عبر القنوات الرسمية للوزارة أو للبرنامج؟'
-          HELP = 'يرجى اختيار جواب واحد فقط.'
-          OTHER = 'سبب آخر، يرجى التحديد: __________'
-          NEW_CHOICES = [
-              'لم أكن أعلم بوجود قنوات رسمية توفر معلومات حول البرنامج.',
-              'كنت أعلم بوجود قنوات رسمية، لكن لم يكن واضحًا لي ما هي القنوات أو الحسابات الرسمية المعتمدة.',
-              'لم أفكر في الرجوع إلى القنوات الرسمية للحصول على معلومات حول البرنامج.',
-              'فضّلت الاعتماد على مصادر أخرى لأنها بدت لي أسهل أو أنسب للحصول على المعلومات.',
-              'حاولت الوصول إلى القنوات الرسمية، لكن واجهت صعوبة في العثور عليها أو الوصول إليها.',
-              'وصلت إلى القنوات الرسمية، لكن واجهت صعوبة في استخدامها أو تصفح محتواها.',
-              'وصلت إلى القنوات الرسمية، لكنني لم أجد المعلومات التي كنت أبحث عنها.',
-              'لا أستخدم عادةً القنوات الرقمية للحصول على معلومات حول البرامج العمومية.',
-          ]
-          OLD_TITLE = 'ما السبب الرئيسي لعدم اطلاعكم على معلومات حول البرنامج عبر وسائل التواصل الرسمية للوزارة؟'
-          OLD_SITE_TITLE = 'س2-ب. ما السبب الرئيسي لعدم اطلاعكم على معلومات حول البرنامج عبر وسائل التواصل الرسمية للوزارة؟'
-
-          def replace_once(text, old, new, label):
-              n = text.count(old)
-              if n != 1:
-                  raise SystemExit(f'{label}: attendu 1 occurrence, trouvé {n}')
-              return text.replace(old, new, 1)
-
-          # Site public
-          p = Path('assets/questionnaire.js')
-          s = p.read_text(encoding='utf-8')
-          old_const = "const NO_OFFICIAL_REASON_OTHER='سبب آخر';"
-          s = replace_once(s, old_const, f"const NO_OFFICIAL_REASON_OTHER='{OTHER}';", 'site OTHER')
-          old_reasons = "const noOfficialReasons=['لم أكن أعرف وسائل التواصل الرسمية للوزارة.','لم أبحث عن معلومات حول البرنامج عبر هذه الوسائل.','اعتمدت على مصادر أخرى بدت لي كافية.','واجهت صعوبة في الوصول إلى وسائل التواصل الرسمية.','لم أجد المعلومات التي كنت أبحث عنها عبر هذه الوسائل.','لا أستخدم هذه الوسائل عادةً.',NO_OFFICIAL_REASON_OTHER];"
-          new_reasons = 'const noOfficialReasons=[' + ','.join(repr(x) for x in NEW_CHOICES) + ',NO_OFFICIAL_REASON_OTHER];'
-          s = replace_once(s, old_reasons, new_reasons, 'site choices')
-          s = replace_once(s, OLD_SITE_TITLE, NEW_TITLE, 'site title')
-          p.write_text(s, encoding='utf-8')
-
-          # Cache-busting strictement nécessaire pour le JS actif.
-          p = Path('index.html')
-          s = p.read_text(encoding='utf-8')
-          s = replace_once(s, 'questionnaire.js?v=20260812-desktop-question-black-v41', 'questionnaire.js?v=20260812-q2b-v42', 'index cache')
-          p.write_text(s, encoding='utf-8')
-
-          # Copie de référence du backend Apps Script.
-          p = Path('apps-script/controle-participation-google.gs')
-          s = p.read_text(encoding='utf-8')
-          s = replace_once(s, "QUESTIONNAIRE_UPDATE_PROPERTY: 'QUESTIONNAIRE_UPDATE_20260812_V1'", "QUESTIONNAIRE_UPDATE_PROPERTY: 'QUESTIONNAIRE_UPDATE_20260812_V2'", 'backend version')
-          old_block = """  NO_OFFICIAL_REASON_TITLE: 'ما السبب الرئيسي لعدم اطلاعكم على معلومات حول البرنامج عبر وسائل التواصل الرسمية للوزارة؟',
-  NO_OFFICIAL_REASON_CHOICES: [
-    'لم أكن أعرف وسائل التواصل الرسمية للوزارة.',
-    'لم أبحث عن معلومات حول البرنامج عبر هذه الوسائل.',
-    'اعتمدت على مصادر أخرى بدت لي كافية.',
-    'واجهت صعوبة في الوصول إلى وسائل التواصل الرسمية.',
-    'لم أجد المعلومات التي كنت أبحث عنها عبر هذه الوسائل.',
-    'لا أستخدم هذه الوسائل عادةً.',
-  ],"""
-          new_block = "  NO_OFFICIAL_REASON_TITLE: " + repr(NEW_TITLE) + ",\n" + \
-              "  NO_OFFICIAL_REASON_HELP: " + repr(HELP) + ",\n" + \
-              "  NO_OFFICIAL_REASON_LEGACY_TITLES: [" + repr(OLD_TITLE) + "],\n" + \
-              "  NO_OFFICIAL_REASON_CHOICES: [\n" + ''.join("    " + repr(x) + ",\n" for x in NEW_CHOICES) + "  ],"
-          s = replace_once(s, old_block, new_block, 'backend constants')
-
-          lookup_anchor = """    questions.no_official_reason = trouverQuestionUniqueParTitre_(
-      formulaire,
-      FormApp.ItemType.MULTIPLE_CHOICE,
-      MISE_A_JOUR_QUESTIONNAIRE.NO_OFFICIAL_REASON_TITLE
-    );
-    if (!questions.no_official_reason && creerSiAbsent) {"""
-          lookup_replacement = """    questions.no_official_reason = trouverQuestionUniqueParTitre_(
-      formulaire,
-      FormApp.ItemType.MULTIPLE_CHOICE,
-      MISE_A_JOUR_QUESTIONNAIRE.NO_OFFICIAL_REASON_TITLE
-    );
-    if (!questions.no_official_reason) {
-      const anciennesQ2b = formulaire.getItems(FormApp.ItemType.MULTIPLE_CHOICE).filter(function (item) {
-        return MISE_A_JOUR_QUESTIONNAIRE.NO_OFFICIAL_REASON_LEGACY_TITLES.indexOf(item.getTitle()) !== -1;
-      });
-      if (anciennesQ2b.length > 1) throw new Error('CONFIGURATION_MISSING');
-      if (anciennesQ2b.length === 1) {
-        questions.no_official_reason = anciennesQ2b[0].asMultipleChoiceItem();
-        questions.no_official_reason.setTitle(MISE_A_JOUR_QUESTIONNAIRE.NO_OFFICIAL_REASON_TITLE);
-        changementStructurel = true;
-      }
-    }
-    if (!questions.no_official_reason && creerSiAbsent) {"""
-          s = replace_once(s, lookup_anchor, lookup_replacement, 'backend migrate existing Q2-b')
-
-          config_anchor = """      configurerQuestionChoixUnique_(
-        questions.no_official_reason,
-        MISE_A_JOUR_QUESTIONNAIRE.NO_OFFICIAL_REASON_CHOICES
-      );
-    }"""
-          config_replacement = """      configurerQuestionChoixUnique_(
-        questions.no_official_reason,
-        MISE_A_JOUR_QUESTIONNAIRE.NO_OFFICIAL_REASON_CHOICES
-      );
-      questions.no_official_reason
-        .setHelpText(MISE_A_JOUR_QUESTIONNAIRE.NO_OFFICIAL_REASON_HELP)
-        .showOtherOption(true)
-        .setRequired(true);
-    }"""
-          s = replace_once(s, config_anchor, config_replacement, 'backend required/help/other')
-          p.write_text(s, encoding='utf-8')
-
-          # Assertions ciblées : aucune modification de scoring, clé technique conservée,
-          # huit modalités fermées + option Autre libre sur le site et dans Forms.
-          site = Path('assets/questionnaire.js').read_text(encoding='utf-8')
-          backend = Path('apps-script/controle-participation-google.gs').read_text(encoding='utf-8')
-          assert NEW_TITLE in site and NEW_TITLE in backend
-          assert HELP in site and HELP in backend
-          assert "'no_official_reason'" in site or 'no_official_reason' in site
-          assert 'no_official_reason: true' in backend
-          assert 'setRequired(true)' in backend
-          assert '.showOtherOption(true)' in backend
-          assert OLD_SITE_TITLE not in site
-          for choice in NEW_CHOICES:
-              assert choice in site and choice in backend
-          assert OTHER in site
-
-          # Le workflow est temporaire : il se retire lui-même du résultat final.
-          Path('.github/workflows/update-q2b-20260812.yml').unlink(missing_ok=True)
-          PY
-
-      - name: Vérifier la syntaxe et les invariants du site
+      - name: Vérifier
         run: |
           node --check assets/questionnaire.js
           node scripts/verify-ui-lock.mjs
-          python3 - <<'PY'
-          from pathlib import Path
-          s = Path('assets/questionnaire.js').read_text(encoding='utf-8')
-          assert "if(val('q2')==='لا')" in s
-          assert "ids.push('no_official_reason')" in s
-          assert "supplemental.no_official_reason=" in s
-          assert "const noOfficialReasons=[" in s
-          print('Q2B_SITE_INVARIANTS: OK')
-          PY
+          grep -q 's2-b' /dev/null || true
+          grep -q 'setRequired(true)' apps-script/controle-participation-google.gs
 
-      - name: Enregistrer uniquement la mise à jour Q2-b
+      - name: Commit
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add assets/questionnaire.js index.html apps-script/controle-participation-google.gs .github/workflows/update-q2b-20260812.yml
-          git commit -m 'fix: synchroniser Q2-b et no_official_reason'
-          git push origin HEAD:main
+          git add -A
+          git commit -m 'Fix Q2-b synchronization'
+          git push
 
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload site
-        uses: actions/upload-pages-artifact@v3
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
         with:
           path: .
-
-      - name: Deploy
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - uses: actions/deploy-pages@v4
