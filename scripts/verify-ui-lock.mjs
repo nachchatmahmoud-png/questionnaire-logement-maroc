@@ -29,7 +29,7 @@ expect(source.includes('checkbox-question-title'), 'Les titres des questions à 
 expect(source.includes('instruction-text'), 'Les consignes doivent conserver la classe instruction-text.');
 expect(source.includes('س1-أ. عبر أي وسيلة تفضلون التوصل بمعلومات حول البرامج العمومية؟'), 'La numérotation س1-أ doit être conservée.');
 expect(source.includes('س2-أ. من خلال أي من المصادر التالية اطلعتم على معلومات حول البرنامج؟'), 'La numérotation س2-أ doit être conservée.');
-expect(source.includes('س2-ب. ما السبب الرئيسي لعدم اطلاعكم على معلومات حول البرنامج عبر وسائل التواصل الرسمية للوزارة؟'), 'La numérotation س2-ب doit être conservée.');
+expect(source.includes('س2-ب. ما السبب الرئيسي لعدم اطلاعكم على معلومات حول البرنامج عبر القنوات الرسمية للوزارة أو للبرنامج؟'), 'La numérotation س2-ب doit être conservée.');
 
 expect(lockCss.includes('color: #111827 !important;'), 'Les titres de questions protégés doivent rester noirs.');
 expect(lockCss.includes('color: #6b7280 !important;'), 'Les consignes doivent rester grises.');
