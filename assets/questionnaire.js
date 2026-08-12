@@ -1,7 +1,7 @@
 const FORM_ACTION='https://docs.google.com/forms/d/e/1FAIpQLSfIOkBS04JQVuTRE0npIB6QOJ6UPg0ckoBTqAdLG9PT3yUOkA/formResponse';
 const FORM_PUBLIC_URL='https://docs.google.com/forms/d/e/1FAIpQLSfIOkBS04JQVuTRE0npIB6QOJ6UPg0ckoBTqAdLG9PT3yUOkA/viewform';
 const GOOGLE_CLIENT_ID='285878510024-7dhdojiucp6ff20m2snuro018t70c6s5.apps.googleusercontent.com';
-const AUTH_BRIDGE_URL='https://script.google.com/macros/s/AKfycbxmwpYfo8bhwBmPPsKrIsqIfW4DQUxOxrwYavWgojHvLzR0e-TDK-DQj7t3LNeODRSv/exec';
+const AUTH_BRIDGE_URL='https://script.google.com/macros/s/AKfycbzta5bsE3ImUaM-qNHnqXCv_qa2MjDmtRwnDXBjHi3tcmDXaxy3oVFIco_u-9gvq6ZK3A/exec';
 const AUTH_CHANNEL='questionnaire-logement-auth-v1';
 const SCHEMA_VERSION='2026-08-11-comprehension-v3';
 const ENTRY_COMMON={
