@@ -1,0 +1,80 @@
+name: Unify question instruction spacing
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/unify-question-instruction-spacing.yml
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-question-instruction-spacing
+  cancel-in-progress: true
+
+jobs:
+  patch-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Apply uniform question instruction spacing
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          marker = 'question-instruction-spacing-20260812-v1'
+          style = """
+      /* question-instruction-spacing-20260812-v1 */
+      html body .question-card > legend:has(+ .instruction-text){
+        margin-bottom:0 !important;
+      }
+      html body .question-card > legend + .instruction-text{
+        margin-top:6px !important;
+        margin-bottom:12px !important;
+      }
+      html body .instruction-card > strong:not(.instruction-text) + .instruction-text{
+        margin-top:6px !important;
+      }
+"""
+          if marker not in s:
+              s = s.replace('</style>', style + '</style>', 1)
+          p.write_text(s, encoding='utf-8')
+          PY
+
+      - name: Verify spacing rule
+        shell: bash
+        run: |
+          grep -q 'question-instruction-spacing-20260812-v1' index.html
+          grep -q 'margin-top:6px !important' index.html
+
+      - name: Commit patch
+        shell: bash
+        run: |
+          rm .github/workflows/unify-question-instruction-spacing.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add index.html .github/workflows/unify-question-instruction-spacing.yml
+          git commit -m 'Use consistent spacing between questions and instructions'
+          git push
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
