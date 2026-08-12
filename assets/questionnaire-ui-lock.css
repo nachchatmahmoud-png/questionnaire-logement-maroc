@@ -1,0 +1,69 @@
+/*
+ * QUESTIONNAIRE UI LOCK
+ * Règles validées à conserver sur mobile et ordinateur.
+ * Ne pas supprimer ni remplacer sans mise à jour explicite du verrou de validation.
+ */
+
+/* Questions à choix multiples : toujours des questions, donc noir, 16px, gras. */
+html body fieldset.question-card:has(input[type="checkbox"]) > legend.checkbox-question-title,
+html body fieldset.question-card:has(input[type="checkbox"]) > legend.question-title.checkbox-question-title {
+  color: #111827 !important;
+  font-family: "Noto Sans Arabic", Tahoma, Arial, sans-serif !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  font-style: normal !important;
+  line-height: 1.9 !important;
+}
+
+/* Toutes les consignes explicites : gris, plus petites que les questions. */
+html body .instruction-text,
+html body .instruction-text * {
+  color: #6b7280 !important;
+  font-family: "Noto Sans Arabic", Tahoma, Arial, sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  font-style: normal !important;
+  line-height: 1.7 !important;
+}
+
+/* Espace unique entre une question et sa consigne. */
+html body .question-card > legend:has(+ .instruction-text) {
+  margin-bottom: 0 !important;
+}
+
+html body .question-card > legend + .instruction-text {
+  display: block !important;
+  margin: 6px 0 12px !important;
+}
+
+html body .instruction-card > strong:not(.instruction-text) + .instruction-text {
+  margin-top: 6px !important;
+}
+
+/* Verrou desktop explicite : neutralise les anciennes règles >= 761px. */
+@media (min-width: 761px) {
+  html body fieldset.question-card:has(input[type="checkbox"]) > legend.checkbox-question-title,
+  html body fieldset.question-card:has(input[type="checkbox"]) > legend.question-title.checkbox-question-title {
+    color: #111827 !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+  }
+
+  html body .question-card > legend + .instruction-text {
+    margin: 6px 0 12px !important;
+  }
+}
+
+/* Verrou mobile explicite. */
+@media (max-width: 760px) {
+  html body fieldset.question-card:has(input[type="checkbox"]) > legend.checkbox-question-title,
+  html body fieldset.question-card:has(input[type="checkbox"]) > legend.question-title.checkbox-question-title {
+    color: #111827 !important;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+  }
+
+  html body .question-card > legend + .instruction-text {
+    margin: 6px 0 12px !important;
+  }
+}
