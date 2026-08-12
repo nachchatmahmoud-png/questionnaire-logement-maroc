@@ -8,7 +8,7 @@
     <meta http-equiv="Expires" content="0" />
     <meta name="description" content="استبيان أكاديمي حول التواصل العمومي المرتبط ببرنامج الدعم المباشر للسكن" />
     <title>استبيان برنامج الدعم المباشر للسكن</title>
-    <link rel="stylesheet" crossorigin href="/questionnaire-logement-maroc/assets/index-iQBeb6Ok.css?v=20260807-access-21" />
+    <link rel="stylesheet" crossorigin href="/questionnaire-logement-maroc/assets/index-iQBeb6Ok.css?v=20260812-instructions-gray-v2" />
     <script>
       window.addEventListener('error', function () {
         document.documentElement.dataset.scriptError = '1';
@@ -327,7 +327,20 @@
         html body .likert-table thead th:not(:first-child){min-width:70px !important;padding:.38rem .14rem !important;}
         html body .likert-table thead th:not(:first-child)::after{font-size:12px !important;line-height:1.25 !important;}
       }
-    </style>
+    
+      /* desktop-instruction-gray-inline-20260812-v2 */
+      @media (min-width:761px){
+        html body .question-help,
+        html body .instruction-card > p,
+        html body .instruction-card:has(.legend-grid) > strong,
+        html body .interaction-channels-card > p,
+        html body .interaction-channels-card .interaction-lead,
+        html body .interaction-channels-card bdi,
+        html body fieldset.question-card:has(input[type="checkbox"]) > legend{
+          color:#6b7280 !important;
+        }
+      }
+</style>
   </head>
   <body>
     <div id="root">
