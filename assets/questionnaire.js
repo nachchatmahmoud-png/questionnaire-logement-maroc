@@ -295,7 +295,7 @@ function handleSubmissionRefusal(resultat){
   auth.allowed=false;auth.idToken='';auth.submissionEntryId='';auth.blocked=false;auth.error='انتهت جلسة تسجيل الدخول. يرجى تسجيل الدخول مجددًا، وستبقى إجاباتكم محفوظة في هذه الصفحة.';render();return;
  }
  state.error=state.pendingSubmissionId
-  ?'لم يؤكد Google Forms تسجيل الإجابات بعد. لم نعرض رسالة نجاح. اضغطوا على زر التحقق مرة أخرى، وستبقى إجاباتكم محفوظة. ['+String(resultat?.reason||'unknown_error')+']'
+  ?'لم يؤكد Google Forms تسجيل الإجابات بعد. لم نعرض رسالة نجاح. اضغطوا على زر التحقق مرة أخرى، وستبقى إجاباتكم محفوظة.'
   :'تعذر تأكيد صلاحية الحساب. لم تُرسل إجاباتكم، ويمكنكم إعادة المحاولة.';
  render();
 }
