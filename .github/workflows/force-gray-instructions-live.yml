@@ -32,35 +32,16 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
-
           path = Path('index.html')
           text = path.read_text(encoding='utf-8')
-          text = text.replace(
-              'index-iQBeb6Ok.css?v=20260807-access-21',
-              'index-iQBeb6Ok.css?v=20260812-instructions-gray-v2'
-          )
-
+          text = text.replace('index-iQBeb6Ok.css?v=20260807-access-21','index-iQBeb6Ok.css?v=20260812-instructions-gray-v2')
           marker = 'desktop-instruction-gray-inline-20260812-v2'
-          block = '''
-      /* desktop-instruction-gray-inline-20260812-v2 */
-      @media (min-width:761px){
-        html body .question-help,
-        html body .instruction-card > p,
-        html body .instruction-card:has(.legend-grid) > strong,
-        html body .interaction-channels-card > p,
-        html body .interaction-channels-card .interaction-lead,
-        html body .interaction-channels-card bdi,
-        html body fieldset.question-card:has(input[type="checkbox"]) > legend{
-          color:#6b7280 !important;
-        }
-      }
-'''
+          block = '\n      /* desktop-instruction-gray-inline-20260812-v2 */\n      @media (min-width:761px){\n        html body .question-help,\n        html body .instruction-card > p,\n        html body .instruction-card:has(.legend-grid) > strong,\n        html body .interaction-channels-card > p,\n        html body .interaction-channels-card .interaction-lead,\n        html body .interaction-channels-card bdi,\n        html body fieldset.question-card:has(input[type="checkbox"]) > legend{\n          color:#6b7280 !important;\n        }\n      }\n'
           if marker not in text:
               pos = text.find('</style>')
               if pos == -1:
                   raise SystemExit('Balise </style> introuvable')
               text = text[:pos] + block + text[pos:]
-
           path.write_text(text, encoding='utf-8')
           PY
 
