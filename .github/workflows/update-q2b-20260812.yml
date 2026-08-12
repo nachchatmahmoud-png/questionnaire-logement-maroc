@@ -1,0 +1,188 @@
+name: Synchroniser Q2-b
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/update-q2b-20260812.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: q2b-20260812
+  cancel-in-progress: false
+
+jobs:
+  update-and-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Appliquer la mise à jour ciblée Q2-b
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          NEW_TITLE = 'س2-ب. ما السبب الرئيسي لعدم اطلاعكم على معلومات حول البرنامج عبر القنوات الرسمية للوزارة أو للبرنامج؟'
+          HELP = 'يرجى اختيار جواب واحد فقط.'
+          OTHER = 'سبب آخر، يرجى التحديد: __________'
+          NEW_CHOICES = [
+              'لم أكن أعلم بوجود قنوات رسمية توفر معلومات حول البرنامج.',
+              'كنت أعلم بوجود قنوات رسمية، لكن لم يكن واضحًا لي ما هي القنوات أو الحسابات الرسمية المعتمدة.',
+              'لم أفكر في الرجوع إلى القنوات الرسمية للحصول على معلومات حول البرنامج.',
+              'فضّلت الاعتماد على مصادر أخرى لأنها بدت لي أسهل أو أنسب للحصول على المعلومات.',
+              'حاولت الوصول إلى القنوات الرسمية، لكن واجهت صعوبة في العثور عليها أو الوصول إليها.',
+              'وصلت إلى القنوات الرسمية، لكن واجهت صعوبة في استخدامها أو تصفح محتواها.',
+              'وصلت إلى القنوات الرسمية، لكنني لم أجد المعلومات التي كنت أبحث عنها.',
+              'لا أستخدم عادةً القنوات الرقمية للحصول على معلومات حول البرامج العمومية.',
+          ]
+          OLD_TITLE = 'ما السبب الرئيسي لعدم اطلاعكم على معلومات حول البرنامج عبر وسائل التواصل الرسمية للوزارة؟'
+          OLD_SITE_TITLE = 'س2-ب. ما السبب الرئيسي لعدم اطلاعكم على معلومات حول البرنامج عبر وسائل التواصل الرسمية للوزارة؟'
+
+          def replace_once(text, old, new, label):
+              n = text.count(old)
+              if n != 1:
+                  raise SystemExit(f'{label}: attendu 1 occurrence, trouvé {n}')
+              return text.replace(old, new, 1)
+
+          # Site public
+          p = Path('assets/questionnaire.js')
+          s = p.read_text(encoding='utf-8')
+          old_const = "const NO_OFFICIAL_REASON_OTHER='سبب آخر';"
+          s = replace_once(s, old_const, f"const NO_OFFICIAL_REASON_OTHER='{OTHER}';", 'site OTHER')
+          old_reasons = "const noOfficialReasons=['لم أكن أعرف وسائل التواصل الرسمية للوزارة.','لم أبحث عن معلومات حول البرنامج عبر هذه الوسائل.','اعتمدت على مصادر أخرى بدت لي كافية.','واجهت صعوبة في الوصول إلى وسائل التواصل الرسمية.','لم أجد المعلومات التي كنت أبحث عنها عبر هذه الوسائل.','لا أستخدم هذه الوسائل عادةً.',NO_OFFICIAL_REASON_OTHER];"
+          new_reasons = 'const noOfficialReasons=[' + ','.join(repr(x) for x in NEW_CHOICES) + ',NO_OFFICIAL_REASON_OTHER];'
+          s = replace_once(s, old_reasons, new_reasons, 'site choices')
+          s = replace_once(s, OLD_SITE_TITLE, NEW_TITLE, 'site title')
+          p.write_text(s, encoding='utf-8')
+
+          # Cache-busting strictement nécessaire pour le JS actif.
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          s = replace_once(s, 'questionnaire.js?v=20260812-desktop-question-black-v41', 'questionnaire.js?v=20260812-q2b-v42', 'index cache')
+          p.write_text(s, encoding='utf-8')
+
+          # Copie de référence du backend Apps Script.
+          p = Path('apps-script/controle-participation-google.gs')
+          s = p.read_text(encoding='utf-8')
+          s = replace_once(s, "QUESTIONNAIRE_UPDATE_PROPERTY: 'QUESTIONNAIRE_UPDATE_20260812_V1'", "QUESTIONNAIRE_UPDATE_PROPERTY: 'QUESTIONNAIRE_UPDATE_20260812_V2'", 'backend version')
+          old_block = """  NO_OFFICIAL_REASON_TITLE: 'ما السبب الرئيسي لعدم اطلاعكم على معلومات حول البرنامج عبر وسائل التواصل الرسمية للوزارة؟',
+  NO_OFFICIAL_REASON_CHOICES: [
+    'لم أكن أعرف وسائل التواصل الرسمية للوزارة.',
+    'لم أبحث عن معلومات حول البرنامج عبر هذه الوسائل.',
+    'اعتمدت على مصادر أخرى بدت لي كافية.',
+    'واجهت صعوبة في الوصول إلى وسائل التواصل الرسمية.',
+    'لم أجد المعلومات التي كنت أبحث عنها عبر هذه الوسائل.',
+    'لا أستخدم هذه الوسائل عادةً.',
+  ],"""
+          new_block = "  NO_OFFICIAL_REASON_TITLE: " + repr(NEW_TITLE) + ",\n" + \
+              "  NO_OFFICIAL_REASON_HELP: " + repr(HELP) + ",\n" + \
+              "  NO_OFFICIAL_REASON_LEGACY_TITLES: [" + repr(OLD_TITLE) + "],\n" + \
+              "  NO_OFFICIAL_REASON_CHOICES: [\n" + ''.join("    " + repr(x) + ",\n" for x in NEW_CHOICES) + "  ],"
+          s = replace_once(s, old_block, new_block, 'backend constants')
+
+          lookup_anchor = """    questions.no_official_reason = trouverQuestionUniqueParTitre_(
+      formulaire,
+      FormApp.ItemType.MULTIPLE_CHOICE,
+      MISE_A_JOUR_QUESTIONNAIRE.NO_OFFICIAL_REASON_TITLE
+    );
+    if (!questions.no_official_reason && creerSiAbsent) {"""
+          lookup_replacement = """    questions.no_official_reason = trouverQuestionUniqueParTitre_(
+      formulaire,
+      FormApp.ItemType.MULTIPLE_CHOICE,
+      MISE_A_JOUR_QUESTIONNAIRE.NO_OFFICIAL_REASON_TITLE
+    );
+    if (!questions.no_official_reason) {
+      const anciennesQ2b = formulaire.getItems(FormApp.ItemType.MULTIPLE_CHOICE).filter(function (item) {
+        return MISE_A_JOUR_QUESTIONNAIRE.NO_OFFICIAL_REASON_LEGACY_TITLES.indexOf(item.getTitle()) !== -1;
+      });
+      if (anciennesQ2b.length > 1) throw new Error('CONFIGURATION_MISSING');
+      if (anciennesQ2b.length === 1) {
+        questions.no_official_reason = anciennesQ2b[0].asMultipleChoiceItem();
+        questions.no_official_reason.setTitle(MISE_A_JOUR_QUESTIONNAIRE.NO_OFFICIAL_REASON_TITLE);
+        changementStructurel = true;
+      }
+    }
+    if (!questions.no_official_reason && creerSiAbsent) {"""
+          s = replace_once(s, lookup_anchor, lookup_replacement, 'backend migrate existing Q2-b')
+
+          config_anchor = """      configurerQuestionChoixUnique_(
+        questions.no_official_reason,
+        MISE_A_JOUR_QUESTIONNAIRE.NO_OFFICIAL_REASON_CHOICES
+      );
+    }"""
+          config_replacement = """      configurerQuestionChoixUnique_(
+        questions.no_official_reason,
+        MISE_A_JOUR_QUESTIONNAIRE.NO_OFFICIAL_REASON_CHOICES
+      );
+      questions.no_official_reason
+        .setHelpText(MISE_A_JOUR_QUESTIONNAIRE.NO_OFFICIAL_REASON_HELP)
+        .showOtherOption(true)
+        .setRequired(true);
+    }"""
+          s = replace_once(s, config_anchor, config_replacement, 'backend required/help/other')
+          p.write_text(s, encoding='utf-8')
+
+          # Assertions ciblées : aucune modification de scoring, clé technique conservée,
+          # huit modalités fermées + option Autre libre sur le site et dans Forms.
+          site = Path('assets/questionnaire.js').read_text(encoding='utf-8')
+          backend = Path('apps-script/controle-participation-google.gs').read_text(encoding='utf-8')
+          assert NEW_TITLE in site and NEW_TITLE in backend
+          assert HELP in site and HELP in backend
+          assert "'no_official_reason'" in site or 'no_official_reason' in site
+          assert 'no_official_reason: true' in backend
+          assert 'setRequired(true)' in backend
+          assert '.showOtherOption(true)' in backend
+          assert OLD_SITE_TITLE not in site
+          for choice in NEW_CHOICES:
+              assert choice in site and choice in backend
+          assert OTHER in site
+
+          # Le workflow est temporaire : il se retire lui-même du résultat final.
+          Path('.github/workflows/update-q2b-20260812.yml').unlink(missing_ok=True)
+          PY
+
+      - name: Vérifier la syntaxe et les invariants du site
+        run: |
+          node --check assets/questionnaire.js
+          node scripts/verify-ui-lock.mjs
+          python3 - <<'PY'
+          from pathlib import Path
+          s = Path('assets/questionnaire.js').read_text(encoding='utf-8')
+          assert "if(val('q2')==='لا')" in s
+          assert "ids.push('no_official_reason')" in s
+          assert "supplemental.no_official_reason=" in s
+          assert "const noOfficialReasons=[" in s
+          print('Q2B_SITE_INVARIANTS: OK')
+          PY
+
+      - name: Enregistrer uniquement la mise à jour Q2-b
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/questionnaire.js index.html apps-script/controle-participation-google.gs .github/workflows/update-q2b-20260812.yml
+          git commit -m 'fix: synchroniser Q2-b et no_official_reason'
+          git push origin HEAD:main
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
