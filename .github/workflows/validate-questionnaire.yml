@@ -13,5 +13,5 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Contrôler les règles validées
-        run: node scripts/verify-questionnaire.mjs
+      - name: Protéger le rendu mobile et ordinateur
+        run: node scripts/verify-ui-lock.mjs
