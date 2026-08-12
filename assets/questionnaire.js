@@ -59,7 +59,7 @@ const FAMILY_BENEFICIARY='استفاد أحد أفراد أسرتي من الب�
 const OFFICIAL_SOURCE_OTHER_ID='official_other';
 const EXTERNAL_SOURCE_OTHER_ID='external_other';
 const PUBLIC_CHANNEL_OTHER='وسيلة أخرى';
-const NO_OFFICIAL_REASON_OTHER='سبب آخر';
+const NO_OFFICIAL_REASON_OTHER='سبب آخر، يرجى التحديد: __________';
 const OTHER_CONTACT_CHANNEL='قناة رسمية أخرى';
 const beneficiary=()=>val('status')===PERSONAL_BENEFICIARY;
 const route=()=>val('q1')==='لا'?'g1':val('q2')==='لا'?'g2':'official';
@@ -111,7 +111,7 @@ function sourcePrincipaleLabel(){
 }
 const externalSources=[['external_tv_radio','التلفزيون أو الإذاعة'],['external_press','الصحافة الإلكترونية أو الورقية'],['external_unofficial_social','مواقع أو صفحات غير رسمية على شبكات التواصل الاجتماعي'],['external_family','الأسرة أو الأصدقاء أو المعارف'],[EXTERNAL_SOURCE_OTHER_ID,'مصدر آخر']];
 const publicCommunicationChannels=['التلفزيون أو الإذاعة','المواقع الإلكترونية الرسمية للإدارات والمؤسسات العمومية','الصفحات والحسابات الرسمية على شبكات التواصل الاجتماعي','الصحافة الإلكترونية أو الورقية','اللقاءات أو الحملات التواصلية الميدانية',PUBLIC_CHANNEL_OTHER];
-const noOfficialReasons=['لم أكن أعرف وسائل التواصل الرسمية للوزارة.','لم أبحث عن معلومات حول البرنامج عبر هذه الوسائل.','اعتمدت على مصادر أخرى بدت لي كافية.','واجهت صعوبة في الوصول إلى وسائل التواصل الرسمية.','لم أجد المعلومات التي كنت أبحث عنها عبر هذه الوسائل.','لا أستخدم هذه الوسائل عادةً.',NO_OFFICIAL_REASON_OTHER];
+const noOfficialReasons=['لم أكن أعلم بوجود قنوات رسمية توفر معلومات حول البرنامج.','كنت أعلم بوجود قنوات رسمية، لكن لم يكن واضحًا لي ما هي القنوات أو الحسابات الرسمية المعتمدة.','لم أفكر في الرجوع إلى القنوات الرسمية للحصول على معلومات حول البرنامج.','فضّلت الاعتماد على مصادر أخرى لأنها بدت لي أسهل أو أنسب للحصول على المعلومات.','حاولت الوصول إلى القنوات الرسمية، لكن واجهت صعوبة في العثور عليها أو الوصول إليها.','وصلت إلى القنوات الرسمية، لكن واجهت صعوبة في استخدامها أو تصفح محتواها.','وصلت إلى القنوات الرسمية، لكنني لم أجد المعلومات التي كنت أبحث عنها.','لا أستخدم عادةً القنوات الرقمية للحصول على معلومات حول البرامج العمومية.',NO_OFFICIAL_REASON_OTHER];
 const statuses=[PERSONAL_BENEFICIARY,FAMILY_BENEFICIARY,'قدمت طلبًا وما زال قيد المعالجة','قدمت طلبًا ولم تتم الموافقة عليه','اطلعت على البرنامج ولم أتقدم بطلب للاستفادة منه'];
 const contactChannels=[
  'منصة دعم سكن – DaamSakane.ma → عبر خدمة «اتصل بنا» على المنصة الرسمية.',
@@ -189,7 +189,7 @@ function filters(){
   if(val('q2')==='لا'){
    h+=checks(externalSources,'س2-أ. من خلال أي من المصادر التالية اطلعتم على معلومات حول البرنامج؟');
    if(val(EXTERNAL_SOURCE_OTHER_ID))h+=textField('external_other_detail','يرجى تحديد المصدر الآخر:','اكتبوا اسم المصدر الآخر');
-   h+=radio('no_official_reason','س2-ب. ما السبب الرئيسي لعدم اطلاعكم على معلومات حول البرنامج عبر وسائل التواصل الرسمية للوزارة؟',noOfficialReasons,true,'يرجى اختيار جواب واحد فقط.');
+   h+=radio('no_official_reason','س2-ب. ما السبب الرئيسي لعدم اطلاعكم على معلومات حول البرنامج عبر القنوات الرسمية للوزارة أو للبرنامج؟',noOfficialReasons,true,'يرجى اختيار جواب واحد فقط.');
    if(val('no_official_reason')===NO_OFFICIAL_REASON_OTHER)h+=textField('no_official_reason_other','يرجى تحديد السبب الآخر:','اكتبوا السبب الآخر');
   }
   if(val('q2'))h+=radio('status','س3. ما هي طبيعة علاقتكم الحالية ببرنامج الدعم المباشر للسكن؟',statuses);

@@ -25,7 +25,7 @@ const CONTROLE_PARTICIPATION = Object.freeze({
   ENTRY_ITEM_MAP_PROPERTY: 'FORM_ENTRY_ITEM_MAP_V1',
   PROVENANCE_SECRET_PROPERTY: 'FORM_SUBMISSION_PROVENANCE_SECRET_V1',
   PROVENANCE_TRIGGER_HANDLER: 'rejeterSoumissionDirecteNonAutorisee',
-  QUESTIONNAIRE_UPDATE_PROPERTY: 'QUESTIONNAIRE_UPDATE_20260812_V1',
+  QUESTIONNAIRE_UPDATE_PROPERTY: 'QUESTIONNAIRE_UPDATE_20260812_V2',
 });
 
 const MISE_A_JOUR_QUESTIONNAIRE = Object.freeze({
@@ -37,14 +37,18 @@ const MISE_A_JOUR_QUESTIONNAIRE = Object.freeze({
     'الصحافة الإلكترونية أو الورقية',
     'اللقاءات أو الحملات التواصلية الميدانية',
   ],
-  NO_OFFICIAL_REASON_TITLE: 'ما السبب الرئيسي لعدم اطلاعكم على معلومات حول البرنامج عبر وسائل التواصل الرسمية للوزارة؟',
+  NO_OFFICIAL_REASON_TITLE: 'س2-ب. ما السبب الرئيسي لعدم اطلاعكم على معلومات حول البرنامج عبر القنوات الرسمية للوزارة أو للبرنامج؟',
+  NO_OFFICIAL_REASON_HELP: 'يرجى اختيار جواب واحد فقط.',
+  NO_OFFICIAL_REASON_LEGACY_TITLES: ['ما السبب الرئيسي لعدم اطلاعكم على معلومات حول البرنامج عبر وسائل التواصل الرسمية للوزارة؟'],
   NO_OFFICIAL_REASON_CHOICES: [
-    'لم أكن أعرف وسائل التواصل الرسمية للوزارة.',
-    'لم أبحث عن معلومات حول البرنامج عبر هذه الوسائل.',
-    'اعتمدت على مصادر أخرى بدت لي كافية.',
-    'واجهت صعوبة في الوصول إلى وسائل التواصل الرسمية.',
-    'لم أجد المعلومات التي كنت أبحث عنها عبر هذه الوسائل.',
-    'لا أستخدم هذه الوسائل عادةً.',
+    'لم أكن أعلم بوجود قنوات رسمية توفر معلومات حول البرنامج.',
+    'كنت أعلم بوجود قنوات رسمية، لكن لم يكن واضحًا لي ما هي القنوات أو الحسابات الرسمية المعتمدة.',
+    'لم أفكر في الرجوع إلى القنوات الرسمية للحصول على معلومات حول البرنامج.',
+    'فضّلت الاعتماد على مصادر أخرى لأنها بدت لي أسهل أو أنسب للحصول على المعلومات.',
+    'حاولت الوصول إلى القنوات الرسمية، لكن واجهت صعوبة في العثور عليها أو الوصول إليها.',
+    'وصلت إلى القنوات الرسمية، لكن واجهت صعوبة في استخدامها أو تصفح محتواها.',
+    'وصلت إلى القنوات الرسمية، لكنني لم أجد المعلومات التي كنت أبحث عنها.',
+    'لا أستخدم عادةً القنوات الرقمية للحصول على معلومات حول البرامج العمومية.',
   ],
   TRUST_COMMON_TITLE: 'الثقة العامة المشتركة بين مسارات الاستبيان',
   TRUST_COMMON_ROW: 'بصفة عامة، أثق في الوزارة فيما يتعلق بتدبير برنامج الدعم المباشر للسكن.',
@@ -473,6 +477,17 @@ function garantirMiseAJourQuestionnaire_(formulaire, creerSiAbsent) {
       FormApp.ItemType.MULTIPLE_CHOICE,
       MISE_A_JOUR_QUESTIONNAIRE.NO_OFFICIAL_REASON_TITLE
     );
+    if (!questions.no_official_reason) {
+      const anciennesQ2b = formulaire.getItems(FormApp.ItemType.MULTIPLE_CHOICE).filter(function (item) {
+        return MISE_A_JOUR_QUESTIONNAIRE.NO_OFFICIAL_REASON_LEGACY_TITLES.indexOf(item.getTitle()) !== -1;
+      });
+      if (anciennesQ2b.length > 1) throw new Error('CONFIGURATION_MISSING');
+      if (anciennesQ2b.length === 1) {
+        questions.no_official_reason = anciennesQ2b[0].asMultipleChoiceItem();
+        questions.no_official_reason.setTitle(MISE_A_JOUR_QUESTIONNAIRE.NO_OFFICIAL_REASON_TITLE);
+        changementStructurel = true;
+      }
+    }
     if (!questions.no_official_reason && creerSiAbsent) {
       questions.no_official_reason = formulaire.addMultipleChoiceItem();
       questions.no_official_reason.setTitle(
@@ -485,6 +500,10 @@ function garantirMiseAJourQuestionnaire_(formulaire, creerSiAbsent) {
         questions.no_official_reason,
         MISE_A_JOUR_QUESTIONNAIRE.NO_OFFICIAL_REASON_CHOICES
       );
+      questions.no_official_reason
+        .setHelpText(MISE_A_JOUR_QUESTIONNAIRE.NO_OFFICIAL_REASON_HELP)
+        .showOtherOption(true)
+        .setRequired(true);
     }
 
     questions.trust_general_common = trouverQuestionUniqueParTitre_(
