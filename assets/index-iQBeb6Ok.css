@@ -101,3 +101,16 @@
       .question-card legend, .statement-card legend { font-size: .98rem !important; }
       .question-card, .group-card, .statement-card, .instruction-card { border-radius: 14px !important; }
     }
+
+/* desktop-instruction-gray-20260812 — consignes en gris sur ordinateur uniquement */
+@media (min-width: 761px) {
+  .question-help,
+  .instruction-card > strong,
+  .instruction-card > p,
+  .interaction-channels-card > p,
+  .interaction-channels-card .interaction-lead,
+  .interaction-channels-card bdi,
+  fieldset.question-card:has(input[type="checkbox"]) > legend {
+    color: #6b7280 !important;
+  }
+}
