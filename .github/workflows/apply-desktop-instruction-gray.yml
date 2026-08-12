@@ -23,27 +23,27 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
-
           css_path = Path('assets/index-iQBeb6Ok.css')
           css = css_path.read_text(encoding='utf-8')
           marker = 'desktop-instruction-gray-20260812'
-          block = r'''
-
-/* desktop-instruction-gray-20260812 — consignes en gris sur ordinateur uniquement */
-@media (min-width: 761px) {
-  .question-help,
-  .instruction-card > strong,
-  .instruction-card > p,
-  .interaction-channels-card > p,
-  .interaction-channels-card .interaction-lead,
-  .interaction-channels-card bdi,
-  fieldset.question-card:has(input[type="checkbox"]) > legend {
-    color: #6b7280 !important;
-  }
-}
-'''
+          lines = [
+              '',
+              '/* desktop-instruction-gray-20260812 — consignes en gris sur ordinateur uniquement */',
+              '@media (min-width: 761px) {',
+              '  .question-help,',
+              '  .instruction-card > strong,',
+              '  .instruction-card > p,',
+              '  .interaction-channels-card > p,',
+              '  .interaction-channels-card .interaction-lead,',
+              '  .interaction-channels-card bdi,',
+              '  fieldset.question-card:has(input[type="checkbox"]) > legend {',
+              '    color: #6b7280 !important;',
+              '  }',
+              '}',
+              ''
+          ]
           if marker not in css:
-              css_path.write_text(css.rstrip() + block + '\n', encoding='utf-8')
+              css_path.write_text(css.rstrip() + '\n' + '\n'.join(lines), encoding='utf-8')
           PY
 
       - name: Remove one-shot workflow
