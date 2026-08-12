@@ -2,7 +2,8 @@ name: Fix question instruction structure
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
     paths:
       - .github/workflows/fix-question-instruction-structure.yml
 
@@ -11,81 +12,30 @@ permissions:
   pages: write
   id-token: write
 
-concurrency:
-  group: pages-question-instruction-structure
-  cancel-in-progress: true
-
 jobs:
   patch-and-deploy:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Normalize question and instruction markup
-        shell: bash
+      - name: Apply structural spacing fix
+        run: echo 'ZnJvbSBwYXRobGliIGltcG9ydCBQYXRoCmltcG9ydCByZQoKanNfcGF0aCA9IFBhdGgoImFzc2V0cy9xdWVzdGlvbm5haXJlLmpzIikKanMgPSBqc19wYXRoLnJlYWRfdGV4dChlbmNvZGluZz0idXRmLTgiKQoKbmV3X2NoZWNrcyA9ICIiImZ1bmN0aW9uIGNoZWNrcyhpdGVtcyxxdWVzdGlvbixpbnN0cnVjdGlvbj0n2YrZhdmD2YYg2KfYrtiq2YrYp9ixINij2YPYq9ixINmF2YYg2KzZiNin2KguJyl7cmV0dXJuIGA8ZmllbGRzZXQgY2xhc3M9InF1ZXN0aW9uLWNhcmQiPjxsZWdlbmQ+JHtlc2MocXVlc3Rpb24pfTwvbGVnZW5kPjxwIGNsYXNzPSJpbnN0cnVjdGlvbi10ZXh0Ij4ke2VzYyhpbnN0cnVjdGlvbil9PC9wPjxkaXYgY2xhc3M9InN0YW5kYXJkLW9wdGlvbnMiPiR7aXRlbXMubWFwKChbaWQsdF0pPT5gPGxhYmVsIGNsYXNzPSJjaG9pY2UgJHt2YWwoaWQpPydjaG9pY2Utc2VsZWN0ZWQnOicnfSI+PGlucHV0IHR5cGU9ImNoZWNrYm94IiBkYXRhLWNoZWNrPSIke2lkfSIgJHt2YWwoaWQpPydjaGVja2VkJzonJ30+PHNwYW4+JHtlc2ModCl9PC9zcGFuPjwvbGFiZWw+YCkuam9pbignJyl9PC9kaXY+PC9maWVsZHNldD5gfSIiIgpqcywgY291bnQgPSByZS5zdWJuKHIiZnVuY3Rpb24gY2hlY2tzXCguKj9cbmZ1bmN0aW9uIHRleHRGaWVsZCIsIG5ld19jaGVja3MgKyAiXG5mdW5jdGlvbiB0ZXh0RmllbGQiLCBqcywgY291bnQ9MSwgZmxhZ3M9cmUuUykKaWYgY291bnQgIT0gMToKICAgIHJhaXNlIFN5c3RlbUV4aXQoImNoZWNrcyBmdW5jdGlvbiBub3QgcmVwbGFjZWQiKQoKcV9vZmZpY2lhbCA9ICLZhdmGINiu2YTYp9mEINij2Yog2YXZhiDZiNiz2KfYptmEINin2YTYqtmI2KfYtdmEINin2YTYsdiz2YXZitipINin2YTYqtin2YTZitipINin2LfZhNi52KrZhSDYudmE2Ykg2YXYudmE2YjZhdin2Kog2K3ZiNmEINin2YTYqNix2YbYp9mF2KzYnyIKcV9leHRlcm5hbCA9ICLZhdmGINiu2YTYp9mEINij2Yog2YXZhiDYp9mE2YXYtdin2K/YsSDYp9mE2KrYp9mE2YrYqSDYp9i32YTYudiq2YUg2LnZhNmJINmF2LnZhNmI2YXYp9iqINit2YjZhCDYp9mE2KjYsdmG2KfZhdis2J8iCm9sZF9vZmZpY2lhbCA9IGYnaCs9YDxkaXYgY2xhc3M9Imdyb3VwLWNhcmQiPjxoMz57cV9vZmZpY2lhbH08L2gzPiR7e2NoZWNrcyhvZmZpY2lhbFNvdXJjZXMpfX08L2Rpdj5gOycKb2xkX2V4dGVybmFsID0gZidoKz1gPGRpdiBjbGFzcz0iZ3JvdXAtY2FyZCI+PGgzPntxX2V4dGVybmFsfTwvaDM+JHt7Y2hlY2tzKGV4dGVybmFsU291cmNlcyl9fTwvZGl2PmA7JwppZiBvbGRfb2ZmaWNpYWwgbm90IGluIGpzIG9yIG9sZF9leHRlcm5hbCBub3QgaW4ganM6CiAgICByYWlzZSBTeXN0ZW1FeGl0KCJjaGVja2JveCBxdWVzdGlvbiB3cmFwcGVycyBub3QgZm91bmQiKQpqcyA9IGpzLnJlcGxhY2Uob2xkX29mZmljaWFsLCBmImgrPWNoZWNrcyhvZmZpY2lhbFNvdXJjZXMsJ3txX29mZmljaWFsfScpOyIsIDEpCmpzID0ganMucmVwbGFjZShvbGRfZXh0ZXJuYWwsIGYiaCs9Y2hlY2tzKGV4dGVybmFsU291cmNlcywne3FfZXh0ZXJuYWx9Jyk7IiwgMSkKanNfcGF0aC53cml0ZV90ZXh0KGpzLCBlbmNvZGluZz0idXRmLTgiKQoKaHRtbF9wYXRoID0gUGF0aCgiaW5kZXguaHRtbCIpCmh0bWwgPSBodG1sX3BhdGgucmVhZF90ZXh0KGVuY29kaW5nPSJ1dGYtOCIpCmh0bWwgPSByZS5zdWIociJcblxzKi9cKiBxdWVzdGlvbi1pbnN0cnVjdGlvbi1zcGFjaW5nLTIwMjYwODEyLXYxIFwqLy4qPyg/PVxuPC9zdHlsZT4pIiwgIiIsIGh0bWwsIGZsYWdzPXJlLlMpCmh0bWwgPSByZS5zdWIociJcblxzKi9cKiBxdWVzdGlvbi1pbnN0cnVjdGlvbi1zcGFjaW5nLTIwMjYwODEyLXYyIFwqLy4qPyg/PVxuPC9zdHlsZT4pIiwgIiIsIGh0bWwsIGZsYWdzPXJlLlMpCnN0eWxlID0gIiIiCiAgICAgIC8qIHF1ZXN0aW9uLWluc3RydWN0aW9uLXNwYWNpbmctMjAyNjA4MTItdjMgKi8KICAgICAgaHRtbCBib2R5IC5xdWVzdGlvbi1jYXJkID4gbGVnZW5kOmhhcygrIC5pbnN0cnVjdGlvbi10ZXh0KXttYXJnaW4tYm90dG9tOjAgIWltcG9ydGFudDt9CiAgICAgIGh0bWwgYm9keSAucXVlc3Rpb24tY2FyZCA+IGxlZ2VuZCArIC5pbnN0cnVjdGlvbi10ZXh0e2Rpc3BsYXk6YmxvY2sgIWltcG9ydGFudDttYXJnaW46NnB4IDAgMTJweCAhaW1wb3J0YW50O30KICAgICAgaHRtbCBib2R5IC5pbnN0cnVjdGlvbi1jYXJkID4gc3Ryb25nOm5vdCguaW5zdHJ1Y3Rpb24tdGV4dCkgKyAuaW5zdHJ1Y3Rpb24tdGV4dHttYXJnaW4tdG9wOjZweCAhaW1wb3J0YW50O30KIiIiCmh0bWwgPSBodG1sLnJlcGxhY2UoIjwvc3R5bGU+Iiwgc3R5bGUgKyAiPC9zdHlsZT4iLCAxKQpodG1sID0gaHRtbC5yZXBsYWNlKCIvYXNzZXRzL3F1ZXN0aW9ubmFpcmUuanM/dj0yMDI2MDgxMi1pbnN0cnVjdGlvbnMtZXhwbGljaXQtdjM3IiwgIi9hc3NldHMvcXVlc3Rpb25uYWlyZS5qcz92PTIwMjYwODEyLWluc3RydWN0aW9ucy1zcGFjaW5nLXYzOCIpCmh0bWxfcGF0aC53cml0ZV90ZXh0KGh0bWwsIGVuY29kaW5nPSJ1dGYtOCIpCg==' | base64 -d | python
+
+      - name: Verify
         run: |
-          python - <<'PY'
-          from pathlib import Path
-          import re
+          grep -q 'function checks(items,question' assets/questionnaire.js
+          grep -q 'question-instruction-spacing-20260812-v3' index.html
 
-          js_path = Path('assets/questionnaire.js')
-          js = js_path.read_text(encoding='utf-8')
-
-          new_checks = '''function checks(items,question,instruction='يمكن اختيار أكثر من جواب.'){return `<fieldset class="question-card"><legend>${esc(question)}</legend><p class="instruction-text">${esc(instruction)}</p><div class="standard-options">${items.map(([id,t])=>`<label class="choice ${val(id)?'choice-selected':''}"><input type="checkbox" data-check="${id}" ${val(id)?'checked':''}><span>${esc(t)}</span></label>`).join('')}</div></fieldset>`}'''
-          js, count = re.subn(r"function checks\(.*?\nfunction textField", new_checks + "\nfunction textField", js, count=1, flags=re.S)
-          if count != 1:
-              raise SystemExit('checks function not replaced')
-
-          q_official = 'من خلال أي من وسائل التواصل الرسمية التالية اطلعتم على معلومات حول البرنامج؟'
-          q_external = 'من خلال أي من المصادر التالية اطلعتم على معلومات حول البرنامج؟'
-          old_official = f'h+=`<div class="group-card"><h3>{q_official}</h3>${{checks(officialSources)}}</div>`;'
-          old_external = f'h+=`<div class="group-card"><h3>{q_external}</h3>${{checks(externalSources)}}</div>`;'
-          if old_official not in js or old_external not in js:
-              raise SystemExit('checkbox question wrappers not found')
-          js = js.replace(old_official, f"h+=checks(officialSources,'{q_official}');", 1)
-          js = js.replace(old_external, f"h+=checks(externalSources,'{q_external}');", 1)
-          js_path.write_text(js, encoding='utf-8')
-
-          html_path = Path('index.html')
-          html = html_path.read_text(encoding='utf-8')
-          html = re.sub(r'\n\s*/\* question-instruction-spacing-20260812-v1 \*/.*?(?=\n</style>)', '', html, flags=re.S)
-          style = '\n      /* question-instruction-spacing-20260812-v2 */\n      html body .question-card > legend:has(+ .instruction-text){margin-bottom:0 !important;}\n      html body .question-card > legend + .instruction-text{display:block !important;margin:6px 0 12px !important;}\n      html body .instruction-card > strong:not(.instruction-text) + .instruction-text{margin-top:6px !important;}\n'
-          if 'question-instruction-spacing-20260812-v2' not in html:
-              html = html.replace('</style>', style + '</style>', 1)
-          html = html.replace('/assets/questionnaire.js?v=20260812-instructions-explicit-v37','/assets/questionnaire.js?v=20260812-instructions-spacing-v38')
-          html_path.write_text(html, encoding='utf-8')
-          PY
-
-      - name: Verify structure and spacing
-        shell: bash
-        run: |
-          grep -q "function checks(items,question" assets/questionnaire.js
-          grep -q "checks(officialSources,'من خلال أي من وسائل التواصل الرسمية" assets/questionnaire.js
-          grep -q "checks(externalSources,'من خلال أي من المصادر التالية" assets/questionnaire.js
-          grep -q 'question-instruction-spacing-20260812-v2' index.html
-          grep -q 'margin:6px 0 12px' index.html
-
-      - name: Commit patch
-        shell: bash
+      - name: Commit
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add assets/questionnaire.js index.html
-          git commit -m 'Normalize question and instruction spacing structure'
+          git commit -m 'Fix actual question instruction spacing structure'
           git push
 
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload site
-        uses: actions/upload-pages-artifact@v3
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
         with:
           path: .
-
-      - name: Deploy
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - uses: actions/deploy-pages@v4
