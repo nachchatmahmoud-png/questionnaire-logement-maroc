@@ -1,14 +1,15 @@
 /**
  * Réorganise uniquement la partie « التفاعل مع الوزارة بشأن البرنامج ».
  *
- * À exécuter une seule fois dans le projet Apps Script du Google Form :
- *   reorganiserInteractionMinistere20260813()
+ * À exécuter dans le projet Apps Script du Google Form après la première
+ * réorganisation :
+ *   ajusterConsultationEtInteraction20260813()
  *
  * Le script est idempotent : une seconde exécution vérifie/réapplique la
  * configuration sans créer de doublons. Il conserve les questions existantes
  * de canal, de réception et de qualité de la réponse, ainsi que leurs données.
  */
-function reorganiserInteractionMinistere20260813() {
+function ajusterConsultationEtInteraction20260813() {
   const FORM_ID = '1Q5pRbUvCAIlI556txfiM_z1qInuVQ4854IjOdVMUnLo';
   const ETAT_PROPERTY = 'INTERACTION_MINISTERE_20260813_V1';
   const ENTRY_MAP_PROPERTY = 'FORM_ENTRY_ITEM_MAP_V1';
@@ -17,7 +18,7 @@ function reorganiserInteractionMinistere20260813() {
   const INTRODUCTION =
     'يرجى الإجابة بناءً على معرفتكم أو تجربتكم مع قنوات التواصل الرسمية التي تتيح التفاعل بشأن برنامج «دعم سكن».';
   const QUESTION_FILTRE =
-    'هل سبق لكم استخدام إحدى القنوات الرسمية للتواصل مع الوزارة بشأن برنامج الدعم المباشر للسكن؟';
+    'هل سبق لكم استخدام إحدى القنوات الرسمية للتواصل أو التفاعل بشأن البرنامج، لطرح سؤال أو طلب توضيح أو تقديم ملاحظة أو مقترح أو شكاية؟';
   const QUESTION_MOTIF =
     'ما السبب الرئيسي الذي دفعكم إلى التواصل مع الوزارة بشأن البرنامج؟';
   const QUESTION_NON_INTERACTION =
@@ -31,18 +32,18 @@ function reorganiserInteractionMinistere20260813() {
     'الإبلاغ عن صعوبة أو مشكلة واجهتني أثناء الاستفادة من البرنامج.',
     'تقديم شكاية مرتبطة بالبرنامج.',
     'تقديم ملاحظة أو مقترح بشأن البرنامج.',
-    'سبب آخر، يرجى تحديده: ...............',
+    'سبب آخر، يرجى تحديده:',
   ];
 
   const RAISONS_NON_INTERACTION = [
     'لم أكن بحاجة إلى التواصل مع الوزارة.',
-    'وجدت المعلومات التي أحتاجها في المصادر الرسمية دون الحاجة إلى التواصل.',
+    'وجدت المعلومات التي أحتاجها دون الحاجة إلى التواصل مع الوزارة.',
     'حصلت على المعلومات التي أحتاجها من مصادر أخرى.',
     'لم أكن أعرف بوجود قنوات رسمية للتواصل مع الوزارة.',
     'كنت أعرف بوجود قنوات للتواصل، لكن لم يكن واضحًا لي أي قناة ينبغي استخدامها.',
     'واجهت صعوبة في الوصول إلى قنوات التواصل أو استخدامها.',
     'لم أتوقع أن يؤدي التواصل إلى الحصول على جواب أو حل مفيد.',
-    'سبب آخر، يرجى تحديده: ...............',
+    'سبب آخر، يرجى تحديده:',
   ];
 
   const LIKERT = [
@@ -83,6 +84,7 @@ function reorganiserInteractionMinistere20260813() {
       qualityPageId: 596612633,
       qualityGridId: 191957779,
       nextPageId: 2022969520,
+      consultationOfficielle: false,
       synthetic: ['990000000000000001', '990000000000000002', '990000000000000003', '990000000000000004', '990000000000000005'],
     },
     {
@@ -96,6 +98,7 @@ function reorganiserInteractionMinistere20260813() {
       qualityPageId: 2104245602,
       qualityGridId: 1132848145,
       nextPageId: 245909717,
+      consultationOfficielle: false,
       synthetic: ['990000000000000011', '990000000000000012', '990000000000000013', '990000000000000014', '990000000000000015'],
     },
     {
@@ -110,6 +113,7 @@ function reorganiserInteractionMinistere20260813() {
       qualityGridId: 338617431,
       noPageId: 695103605,
       nextPageId: 1593593510,
+      consultationOfficielle: true,
       legacyIds: [351512942, 350843683, 2141349291, 1684280107, 1977115362],
       synthetic: ['990000000000000021', '990000000000000022', '990000000000000023', '990000000000000024', '990000000000000025'],
     },
@@ -125,6 +129,7 @@ function reorganiserInteractionMinistere20260813() {
       qualityGridId: 1916460429,
       noPageId: 1131663142,
       nextPageId: 465167947,
+      consultationOfficielle: true,
       legacyIds: [1714472375, 650330153, 715214820, 1854786006, 321455995],
       synthetic: ['990000000000000031', '990000000000000032', '990000000000000033', '990000000000000034', '990000000000000035'],
     },
@@ -176,18 +181,26 @@ function reorganiserInteractionMinistere20260813() {
     enregistrerEtatInteraction_(properties, ETAT_PROPERTY, state, route.key, routeState);
 
     routeState.perceptionIds = routeState.perceptionIds || {};
-    const perceptionItems = PERCEPTIONS.map(function (definition) {
-      const item = obtenirOuCreerGrilleInteraction_(
-        form,
-        routeState.perceptionIds[definition.key],
-        definition.title,
-        definition.row,
-        LIKERT
-      );
-      routeState.perceptionIds[definition.key] = item.getId();
-      enregistrerEtatInteraction_(properties, ETAT_PROPERTY, state, route.key, routeState);
-      return item;
-    });
+    let perceptionItems = [];
+    if (route.consultationOfficielle) {
+      perceptionItems = PERCEPTIONS.map(function (definition) {
+        const item = obtenirOuCreerGrilleInteraction_(
+          form,
+          routeState.perceptionIds[definition.key],
+          definition.title,
+          definition.row,
+          LIKERT
+        );
+        routeState.perceptionIds[definition.key] = item.getId();
+        enregistrerEtatInteraction_(properties, ETAT_PROPERTY, state, route.key, routeState);
+        return item;
+      });
+    } else {
+      Object.keys(routeState.perceptionIds).forEach(function (key) {
+        supprimerItemInteractionSiPresent_(form, routeState.perceptionIds[key], FormApp.ItemType.GRID);
+      });
+      routeState.perceptionIds = {};
+    }
 
     interactionPage.setTitle(TITRE_SECTION).setHelpText(INTRODUCTION);
     filter.setTitle(QUESTION_FILTRE).setRequired(true);
@@ -196,8 +209,9 @@ function reorganiserInteractionMinistere20260813() {
     contactReason.setTitle(QUESTION_MOTIF).setChoiceValues(MOTIFS_CONTACT).setRequired(true);
     noReason.setTitle(QUESTION_NON_INTERACTION).setChoiceValues(RAISONS_NON_INTERACTION).setRequired(true);
 
-    PERCEPTIONS.forEach(function (definition, index) {
-      perceptionItems[index]
+    perceptionItems.forEach(function (item, index) {
+      const definition = PERCEPTIONS[index];
+      item
         .setTitle(definition.title)
         .setRows([definition.row])
         .setColumns(LIKERT)
@@ -246,26 +260,35 @@ function reorganiserInteractionMinistere20260813() {
     const routeState = state[route.key];
     entryMap[route.synthetic[0]] = { itemId: String(routeState.contactReasonId) };
     entryMap[route.synthetic[1]] = { itemId: String(routeState.noReasonId) };
-    entryMap[route.synthetic[2]] = { itemId: String(routeState.perceptionIds.infoClarification), rowIndex: 0 };
-    entryMap[route.synthetic[3]] = { itemId: String(routeState.perceptionIds.observationsPropositions), rowIndex: 0 };
-    entryMap[route.synthetic[4]] = { itemId: String(routeState.perceptionIds.reclamations), rowIndex: 0 };
+    if (route.consultationOfficielle) {
+      entryMap[route.synthetic[2]] = { itemId: String(routeState.perceptionIds.infoClarification), rowIndex: 0 };
+      entryMap[route.synthetic[3]] = { itemId: String(routeState.perceptionIds.observationsPropositions), rowIndex: 0 };
+      entryMap[route.synthetic[4]] = { itemId: String(routeState.perceptionIds.reclamations), rowIndex: 0 };
+    } else {
+      delete entryMap[route.synthetic[2]];
+      delete entryMap[route.synthetic[3]];
+      delete entryMap[route.synthetic[4]];
+    }
   });
   properties.setProperty(ENTRY_MAP_PROPERTY, JSON.stringify(entryMap));
 
   const apres = form.getItems().length;
   verifierInteractionInstallee_(form, ROUTES, state, TITRE_SECTION, INTRODUCTION, QUESTION_FILTRE, PERCEPTIONS);
 
-  console.log('INTERACTION_MINISTERE_REORGANISEE: oui');
+  console.log('LOGIQUE_CONSULTATION_INTERACTION_AJUSTEE: oui');
   console.log('NOMBRE_ITEMS_AVANT_APRES: ' + avant + ' / ' + apres);
   console.log('TITRE_ET_INTRODUCTION_CONSERVES: oui');
   console.log('LONG_PARAGRAPHE_SUPPRIME: oui');
   console.log('QUESTION_FILTRE_OBLIGATOIRE: oui');
   console.log('PARCOURS_OUI: motif -> canal -> réponse -> qualité_si_réponse');
-  console.log('PARCOURS_NON: raison -> 3 affirmations Likert');
+  console.log('CAS_1_CONSULTATION_OUI_INTERACTION_OUI: expérience réelle');
+  console.log('CAS_2_CONSULTATION_NON_INTERACTION_OUI: expérience réelle');
+  console.log('CAS_3_CONSULTATION_OUI_INTERACTION_NON: raison + 3 affirmations Likert');
+  console.log('CAS_4_CONSULTATION_NON_INTERACTION_NON: raison uniquement');
   console.log('AUTRES_SECTIONS_INCHANGEES: oui');
   console.log('CORRESPONDANCE_SITE_ACTUALISEE: oui');
   ROUTES.forEach(function (route) {
-    console.log('ROUTE_OK: ' + route.key + ' | SITE_KEYS=' + route.synthetic.join(','));
+    console.log('ROUTE_OK: ' + route.key + ' | LIKERT=' + (route.consultationOfficielle ? 'oui' : 'non'));
   });
 }
 
@@ -314,6 +337,16 @@ function obtenirOuCreerGrilleInteraction_(form, id, title, row, columns) {
   return grid.setTitle(title).setRows([row]).setColumns(columns).setRequired(true);
 }
 
+function supprimerItemInteractionSiPresent_(form, id, type) {
+  if (!id) return;
+  const item = form.getItemById(Number(id));
+  if (!item) return;
+  if (item.getType() !== type) {
+    throw new Error('Type inattendu pour la suppression: ' + id);
+  }
+  form.deleteItem(item.getIndex());
+}
+
 function placerAvantInteraction_(form, item, before) {
   if (item.getIndex() === before.getIndex() - 1) return;
   form.moveItem(item.getIndex(), before.getIndex());
@@ -347,14 +380,18 @@ function verifierInteractionInstallee_(form, routes, state, title, intro, filter
     if (!(yesPage.getIndex() < contactReason.getIndex() && contactReason.getIndex() < channel.getIndex())) throw new Error('Ordre OUI incorrect: ' + route.key);
     if (!(noPage.getIndex() < noReason.getIndex() && noReason.getIndex() < nextPage.getIndex())) throw new Error('Ordre NON incorrect: ' + route.key);
 
-    perceptions.forEach(function (definition) {
-      const grid = exigerItemInteraction_(form, routeState.perceptionIds[definition.key], FormApp.ItemType.GRID).asGridItem();
-      if (grid.getTitle() !== definition.title || grid.getRows()[0] !== definition.row || !grid.isRequired()) {
-        throw new Error('Affirmation Likert incorrecte: ' + route.key + ' / ' + definition.key);
-      }
-      if (!(noReason.getIndex() < grid.getIndex() && grid.getIndex() < nextPage.getIndex())) {
-        throw new Error('Affirmation hors parcours NON: ' + route.key + ' / ' + definition.key);
-      }
-    });
+    if (route.consultationOfficielle) {
+      perceptions.forEach(function (definition) {
+        const grid = exigerItemInteraction_(form, routeState.perceptionIds[definition.key], FormApp.ItemType.GRID).asGridItem();
+        if (grid.getTitle() !== definition.title || grid.getRows()[0] !== definition.row || !grid.isRequired()) {
+          throw new Error('Affirmation Likert incorrecte: ' + route.key + ' / ' + definition.key);
+        }
+        if (!(noReason.getIndex() < grid.getIndex() && grid.getIndex() < nextPage.getIndex())) {
+          throw new Error('Affirmation hors parcours NON: ' + route.key + ' / ' + definition.key);
+        }
+      });
+    } else if (Object.keys(routeState.perceptionIds || {}).length) {
+      throw new Error('Des affirmations Likert subsistent dans le parcours sans consultation: ' + route.key);
+    }
   });
 }
