@@ -83,7 +83,15 @@ function ajusterConsultationEtInteraction20260813() {
       responseId: 1809358596,
       qualityPageId: 596612633,
       qualityGridId: 191957779,
+      noPageId: 2095709005,
       nextPageId: 2022969520,
+      contactReasonId: 470634372,
+      noReasonId: 87110067,
+      perceptionIds: {
+        infoClarification: 793689576,
+        observationsPropositions: 912503116,
+        reclamations: 2037237011,
+      },
       consultationOfficielle: false,
       synthetic: ['990000000000000001', '990000000000000002', '990000000000000003', '990000000000000004', '990000000000000005'],
     },
@@ -97,7 +105,15 @@ function ajusterConsultationEtInteraction20260813() {
       responseId: 1539560186,
       qualityPageId: 2104245602,
       qualityGridId: 1132848145,
+      noPageId: 1237717641,
       nextPageId: 245909717,
+      contactReasonId: 1760916153,
+      noReasonId: 1700421298,
+      perceptionIds: {
+        infoClarification: 1983786008,
+        observationsPropositions: 579843107,
+        reclamations: 562250570,
+      },
       consultationOfficielle: false,
       synthetic: ['990000000000000011', '990000000000000012', '990000000000000013', '990000000000000014', '990000000000000015'],
     },
@@ -113,6 +129,13 @@ function ajusterConsultationEtInteraction20260813() {
       qualityGridId: 338617431,
       noPageId: 695103605,
       nextPageId: 1593593510,
+      contactReasonId: 1769331976,
+      noReasonId: 768149222,
+      perceptionIds: {
+        infoClarification: 984260886,
+        observationsPropositions: 1489177863,
+        reclamations: 65348748,
+      },
       consultationOfficielle: true,
       legacyIds: [351512942, 350843683, 2141349291, 1684280107, 1977115362],
       synthetic: ['990000000000000021', '990000000000000022', '990000000000000023', '990000000000000024', '990000000000000025'],
@@ -129,6 +152,13 @@ function ajusterConsultationEtInteraction20260813() {
       qualityGridId: 1916460429,
       noPageId: 1131663142,
       nextPageId: 465167947,
+      contactReasonId: 803530616,
+      noReasonId: 1826130994,
+      perceptionIds: {
+        infoClarification: 547508310,
+        observationsPropositions: 1017244650,
+        reclamations: 1579501699,
+      },
       consultationOfficielle: true,
       legacyIds: [1714472375, 650330153, 715214820, 1854786006, 321455995],
       synthetic: ['990000000000000031', '990000000000000032', '990000000000000033', '990000000000000034', '990000000000000035'],
@@ -141,7 +171,13 @@ function ajusterConsultationEtInteraction20260813() {
   const avant = form.getItems().length;
 
   ROUTES.forEach(function (route) {
-    const routeState = state[route.key] || {};
+    const savedState = state[route.key] || {};
+    const routeState = {
+      contactReasonId: savedState.contactReasonId || route.contactReasonId,
+      noReasonId: savedState.noReasonId || route.noReasonId,
+      noPageId: savedState.noPageId || route.noPageId,
+      perceptionIds: Object.assign({}, route.perceptionIds || {}, savedState.perceptionIds || {}),
+    };
 
     const interactionPage = exigerItemInteraction_(form, route.interactionPageId, FormApp.ItemType.PAGE_BREAK).asPageBreakItem();
     const filter = exigerItemInteraction_(form, route.filterId, FormApp.ItemType.MULTIPLE_CHOICE).asMultipleChoiceItem();
@@ -163,8 +199,8 @@ function ajusterConsultationEtInteraction20260813() {
     enregistrerEtatInteraction_(properties, ETAT_PROPERTY, state, route.key, routeState);
 
     let noPage;
-    if (route.noPageId) {
-      noPage = exigerItemInteraction_(form, route.noPageId, FormApp.ItemType.PAGE_BREAK).asPageBreakItem();
+    if (routeState.noPageId) {
+      noPage = exigerItemInteraction_(form, routeState.noPageId, FormApp.ItemType.PAGE_BREAK).asPageBreakItem();
     } else {
       noPage = obtenirOuCreerPageInteraction_(form, routeState.noPageId);
       routeState.noPageId = noPage.getId();
