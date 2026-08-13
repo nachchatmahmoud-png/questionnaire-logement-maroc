@@ -26,7 +26,7 @@ const ENTRY_G2_OTHER={
 };
 const ENTRY_OFFICIAL_BENEFICIARY={
  info_1:'1262380031',info_2:'618372618',info_3:'1276906943',info_4:'1758509584',info_5:'1958940162',info_6:'1042862389',
- info_7:'89201942',info_8:'2061798367',info_9:'699276498',info_10:'3577675',info_11:'1107060713',info_12:'483431253',info_13:'135111340',transparency_global:'1552438031',
+ info_7:'89201942',info_8:'2061798367',info_9:'699276498',info_10:'3577675',info_11:'1107060713',info_12:'483431253',info_13:'135111340',
  inter_comm_1:'1924785794',inter_comm_2:'1564005720',inter_comm_3:'589116406',inter_part_1:'1689196695',inter_part_2:'578326184',inter_part_3:'578057116',
  contact_reel:'1807617813',canal_dernier_contact:'1917194186',reponse_recue:'1188398753',clarte_reponse:'401614676',suffisance_reponse:'2030949688',delai_reponse:'1948428970',interaction_global:'1955561785',communication_quality_global:'1618370412',
  understanding_1:'366290689',understanding_2:'2118812173',understanding_3:'1797114715',understanding_4:'857685078',understanding_5:'1190608777',understanding_6:'2009753717',
@@ -38,7 +38,7 @@ const ENTRY_OFFICIAL_BENEFICIARY={
 };
 const ENTRY_OFFICIAL_OTHER={
  info_1:'1389225289',info_2:'1504812338',info_3:'2684055',info_4:'1111425501',info_5:'1367527335',info_6:'2078777661',
- info_7:'495302381',info_8:'20488223',info_9:'2047790623',info_10:'73359176',info_11:'125291520',info_12:'733383354',info_13:'1717414505',transparency_global:'1912399868',
+ info_7:'495302381',info_8:'20488223',info_9:'2047790623',info_10:'73359176',info_11:'125291520',info_12:'733383354',info_13:'1717414505',
  inter_comm_1:'45196571',inter_comm_2:'1898453798',inter_comm_3:'1748147612',inter_part_1:'2104567946',inter_part_2:'1775831782',inter_part_3:'1629335611',
  contact_reel:'1924533978',canal_dernier_contact:'641302619',reponse_recue:'778119099',clarte_reponse:'2066363404',suffisance_reponse:'89722042',delai_reponse:'1975544690',interaction_global:'83983109',communication_quality_global:'1469339541',
  understanding_1:'850668692',understanding_2:'243215310',understanding_3:'1457325425',understanding_4:'1228145603',understanding_5:'1607620672',understanding_6:'1608907783',
@@ -140,7 +140,6 @@ const G={
   ['وضوح المعلومات وسهولة فهمها',[['info_4','4. تُقدَّم المعلومات الرسمية المتعلقة بالبرنامج بلغة واضحة.'],['info_5','5. تُشرح المصطلحات والإجراءات المتعلقة بالبرنامج في المعلومات الرسمية بطريقة يسهل فهمها.'],['info_6','6. تشرح المعلومات الرسمية بوضوح الخطوات التي يجب اتباعها للاستفادة من البرنامج.']]],
   ['محتوى المعلومات المتعلقة بالبرنامج',[['info_7','7. توفر المعلومات الرسمية تفاصيل كافية حول شروط الاستفادة من البرنامج.'],['info_8','8. تحدد المعلومات الرسمية الوثائق المطلوبة لتقديم الطلب.'],['info_9','9. توضح المعلومات الرسمية مختلف مراحل معالجة الطلب.'],['info_10','10. توفر المعلومات الرسمية تفاصيل كافية حول قيمة الدعم وكيفية الاستفادة منه.']]],
   ['دقة المعلومات وتحيينها',[['info_11','11. المعلومات الرسمية التي تنشرها الوزارة بشأن البرنامج دقيقة.'],['info_12','12. تتسم المعلومات المنشورة عبر وسائل التواصل الرسمية للوزارة بالاتساق وعدم التناقض.'],['info_13','13. تعكس المعلومات المنشورة آخر المستجدات المتعلقة بالبرنامج.']]],
-  ['المعلومات الرسمية المتعلقة بالبرنامج',[['transparency_global','14. بصفة عامة، أرى أن التواصل العمومي للوزارة حول برنامج الدعم المباشر للسكن يتسم بالشفافية.']]]
  ],
  interComm:[['الاستفسارات وطلب التوضيحات',[['inter_comm_1','1. تتيح القنوات الرسمية للمواطنين توجيه استفساراتهم إلى الوزارة بشأن البرنامج.'],['inter_comm_2','2. تتيح القنوات الرسمية للمواطنين طلب توضيحات إضافية بشأن المعلومات المتعلقة بالبرنامج.'],['inter_comm_3','3. تُمكّن القنوات الرسمية المواطنين من مواصلة التواصل مع الوزارة عند الحاجة إلى معلومات أو توضيحات إضافية.']]]],
  interPart:[['الملاحظات والمقترحات — الشكايات المتعلقة بالبرنامج',[['inter_part_1','4. تتيح القنوات الرسمية للمواطنين تقديم ملاحظاتهم بشأن البرنامج.'],['inter_part_2','5. تتيح القنوات الرسمية للمواطنين تقديم مقترحات لتحسين البرنامج أو التواصل المرتبط به.'],['inter_part_3','6. تتيح القنوات الرسمية للمواطنين التعبير عن الصعوبات أو تقديم الشكايات المرتبطة بالبرنامج.']]]],
@@ -451,7 +450,7 @@ async function submit(){
  }
  if(route()!=='g1'){add(shared.status,val('status'));if(val('status')===COMBINED_BENEFICIARY)add(shared.q3_detail,val('q3_detail'));}
  [
-  'info_1','info_2','info_3','info_4','info_5','info_6','info_7','info_8','info_9','info_10','info_11','info_12','info_13','transparency_global',
+  'info_1','info_2','info_3','info_4','info_5','info_6','info_7','info_8','info_9','info_10','info_11','info_12','info_13',
   'inter_comm_1','inter_comm_2','inter_comm_3','inter_part_1','inter_part_2','inter_part_3','interaction_global','communication_quality_global','clarte_reponse','suffisance_reponse','delai_reponse',
   'trust_1','trust_2','trust_3','trust_4','trust_5','legit_1','legit_2','legit_3','legit_4',
   'ease_1','ease_2','ease_3','accept_1','accept_2','accept_3','satisfaction_1','satisfaction_2','satisfaction_3',
