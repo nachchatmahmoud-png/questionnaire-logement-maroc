@@ -1,7 +1,7 @@
 const GOOGLE_CLIENT_ID='285878510024-7dhdojiucp6ff20m2snuro018t70c6s5.apps.googleusercontent.com';
 const AUTH_BRIDGE_URL='https://script.google.com/macros/s/AKfycbxmwpYfo8bhwBmPPsKrIsqIfW4DQUxOxrwYavWgojHvLzR0e-TDK-DQj7t3LNeODRSv/exec';
 const AUTH_CHANNEL='questionnaire-logement-auth-v1';
-const SCHEMA_VERSION='2026-08-12-parcours-v5';
+const SCHEMA_VERSION='2026-08-13-likert-v1';
 const ENTRY_COMMON={
  q1:'299895912',q2:'1225420672',age:'1577939573',gender:'2068308268',education:'1330802393',housing:'1373868444',residence:'865830704',professional:'1061681182',region:'861634292',country:'1099313147'
 };
@@ -241,8 +241,61 @@ function requiredIds(step){
  return[];
 }
 function valid(){if(state.step==='filters'&&val('q2')==='نعم'&&!officialSources.some(([id])=>val(id))){state.error='يرجى اختيار وسيلة رسمية واحدة على الأقل.';return false;}if(state.step==='filters'&&val('q2')==='نعم'&&selectedOfficialSources().length>=2&&!val('sourcePrincipale')){state.error='يرجى اختيار وسيلة التواصل الرسمية الرئيسية قبل المتابعة.';return false;}if(state.step==='filters'&&val('q2')==='لا'&&!externalSources.some(([id])=>val(id))){state.error='يرجى اختيار مصدر واحد على الأقل.';return false;}for(const id of requiredIds(state.step)){if(!String(val(id)).trim()){state.error='يرجى الإجابة عن جميع الأسئلة المطلوبة قبل المتابعة.';return false;}}state.error='';return true;}
-function mean(ids){let nums=ids.map(id=>Number(val(id))).filter(Number.isFinite);return nums.length===ids.length?nums.reduce((a,b)=>a+b,0)/nums.length:null;}
-function scores(){return{information_access:route()==='official'?mean(G.information[0][1].map(r=>r[0])):null,information_clarity:route()==='official'?mean(G.information[1][1].map(r=>r[0])):null,information_sufficiency:route()==='official'?mean(G.information[2][1].map(r=>r[0])):null,information_accuracy:route()==='official'?mean(G.information[3][1].map(r=>r[0])):null,transparency:route()==='official'?mean(G.information[4][1].map(r=>r[0])):null,communication_possibility:route()==='official'?mean(G.interComm[0][1].map(r=>r[0])):null,participation_possibility:route()==='official'?mean(G.interPart[0][1].map(r=>r[0])):null,response_quality:val('reponse_recue')==='نعم'?mean(G.response[0][1].map(r=>r[0])):null,interaction_global:route()==='official'?mean(G.interGlobal[0][1].map(r=>r[0])):null,communication_quality_global:route()==='official'?mean(G.communicationQuality[0][1].map(r=>r[0])):null,trust_detailed:route()==='official'?mean(G.trust[0][1].map(r=>r[0])):null,trust_common:route()==='g1'?null:mean(G.trustGeneral[0][1].map(r=>r[0])),legitimacy:mean(G.legitimacy[0][1].map(r=>r[0])),ease:mean(G.ease[0][1].map(r=>r[0])),acceptance:mean(G.accept[0][1].map(r=>r[0])),satisfaction:beneficiary()?mean(G.satisfaction[0][1].map(r=>r[0])):null,general_impact:mean(G.generalImpact[0][1].map(r=>r[0])),success:mean(G.success[0][1].map(r=>r[0])),personal_impact:beneficiary()?mean(G.personalImpact[0][1].map(r=>r[0])):null,understanding:route()==='g1'?null:quiz.reduce((s,[id,,,correct])=>s+(val(id)===correct?1:0),0)};}
+function mean(ids){
+ const raw=ids.map(id=>String(val(id)).trim());
+ if(raw.some(value=>value===''))return null;
+ const nums=raw.map(Number);
+ return nums.every(value=>Number.isFinite(value)&&value>=1&&value<=5)?nums.reduce((sum,value)=>sum+value,0)/nums.length:null;
+}
+function likertIndex(score){return score===null?null:(score-1)/4*100;}
+function likertClassification(score){return score===null?null:score<3?'negative':score>3?'positive':'neutral';}
+function likertResult(score,itemCount){
+ return{score,index:likertIndex(score),classification:likertClassification(score),item_count:itemCount};
+}
+function likertDimension(ids,enabled=true){return likertResult(enabled?mean(ids):null,ids.length);}
+function likertComposite(dimensions){
+ const values=dimensions.map(d=>d.score);
+ const score=values.every(value=>value!==null)?values.reduce((sum,value)=>sum+value,0)/values.length:null;
+ return{...likertResult(score,dimensions.reduce((sum,d)=>sum+d.item_count,0)),dimension_count:dimensions.length,positive_dimension_count:score===null?null:dimensions.filter(d=>d.score>3).length};
+}
+function scores(){
+ const official=route()==='official';
+ const dimensions={
+  information_accessibility:likertDimension(G.information[0][1].map(r=>r[0]),official),
+  information_clarity:likertDimension(G.information[1][1].map(r=>r[0]),official),
+  information_completeness:likertDimension(G.information[2][1].map(r=>r[0]),official),
+  information_accuracy:likertDimension(G.information[3][1].map(r=>r[0]),official),
+  communication_possibility:likertDimension(G.interComm[0][1].map(r=>r[0]),official),
+  participation_possibility:likertDimension(G.interPart[0][1].map(r=>r[0]),official),
+  institutional_trust:likertDimension(G.trust[0][1].map(r=>r[0]),official),
+  programme_legitimacy:likertDimension(G.legitimacy[0][1].map(r=>r[0]),route()!=='g1'),
+  access_ease:likertDimension(G.ease[0][1].map(r=>r[0]),route()!=='g1'),
+  programme_acceptance:likertDimension(G.accept[0][1].map(r=>r[0]),route()!=='g1'),
+  beneficiary_satisfaction:likertDimension(G.satisfaction[0][1].map(r=>r[0]),beneficiary()),
+  general_impact:likertDimension(G.generalImpact[0][1].map(r=>r[0]),route()!=='g1'),
+  response_quality:likertDimension(G.response[0][1].map(r=>r[0]),val('reponse_recue')==='نعم'),
+  personal_impact:likertDimension(G.personalImpact[0][1].map(r=>r[0]),beneficiary())
+ };
+ const transparency=likertComposite([dimensions.information_accessibility,dimensions.information_clarity,dimensions.information_completeness,dimensions.information_accuracy]);
+ const interactivity=likertComposite([dimensions.communication_possibility,dimensions.participation_possibility]);
+ const communicationPublic=likertComposite([transparency,interactivity]);
+ const programmeSuccess=likertComposite([dimensions.access_ease,dimensions.programme_acceptance,dimensions.general_impact]);
+ const singleItems={
+  transparency_general:likertDimension(G.information[4][1].map(r=>r[0]),official),
+  interactivity_general:likertDimension(G.interGlobal[0][1].map(r=>r[0]),official),
+  communication_quality_general:likertDimension(G.communicationQuality[0][1].map(r=>r[0]),official),
+  programme_success_general:likertDimension(G.success[0][1].map(r=>r[0]),route()!=='g1'),
+  trust_general:likertDimension(G.trustGeneral[0][1].map(r=>r[0]),route()!=='g1')
+ };
+ const rawAnswers=Object.fromEntries([...new Set(Object.values(G).flatMap(groups=>groups.flatMap(([,rows])=>rows.map(([id])=>id))))].map(id=>[id,val(id)||null]));
+ return{
+  raw_answers:rawAnswers,
+  dimensions,
+  global_scores:{transparency,interactivity,communication_public:communicationPublic,programme_success:programmeSuccess},
+  single_items:singleItems,
+  understanding:route()==='g1'?null:quiz.reduce((sum,[id,,,correct])=>sum+(val(id)===correct?1:0),0)
+ };
+}
 function authConfigured(){return /^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec$/.test(AUTH_BRIDGE_URL);}
 function authRequestId(){return globalThis.crypto?.randomUUID?.()||Date.now().toString(36)+Math.random().toString(36).slice(2);}
 function authGateMessage(){
