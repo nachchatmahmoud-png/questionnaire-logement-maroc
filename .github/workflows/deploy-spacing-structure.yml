@@ -8,7 +8,7 @@ on:
       - .github/workflows/deploy-spacing-structure.yml
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -19,11 +19,37 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Synchroniser l'URL Apps Script
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          p = Path('assets/questionnaire.js')
+          text = p.read_text(encoding='utf-8')
+          old = "const AUTH_BRIDGE_URL='https://script.google.com/macros/s/AKfycbzta5bsE3ImUaM-qNHnqXCv_qa2MjDmtRwnDXBjHi3tcmDXaxy3oVFIco_u-9gvq6ZK3A/exec';"
+          new = "const AUTH_BRIDGE_URL='https://script.google.com/macros/s/AKfycbxmwpYfo8bhwBmPPsKrIsqIfW4DQUxOxrwYavWgojHvLzR0e-TDK-DQj7t3LNeODRSv/exec';"
+          if new in text:
+              print('AUTH_BRIDGE_URL déjà synchronisée')
+          elif old in text:
+              p.write_text(text.replace(old, new, 1), encoding='utf-8')
+              print('AUTH_BRIDGE_URL synchronisée')
+          else:
+              raise SystemExit('AUTH_BRIDGE_URL attendue introuvable')
+          PY
+          node --check assets/questionnaire.js
+          node scripts/verify-ui-lock.mjs
+          if ! git diff --quiet -- assets/questionnaire.js; then
+            git config user.name 'nachchatmahmoud-png'
+            git config user.email 'nachchatmahmoud@gmail.com'
+            git add assets/questionnaire.js
+            git commit -m 'Point site to current Apps Script deployment'
+            git push origin main
+          fi
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
