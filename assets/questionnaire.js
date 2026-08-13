@@ -1,7 +1,7 @@
 const GOOGLE_CLIENT_ID='285878510024-7dhdojiucp6ff20m2snuro018t70c6s5.apps.googleusercontent.com';
 const AUTH_BRIDGE_URL='https://script.google.com/macros/s/AKfycbxmwpYfo8bhwBmPPsKrIsqIfW4DQUxOxrwYavWgojHvLzR0e-TDK-DQj7t3LNeODRSv/exec';
 const AUTH_CHANNEL='questionnaire-logement-auth-v1';
-const SCHEMA_VERSION='2026-08-13-likert-v1';
+const SCHEMA_VERSION='2026-08-13-interaction-v2';
 const ENTRY_COMMON={
  q1:'299895912',q2:'1225420672',age:'1577939573',gender:'2068308268',education:'1330802393',housing:'1373868444',residence:'865830704',professional:'1061681182',region:'861634292',country:'1099313147'
 };
@@ -9,6 +9,7 @@ const ENTRY_G2_SHARED={external_sources:'1040032',status:'1268123456',q3_detail:
 const ENTRY_OFFICIAL_SHARED={official_sources:'1856677935',source_principale:'1646951693',status:'739440927',q3_detail:'2025224647'};
 const ENTRY_G2_BENEFICIARY={
  contact_reel:'237635013',canal_dernier_contact:'1051412983',reponse_recue:'1024258489',
+ contact_reason:'990000000000000001',noninteraction_reason:'990000000000000002',perception_info_clarification:'990000000000000003',perception_observations_proposals:'990000000000000004',perception_complaints:'990000000000000005',
  clarte_reponse:'1650482042',suffisance_reponse:'59663361',delai_reponse:'2100269279',
  understanding_1:'1845717094',understanding_2:'323132636',understanding_3:'1183906650',understanding_4:'1622342161',understanding_5:'838382116',understanding_6:'882397137',
  trust_general:'1545023701',legit_1:'1486461560',legit_2:'1904067536',legit_3:'1513964979',legit_4:'1092411069',
@@ -18,6 +19,7 @@ const ENTRY_G2_BENEFICIARY={
 };
 const ENTRY_G2_OTHER={
  contact_reel:'328033588',canal_dernier_contact:'1748054727',reponse_recue:'476498187',
+ contact_reason:'990000000000000011',noninteraction_reason:'990000000000000012',perception_info_clarification:'990000000000000013',perception_observations_proposals:'990000000000000014',perception_complaints:'990000000000000015',
  clarte_reponse:'716145318',suffisance_reponse:'166426109',delai_reponse:'1813469453',
  understanding_1:'1374327145',understanding_2:'2115575476',understanding_3:'2111378965',understanding_4:'310689731',understanding_5:'1860201892',understanding_6:'1729249596',
  trust_general:'873189515',legit_1:'1677021184',legit_2:'520351974',legit_3:'1645334930',legit_4:'961995117',
@@ -29,6 +31,7 @@ const ENTRY_OFFICIAL_BENEFICIARY={
  info_7:'89201942',info_8:'2061798367',info_9:'699276498',info_10:'3577675',info_11:'1107060713',info_12:'483431253',info_13:'135111340',
  inter_comm_1:'1924785794',inter_comm_2:'1564005720',inter_comm_3:'589116406',inter_part_1:'1689196695',inter_part_2:'578326184',inter_part_3:'578057116',
  contact_reel:'1807617813',canal_dernier_contact:'1917194186',reponse_recue:'1188398753',clarte_reponse:'401614676',suffisance_reponse:'2030949688',delai_reponse:'1948428970',interaction_global:'1955561785',communication_quality_global:'1618370412',
+ contact_reason:'990000000000000021',noninteraction_reason:'990000000000000022',perception_info_clarification:'990000000000000023',perception_observations_proposals:'990000000000000024',perception_complaints:'990000000000000025',
  understanding_1:'366290689',understanding_2:'2118812173',understanding_3:'1797114715',understanding_4:'857685078',understanding_5:'1190608777',understanding_6:'2009753717',
  trust_1:'933937764',trust_2:'844787965',trust_3:'1182559343',trust_4:'91257242',trust_5:'674993537',
  legit_1:'1896687752',legit_2:'500642904',legit_3:'1151297594',legit_4:'1948347725',
@@ -41,6 +44,7 @@ const ENTRY_OFFICIAL_OTHER={
  info_7:'495302381',info_8:'20488223',info_9:'2047790623',info_10:'73359176',info_11:'125291520',info_12:'733383354',info_13:'1717414505',
  inter_comm_1:'45196571',inter_comm_2:'1898453798',inter_comm_3:'1748147612',inter_part_1:'2104567946',inter_part_2:'1775831782',inter_part_3:'1629335611',
  contact_reel:'1924533978',canal_dernier_contact:'641302619',reponse_recue:'778119099',clarte_reponse:'2066363404',suffisance_reponse:'89722042',delai_reponse:'1975544690',interaction_global:'83983109',communication_quality_global:'1469339541',
+ contact_reason:'990000000000000031',noninteraction_reason:'990000000000000032',perception_info_clarification:'990000000000000033',perception_observations_proposals:'990000000000000034',perception_complaints:'990000000000000035',
  understanding_1:'850668692',understanding_2:'243215310',understanding_3:'1457325425',understanding_4:'1228145603',understanding_5:'1607620672',understanding_6:'1608907783',
  trust_1:'1808656211',trust_2:'1992870685',trust_3:'1344743776',trust_4:'2037118212',trust_5:'1300161676',
  legit_1:'1119108321',legit_2:'825450485',legit_3:'901308624',legit_4:'2085038932',
@@ -65,6 +69,31 @@ const EXTERNAL_SOURCE_OTHER_ID='external_other';
 const PUBLIC_CHANNEL_OTHER='وسيلة أخرى';
 const NO_OFFICIAL_REASON_OTHER='سبب آخر، يرجى التحديد:';
 const OTHER_CONTACT_CHANNEL='قناة رسمية أخرى';
+const contactReasons=[
+ 'طلب معلومات حول البرنامج أو شروط الاستفادة منه.',
+ 'طلب توضيح بشأن معلومة أو إجراء متعلق بالبرنامج.',
+ 'طلب المساعدة بشأن تقديم الطلب أو استكمال الإجراءات.',
+ 'الاستفسار عن وضعية الطلب أو متابعة معالجة الملف.',
+ 'الإبلاغ عن صعوبة أو مشكلة واجهتني أثناء الاستفادة من البرنامج.',
+ 'تقديم شكاية مرتبطة بالبرنامج.',
+ 'تقديم ملاحظة أو مقترح بشأن البرنامج.',
+ 'سبب آخر، يرجى تحديده: ...............',
+];
+const nonInteractionReasons=[
+ 'لم أكن بحاجة إلى التواصل مع الوزارة.',
+ 'وجدت المعلومات التي أحتاجها في المصادر الرسمية دون الحاجة إلى التواصل.',
+ 'حصلت على المعلومات التي أحتاجها من مصادر أخرى.',
+ 'لم أكن أعرف بوجود قنوات رسمية للتواصل مع الوزارة.',
+ 'كنت أعرف بوجود قنوات للتواصل، لكن لم يكن واضحًا لي أي قناة ينبغي استخدامها.',
+ 'واجهت صعوبة في الوصول إلى قنوات التواصل أو استخدامها.',
+ 'لم أتوقع أن يؤدي التواصل إلى الحصول على جواب أو حل مفيد.',
+ 'سبب آخر، يرجى تحديده: ...............',
+];
+const interactionPerceptionIds=()=>G.interactionPerceptions.flatMap(group=>group[1].map(row=>row[0]));
+function clearAbandonedInteractionBranch(answer){
+ if(answer==='لا')del('contact_reason','canal_dernier_contact','contact_channel_other_detail','reponse_recue',...G.response[0][1].map(row=>row[0]));
+ if(answer==='نعم')del('noninteraction_reason',...interactionPerceptionIds());
+}
 const beneficiary=()=>val('q3_detail')===Q3_DETAIL_PERSONAL;
 const route=()=>val('q1')==='لا'?'g1':val('q2')==='لا'?'g2':'official';
 const submissionRoute=()=>route()==='g1'?'g1':route()+'_'+(beneficiary()?'beneficiary':'other');
@@ -141,10 +170,11 @@ const G={
   ['محتوى المعلومات المتعلقة بالبرنامج',[['info_7','7. توفر المعلومات الرسمية تفاصيل كافية حول شروط الاستفادة من البرنامج.'],['info_8','8. تحدد المعلومات الرسمية الوثائق المطلوبة لتقديم الطلب.'],['info_9','9. توضح المعلومات الرسمية مختلف مراحل معالجة الطلب.'],['info_10','10. توفر المعلومات الرسمية تفاصيل كافية حول قيمة الدعم وكيفية الاستفادة منه.']]],
   ['دقة المعلومات وتحيينها',[['info_11','11. المعلومات الرسمية التي تنشرها الوزارة بشأن البرنامج دقيقة.'],['info_12','12. تتسم المعلومات المنشورة عبر وسائل التواصل الرسمية للوزارة بالاتساق وعدم التناقض.'],['info_13','13. تعكس المعلومات المنشورة آخر المستجدات المتعلقة بالبرنامج.']]],
  ],
- interComm:[['الاستفسارات وطلب التوضيحات',[['inter_comm_1','1. تتيح القنوات الرسمية للمواطنين توجيه استفساراتهم إلى الوزارة بشأن البرنامج.'],['inter_comm_2','2. تتيح القنوات الرسمية للمواطنين طلب توضيحات إضافية بشأن المعلومات المتعلقة بالبرنامج.'],['inter_comm_3','3. تُمكّن القنوات الرسمية المواطنين من مواصلة التواصل مع الوزارة عند الحاجة إلى معلومات أو توضيحات إضافية.']]]],
- interPart:[['الملاحظات والمقترحات — الشكايات المتعلقة بالبرنامج',[['inter_part_1','4. تتيح القنوات الرسمية للمواطنين تقديم ملاحظاتهم بشأن البرنامج.'],['inter_part_2','5. تتيح القنوات الرسمية للمواطنين تقديم مقترحات لتحسين البرنامج أو التواصل المرتبط به.'],['inter_part_3','6. تتيح القنوات الرسمية للمواطنين التعبير عن الصعوبات أو تقديم الشكايات المرتبطة بالبرنامج.']]]],
- interGlobal:[['التفاعل مع الوزارة بشأن البرنامج',[['interaction_global','7. بصفة عامة، أرى أن وسائل التواصل الرسمية تتيح للمواطنين التفاعل مع الوزارة بشأن البرنامج.']]]],
- communicationQuality:[['التفاعل مع الوزارة بشأن البرنامج',[['communication_quality_global','1. بصفة عامة، أقيّم جودة تواصل الوزارة حول البرنامج تقييمًا إيجابيًا.']]]],
+ interactionPerceptions:[
+  ['الاستفسارات وطلب التوضيحات',[['perception_info_clarification','تتيح القنوات الرسمية للمواطنين توجيه استفساراتهم وطلب توضيحات من الوزارة بشأن البرنامج.']]],
+  ['الملاحظات والمقترحات',[['perception_observations_proposals','تتيح القنوات الرسمية للمواطنين تقديم ملاحظاتهم ومقترحاتهم بشأن البرنامج.']]],
+  ['الشكايات المتعلقة بالبرنامج',[['perception_complaints','تتيح القنوات الرسمية للمواطنين تقديم الشكايات المرتبطة بالبرنامج.']]],
+ ],
  response:[['حول الرد الذي توصلتم به',[['clarte_reponse','1. كان الرد الذي توصلت به واضحًا.'],['suffisance_reponse','2. تضمن الرد معلومات كافية بشأن الموضوع الذي تواصلت حوله.'],['delai_reponse','3. توصلت بالرد في أجل اعتبرته مناسبًا.']]]],
  trustGeneral:[['آراؤكم حول تدبير الوزارة للبرنامج',[['trust_general_common','بصفة عامة، أثق في الوزارة فيما يتعلق بتدبير برنامج الدعم المباشر للسكن.']]]],
  trust:[['آراؤكم حول تدبير الوزارة للبرنامج',[['trust_1','1. المعلومات التي تنشرها الوزارة بشأن البرنامج دقيقة وموثوقة.'],['trust_2','2. لدى الوزارة القدرة على تدبير البرنامج بكفاءة.'],['trust_3','3. تُعالج طلبات الاستفادة وفق القواعد المعلنة.'],['trust_4','4. تطبق الوزارة معايير الاستفادة على جميع طالبي الدعم بصورة عادلة ودون تمييز.'],['trust_5','5. تفي الوزارة بالتزاماتها المعلنة بشأن البرنامج.']]]],
@@ -157,7 +187,7 @@ const G={
  personalImpact:[['وضعكم السكني بعد الاستفادة من البرنامج',[['impact_personal_1','1. خفف الدعم من العبء المالي المرتبط باقتناء السكن.'],['impact_personal_2','2. ساهم الدعم في إتمام عملية اقتناء السكن.'],['impact_personal_3','3. ساهمت الاستفادة من البرنامج في تحسين وضعي السكني.']]]]
 };
 const stepTitles={filters:'معلومات حول علاقتكم بالبرنامج',information:'المعلومات الرسمية المتعلقة بالبرنامج',interaction:'التفاعل مع الوزارة بشأن البرنامج',understanding:'أسئلة حول برنامج الدعم المباشر للسكن',trust:'آراؤكم حول تدبير الوزارة للبرنامج',legitimacy:'آراؤكم حول بعض جوانب البرنامج',evaluation:'آراؤكم حول البرنامج',impact:'وضعكم السكني بعد الاستفادة من البرنامج',suggestions:'مقترحاتكم بشأن البرنامج',demographics:'معلومات عامة'};
-function currentStepTitle(step){if(step==='interaction'&&route()==='g2')return'تجربتكم في التفاعل مع الوزارة';if(step==='trust'&&route()==='g2')return'آراؤكم حول تدبير الوزارة للبرنامج';return stepTitles[step];}
+function currentStepTitle(step){if(step==='trust'&&route()==='g2')return'آراؤكم حول تدبير الوزارة للبرنامج';return stepTitles[step];}
 function steps(){
  if(!val('q1'))return['filters'];
  if(val('q1')==='لا')return['filters','demographics'];
@@ -200,12 +230,19 @@ function filters(){
  return h;
 }
 function interaction(){
- let official=route()==='official';
- let h=official?`<div class="instruction-card interaction-channels-card"><p class="instruction-text"><strong class="interaction-lead">يرجى الإجابة بناءً على معرفتكم أو تجربتكم مع قنوات التواصل الرسمية التي تتيح التفاعل بشأن برنامج «دعم سكن».</strong>وتشمل هذه القنوات خدمة «اتصل بنا» المتاحة على منصة دعم سكن (<bdi dir="ltr">DaamSakane.ma</bdi>)، ونموذج الاتصال أو خدمة التواصل في الموقع الرسمي للوزارة (<bdi dir="ltr">mhpv.gov.ma</bdi>)، والبوابة الوطنية للشكايات (<bdi dir="ltr">Chikaya.ma</bdi>) لإيداع الشكايات الرسمية أو متابعتها. كما يمكن التواصل عبر الهاتف على الرقم <bdi dir="ltr">+212 5 37 71 81 81</bdi>، أو عبر البريد الإلكتروني <bdi dir="ltr">contact@daamsakane.ma</bdi>، أو من خلال الرسائل الخاصة والتعليقات عبر الحسابات الرسمية للوزارة على Facebook وInstagram وباقي شبكات التواصل الاجتماعي.</p></div>${scaleLegend()}${table(G.interComm)}${table(G.interPart)}`:`<div class="instruction-card compact"><p class="instruction-text">يجيب المشارك هنا فقط عن تجربة تواصل فعلية مع الوزارة بشأن البرنامج.</p></div>`;
- h+=`<section class="group-card"><div class="group-heading"><h3>${official?'تجربتكم في التفاعل مع الوزارة':'تجربتكم في التفاعل مع الوزارة'}</h3></div>${radio('contact_reel','هل سبق لكم استخدام إحدى القنوات الرسمية للتواصل أو التفاعل بشأن البرنامج، لطرح سؤال أو طلب توضيح أو تقديم ملاحظة أو مقترح أو شكاية؟',['نعم','لا'])}`;
- if(val('contact_reel')==='نعم'){h+=radio('canal_dernier_contact','عبر أي قناة رسمية تم آخر تواصل لكم بشأن برنامج الدعم المباشر للسكن؟',contactChannels);if(val('canal_dernier_contact')===OTHER_CONTACT_CHANNEL)h+=textField('contact_channel_other_detail','يرجى تحديد القناة الرسمية الأخرى:','اكتبوا اسم القناة الرسمية الأخرى');h+=radio('reponse_recue','هل توصلتم برد بشأن هذا التواصل؟',['نعم','لا']);if(val('reponse_recue')==='نعم')h+=`<p class="question-help instruction-text">يرجى تقييم الرد الذي توصلتم به:</p>${table(G.response)}`;}
- h+='</section>';
- if(official)h+=table(G.interGlobal)+table(G.communicationQuality);
+ let h=`<div class="instruction-card compact"><p class="instruction-text">يرجى الإجابة بناءً على معرفتكم أو تجربتكم مع قنوات التواصل الرسمية التي تتيح التفاعل بشأن برنامج «دعم سكن».</p></div>`;
+ h+=radio('contact_reel','هل سبق لكم استخدام إحدى القنوات الرسمية للتواصل مع الوزارة بشأن برنامج الدعم المباشر للسكن؟',['نعم','لا']);
+ if(val('contact_reel')==='نعم'){
+  h+=radio('contact_reason','ما السبب الرئيسي الذي دفعكم إلى التواصل مع الوزارة بشأن البرنامج؟',contactReasons);
+  h+=radio('canal_dernier_contact','عبر أي قناة رسمية تم آخر تواصل لكم بشأن برنامج الدعم المباشر للسكن؟',contactChannels);
+  if(val('canal_dernier_contact')===OTHER_CONTACT_CHANNEL)h+=textField('contact_channel_other_detail','يرجى تحديد القناة الرسمية الأخرى:','اكتبوا اسم القناة الرسمية الأخرى');
+  h+=radio('reponse_recue','هل توصلتم برد بشأن هذا التواصل؟',['نعم','لا']);
+  if(val('reponse_recue')==='نعم')h+=`<p class="question-help instruction-text">يرجى تقييم الرد الذي توصلتم به:</p>${table(G.response)}`;
+ }
+ if(val('contact_reel')==='لا'){
+  h+=radio('noninteraction_reason','ما السبب الرئيسي لعدم تواصلكم مع الوزارة بشأن البرنامج؟',nonInteractionReasons);
+  h+=scaleLegend()+table(G.interactionPerceptions);
+ }
  return h;
 }
 function understanding(){return `<div class="instruction-card"><strong>أسئلة حول برنامج الدعم المباشر للسكن</strong><p class="instruction-text">يرجى اختيار جواب واحد لكل سؤال.</p></div>${quiz.map(([id,q,opts])=>radio(id,q,opts)).join('')}`}
@@ -230,7 +267,7 @@ function requiredIds(step){
   return ids;
  }
  if(step==='information')return G.information.flatMap(g=>g[1].map(r=>r[0]));
- if(step==='interaction'){let ids=[];if(route()==='official')ids.push(...[...G.interComm,...G.interPart,...G.interGlobal,...G.communicationQuality].flatMap(g=>g[1].map(r=>r[0])));ids.push('contact_reel');if(val('contact_reel')==='نعم'){ids.push('canal_dernier_contact','reponse_recue');if(val('canal_dernier_contact')===OTHER_CONTACT_CHANNEL)ids.push('contact_channel_other_detail');if(val('reponse_recue')==='نعم')ids.push(...G.response[0][1].map(r=>r[0]));}return ids;}
+ if(step==='interaction'){let ids=['contact_reel'];if(val('contact_reel')==='نعم'){ids.push('contact_reason','canal_dernier_contact','reponse_recue');if(val('canal_dernier_contact')===OTHER_CONTACT_CHANNEL)ids.push('contact_channel_other_detail');if(val('reponse_recue')==='نعم')ids.push(...G.response[0][1].map(r=>r[0]));}if(val('contact_reel')==='لا')ids.push('noninteraction_reason',...interactionPerceptionIds());return ids;}
  if(step==='understanding')return quiz.map(q=>q[0]);
  if(step==='trust')return(route()==='g2'?G.trustGeneral[0][1]:[...G.trust[0][1],...G.trustGeneral[0][1]]).map(r=>r[0]);
  if(step==='legitimacy')return G.legitimacy[0][1].map(r=>r[0]);
@@ -264,8 +301,9 @@ function scores(){
   information_clarity:likertDimension(G.information[1][1].map(r=>r[0]),official),
   information_completeness:likertDimension(G.information[2][1].map(r=>r[0]),official),
   information_accuracy:likertDimension(G.information[3][1].map(r=>r[0]),official),
-  communication_possibility:likertDimension(G.interComm[0][1].map(r=>r[0]),official),
-  participation_possibility:likertDimension(G.interPart[0][1].map(r=>r[0]),official),
+  interaction_information_clarifications:likertDimension(G.interactionPerceptions[0][1].map(r=>r[0]),val('contact_reel')==='لا'),
+  interaction_observations_proposals:likertDimension(G.interactionPerceptions[1][1].map(r=>r[0]),val('contact_reel')==='لا'),
+  interaction_complaints:likertDimension(G.interactionPerceptions[2][1].map(r=>r[0]),val('contact_reel')==='لا'),
   institutional_trust:likertDimension(G.trust[0][1].map(r=>r[0]),official),
   programme_legitimacy:likertDimension(G.legitimacy[0][1].map(r=>r[0]),route()!=='g1'),
   access_ease:likertDimension(G.ease[0][1].map(r=>r[0]),route()!=='g1'),
@@ -276,13 +314,9 @@ function scores(){
   personal_impact:likertDimension(G.personalImpact[0][1].map(r=>r[0]),beneficiary())
  };
  const transparency=likertComposite([dimensions.information_accessibility,dimensions.information_clarity,dimensions.information_completeness,dimensions.information_accuracy]);
- const interactivity=likertComposite([dimensions.communication_possibility,dimensions.participation_possibility]);
- const communicationPublic=likertComposite([transparency,interactivity]);
+ const interactivity=likertComposite([dimensions.interaction_information_clarifications,dimensions.interaction_observations_proposals,dimensions.interaction_complaints]);
  const programmeSuccess=likertComposite([dimensions.access_ease,dimensions.programme_acceptance,dimensions.general_impact]);
  const singleItems={
-  transparency_general:likertDimension(G.information[4][1].map(r=>r[0]),official),
-  interactivity_general:likertDimension(G.interGlobal[0][1].map(r=>r[0]),official),
-  communication_quality_general:likertDimension(G.communicationQuality[0][1].map(r=>r[0]),official),
   programme_success_general:likertDimension(G.success[0][1].map(r=>r[0]),route()!=='g1'),
   trust_general:likertDimension(G.trustGeneral[0][1].map(r=>r[0]),route()!=='g1')
  };
@@ -290,7 +324,7 @@ function scores(){
  return{
   raw_answers:rawAnswers,
   dimensions,
-  global_scores:{transparency,interactivity,communication_public:communicationPublic,programme_success:programmeSuccess},
+  global_scores:{transparency,interactivity,programme_success:programmeSuccess},
   single_items:singleItems,
   understanding:route()==='g1'?null:quiz.reduce((sum,[id,,,correct])=>sum+(val(id)===correct?1:0),0)
  };
@@ -451,7 +485,7 @@ async function submit(){
  if(route()!=='g1'){add(shared.status,val('status'));if(val('status')===COMBINED_BENEFICIARY)add(shared.q3_detail,val('q3_detail'));}
  [
   'info_1','info_2','info_3','info_4','info_5','info_6','info_7','info_8','info_9','info_10','info_11','info_12','info_13',
-  'inter_comm_1','inter_comm_2','inter_comm_3','inter_part_1','inter_part_2','inter_part_3','interaction_global','communication_quality_global','clarte_reponse','suffisance_reponse','delai_reponse',
+  'perception_info_clarification','perception_observations_proposals','perception_complaints','clarte_reponse','suffisance_reponse','delai_reponse',
   'trust_1','trust_2','trust_3','trust_4','trust_5','legit_1','legit_2','legit_3','legit_4',
   'ease_1','ease_2','ease_3','accept_1','accept_2','accept_3','satisfaction_1','satisfaction_2','satisfaction_3',
   'impact_general_1','impact_general_2','impact_general_3','success_global','impact_personal_1','impact_personal_2','impact_personal_3'
@@ -464,6 +498,8 @@ async function submit(){
  if(route()!=='g1')supplemental.trust_general_common=scaleValue(val('trust_general_common'));
  if(route()!=='g1'){
   addKey('contact_reel',val('contact_reel'));
+  addKey('contact_reason',val('contact_reason'));
+  addKey('noninteraction_reason',val('noninteraction_reason'));
   addKey('canal_dernier_contact',val('canal_dernier_contact'));
   if(val('canal_dernier_contact')===OTHER_CONTACT_CHANNEL)supplemental.contact_channel_other_detail=String(val('contact_channel_other_detail')).trim();
   addKey('reponse_recue',val('reponse_recue'));
@@ -480,7 +516,7 @@ async function submit(){
 }
 function nav(){let ss=steps(),i=ss.indexOf(state.step),label=state.sending?'جارٍ التحقق من تسجيل الإجابات…':state.pendingSubmissionId?'التحقق من تسجيل الإجابات':'إرسال الإجابات';return `<nav class="form-actions">${i>0?'<button class="secondary-button" id="prev" type="button">السابق</button>':'<span></span>'}${i<ss.length-1?'<button class="primary-button" id="next" type="button">التالي</button>':`<button class="primary-button submit-button" id="submit" type="button" ${state.sending?'disabled':''}>${label}</button>`}</nav>`;}
 function render(){if(!auth.allowed){renderAuthGate();return;}if(state.done){$('#root').innerHTML=`<main class="site-shell" dir="rtl"><section class="success-card"><div class="success-icon">✓</div><p class="eyebrow">نهاية الاستبيان</p><h1>شكرًا جزيلًا على مشاركتكم</h1><p>تم تسجيل إجاباتكم بنجاح، ولن تُستعمل إلا لأغراض البحث العلمي.</p></section></main>`;return;}let ss=steps(),i=Math.max(ss.indexOf(state.step),0),pct=(i+1)/ss.length*100,title=currentStepTitle(state.step);$('#root').innerHTML=`<main class="site-shell" dir="rtl"><header class="hero"><div class="hero-accent"></div><p class="eyebrow">بحث أكاديمي بسلك الدكتوراه</p><h1>استبيان حول التواصل العمومي المرتبط ببرنامج الدعم المباشر للسكن</h1><p class="hero-lead"><span class="hero-lead-desktop">في إطار إعداد بحث أكاديمي بسلك الدكتوراه، أضع بين أيديكم هذا الاستبيان، الذي يندرج ضمن دراسة حول التواصل العمومي المرتبط ببرنامج الدعم المباشر للسكن.</span><span class="hero-lead-mobile">ندعوكم للمشاركة في هذا الاستبيان الأكاديمي حول التواصل العمومي المرتبط ببرنامج الدعم المباشر للسكن.</span></p><div class="privacy-note"><span>◉</span><p>جميع الأجوبة سرية، ولن تُستعمل إلا لأغراض البحث العلمي.</p></div><button class="intro-toggle" id="intro-toggle" type="button">${state.intro?'إخفاء مقدمة الاستبيان':'عرض مقدمة الاستبيان'} <span>${state.intro?'−':'+'}</span></button>${state.intro?`<div class="intro-copy"><p>وتكتسي مشاركتكم أهمية كبيرة، لما ستوفره من معطيات أساسية تسهم في إغناء هذا البحث وتعزيز نتائجه من الناحية العلمية. لذلك، نرجو منكم الإجابة عن الأسئلة بكل موضوعية ودقة.</p><details><summary>توضيحات</summary><div class="definition-list"><p><strong>الوزارة:</strong> وزارة إعداد التراب الوطني والتعمير والإسكان وسياسة المدينة.</p><p><strong>وسائل التواصل الرسمية للوزارة:</strong> يقصد بها مجموع القنوات والوسائط التي تعتمدها الوزارة رسمياً للتواصل العمومي بشأن برنامج الدعم المباشر للسكن، سواء لنشر المعلومات المتعلقة بأهدافه وشروط الاستفادة منه وإجراءاته ومستجداته، أو لتيسير الولوج إلى المعطيات والخدمات المرتبطة به. وتشمل، على الخصوص، الموقع الإلكتروني للوزارة، ومنصة «دعم سكن» وتطبيقها، والحسابات الرسمية على شبكات التواصل الاجتماعي، والبلاغات والمنشورات الرسمية. ولا تفترض هذه الوسائل، بالضرورة، إتاحة تواصل مباشر بين المواطن والوزارة.</p><p><strong>وسائل التواصل الرسمية التي تتيح التفاعل:</strong> يقصد بها القنوات الرسمية التي تمكّن المواطنين من التواصل مع الوزارة بشأن برنامج الدعم المباشر للسكن، من خلال توجيه الاستفسارات وطلب التوضيحات وتقديم الملاحظات أو المقترحات أو الشكايات، مع إمكانية تلقي جواب أو تتبع مآل الطلبات والشكايات المقدمة. وتشمل، على الخصوص، خدمات التواصل والمساعدة عبر منصة «دعم سكن» وتطبيقها، والبريد الإلكتروني ورقم المساعدة المخصصين للبرنامج، والبوابة الوطنية للشكايات، وخدمات المراسلة عبر الحسابات الرسمية للوزارة على شبكات التواصل الاجتماعي.</p></div></details></div>`:''}</header><section class="progress-panel"><div class="progress-copy"><span>المرحلة ${i+1}</span><strong>${esc(title)}</strong><span dir="ltr">${i+1} / ${ss.length}</span></div><div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div></section><section id="questionnaire-form" class="form-section"><div class="section-heading"><p>الاستبيان</p><h2>${esc(title)}</h2></div>${state.error?`<div class="error-message" role="alert">${esc(state.error)}</div>`:''}${section()}${nav()}</section><footer><p>شكرًا لتعاونكم ومساهمتكم في هذا البحث العلمي.</p></footer></main>`;bind();}
-function bind(){document.querySelectorAll('input[type=radio][data-id]').forEach(x=>x.onchange=()=>{let id=x.dataset.id;set(id,x.value);if(id==='q1'){if(x.value!=='نعم')del('q2','status','q3_detail','sourcePrincipale','no_official_reason','no_official_reason_other','official_other_detail','external_other_detail',...officialSources.map(z=>z[0]),...externalSources.map(z=>z[0]));else del('preferred_public_channel','preferred_public_channel_other');}if(id==='q2'){del('status','q3_detail','sourcePrincipale');if(x.value==='نعم')del('no_official_reason','no_official_reason_other','external_other_detail',...externalSources.map(z=>z[0]));else del('official_other_detail',...officialSources.map(z=>z[0]));}if(id==='preferred_public_channel'&&x.value!==PUBLIC_CHANNEL_OTHER)del('preferred_public_channel_other');if(id==='no_official_reason'&&x.value!==NO_OFFICIAL_REASON_OTHER)del('no_official_reason_other');if(id==='canal_dernier_contact'&&x.value!==OTHER_CONTACT_CHANNEL)del('contact_channel_other_detail');if(id==='status'){if(x.value!==COMBINED_BENEFICIARY)del('q3_detail');if(!beneficiary())del(...G.satisfaction[0][1].map(r=>r[0]),...G.personalImpact[0][1].map(r=>r[0]));}if(id==='q3_detail'&&!beneficiary())del(...G.satisfaction[0][1].map(r=>r[0]),...G.personalImpact[0][1].map(r=>r[0]));if(id==='contact_reel'&&x.value==='لا')del('canal_dernier_contact','contact_channel_other_detail','reponse_recue',...G.response[0][1].map(r=>r[0]));if(id==='reponse_recue'&&x.value==='لا')del(...G.response[0][1].map(r=>r[0]));if(id==='residence'){if(x.value==='داخل المغرب')del('country');else del('region');}render();});document.querySelectorAll('input[type=checkbox][data-check]').forEach(x=>x.onchange=()=>{let id=x.dataset.check;set(id,x.checked?'1':'');if(!x.checked&&id===OFFICIAL_SOURCE_OTHER_ID)del('official_other_detail');if(!x.checked&&id===EXTERNAL_SOURCE_OTHER_ID)del('external_other_detail');if(officialSourceCodes[id])reconcileSourcePrincipale();render();});document.querySelectorAll('[data-text]').forEach(x=>x.oninput=()=>set(x.dataset.text,x.value));let s=$('#suggestion');if(s)s.oninput=()=>set('suggestion',s.value);let r=$('#region-select');if(r)r.onchange=()=>{set('region',r.value);render();};let c=$('#country-input');if(c)c.oninput=()=>set('country',c.value);let it=$('#intro-toggle');if(it)it.onclick=()=>{state.intro=!state.intro;render();};let n=$('#next');if(n)n.onclick=()=>{if(!valid())return render();let ss=steps(),i=ss.indexOf(state.step);state.step=ss[i+1];state.error='';render();scrollToForm();};let p=$('#prev');if(p)p.onclick=()=>{let ss=steps(),i=ss.indexOf(state.step);state.step=ss[i-1];state.error='';render();scrollToForm();};let sub=$('#submit');if(sub)sub.onclick=submit;}
+function bind(){document.querySelectorAll('input[type=radio][data-id]').forEach(x=>x.onchange=()=>{let id=x.dataset.id;set(id,x.value);if(id==='q1'){if(x.value!=='نعم')del('q2','status','q3_detail','sourcePrincipale','no_official_reason','no_official_reason_other','official_other_detail','external_other_detail',...officialSources.map(z=>z[0]),...externalSources.map(z=>z[0]));else del('preferred_public_channel','preferred_public_channel_other');}if(id==='q2'){del('status','q3_detail','sourcePrincipale');if(x.value==='نعم')del('no_official_reason','no_official_reason_other','external_other_detail',...externalSources.map(z=>z[0]));else del('official_other_detail',...officialSources.map(z=>z[0]));}if(id==='preferred_public_channel'&&x.value!==PUBLIC_CHANNEL_OTHER)del('preferred_public_channel_other');if(id==='no_official_reason'&&x.value!==NO_OFFICIAL_REASON_OTHER)del('no_official_reason_other');if(id==='canal_dernier_contact'&&x.value!==OTHER_CONTACT_CHANNEL)del('contact_channel_other_detail');if(id==='status'){if(x.value!==COMBINED_BENEFICIARY)del('q3_detail');if(!beneficiary())del(...G.satisfaction[0][1].map(r=>r[0]),...G.personalImpact[0][1].map(r=>r[0]));}if(id==='q3_detail'&&!beneficiary())del(...G.satisfaction[0][1].map(r=>r[0]),...G.personalImpact[0][1].map(r=>r[0]));if(id==='contact_reel')clearAbandonedInteractionBranch(x.value);if(id==='reponse_recue'&&x.value==='لا')del(...G.response[0][1].map(r=>r[0]));if(id==='residence'){if(x.value==='داخل المغرب')del('country');else del('region');}render();});document.querySelectorAll('input[type=checkbox][data-check]').forEach(x=>x.onchange=()=>{let id=x.dataset.check;set(id,x.checked?'1':'');if(!x.checked&&id===OFFICIAL_SOURCE_OTHER_ID)del('official_other_detail');if(!x.checked&&id===EXTERNAL_SOURCE_OTHER_ID)del('external_other_detail');if(officialSourceCodes[id])reconcileSourcePrincipale();render();});document.querySelectorAll('[data-text]').forEach(x=>x.oninput=()=>set(x.dataset.text,x.value));let s=$('#suggestion');if(s)s.oninput=()=>set('suggestion',s.value);let r=$('#region-select');if(r)r.onchange=()=>{set('region',r.value);render();};let c=$('#country-input');if(c)c.oninput=()=>set('country',c.value);let it=$('#intro-toggle');if(it)it.onclick=()=>{state.intro=!state.intro;render();};let n=$('#next');if(n)n.onclick=()=>{if(!valid())return render();let ss=steps(),i=ss.indexOf(state.step);state.step=ss[i+1];state.error='';render();scrollToForm();};let p=$('#prev');if(p)p.onclick=()=>{let ss=steps(),i=ss.indexOf(state.step);state.step=ss[i-1];state.error='';render();scrollToForm();};let sub=$('#submit');if(sub)sub.onclick=submit;}
 function scrollToForm(){requestAnimationFrame(()=>$('#questionnaire-form')?.scrollIntoView({behavior:'smooth',block:'start'}));}
 const style=document.createElement('style');style.textContent=`.likert-wrap{overflow-x:auto}.likert-table{width:100%;border-collapse:collapse;min-width:760px;background:#fff}.likert-table th,.likert-table td{border:1px solid rgba(15,23,42,.12);padding:.85rem;text-align:center}.likert-table th:first-child,.likert-table td:first-child{text-align:right;min-width:360px}.likert-table input{width:20px;height:20px}.likert-table thead th{font-weight:800;background:rgba(15,23,42,.04)}.group-card+.instruction-card{margin-top:1rem}@media(max-width:700px){.likert-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}.likert-table{width:100%;min-width:0;table-layout:fixed;border-collapse:collapse;background:#fff}.likert-table thead{display:table-header-group}.likert-table thead th{font-size:1.12rem;font-weight:800;padding-block:.85rem}.likert-table thead th:first-child{font-size:1.08rem}.likert-table tbody{display:table-row-group}.likert-table tr{display:table-row}.likert-table th,.likert-table td{display:table-cell;padding:.76rem .24rem;font-size:1rem;vertical-align:middle}.likert-table th:first-child,.likert-table td:first-child{display:table-cell;width:45%;min-width:0;padding:.95rem .6rem;text-align:right;line-height:1.75}.likert-table th:not(:first-child),.likert-table td:not(:first-child){width:11%;min-width:0;padding-inline:.08rem}.likert-table tbody td label{display:flex;width:100%;min-height:60px;align-items:center;justify-content:center}.likert-table input{width:28px;height:28px;margin:0}}@media(max-width:380px){.likert-table th,.likert-table td{padding:.6rem .12rem;font-size:.88rem}.likert-table thead th{font-size:.98rem;padding-block:.68rem}.likert-table thead th:first-child{font-size:.96rem}.likert-table th:first-child,.likert-table td:first-child{width:45%;padding:.78rem .38rem}.likert-table th:not(:first-child),.likert-table td:not(:first-child){width:11%}.likert-table input{width:25px;height:25px}}`;document.head.appendChild(style);
 render();
