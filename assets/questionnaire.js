@@ -1,7 +1,7 @@
 const GOOGLE_CLIENT_ID='285878510024-7dhdojiucp6ff20m2snuro018t70c6s5.apps.googleusercontent.com';
 const AUTH_BRIDGE_URL='https://script.google.com/macros/s/AKfycbxmwpYfo8bhwBmPPsKrIsqIfW4DQUxOxrwYavWgojHvLzR0e-TDK-DQj7t3LNeODRSv/exec';
 const AUTH_CHANNEL='questionnaire-logement-auth-v1';
-const SCHEMA_VERSION='2026-08-13-interaction-v3';
+const SCHEMA_VERSION='2026-08-13-comprehension-v1';
 const ENTRY_COMMON={
  q1:'299895912',q2:'1225420672',age:'1577939573',gender:'2068308268',education:'1330802393',housing:'1373868444',residence:'865830704',professional:'1061681182',region:'861634292',country:'1099313147'
 };
@@ -157,11 +157,11 @@ const contactChannels=[
 ];
 const quiz=[
  ['understanding_1','1. ما الغاية الأساسية من برنامج الدعم المباشر للسكن؟',['مساعدة المواطنين على أداء واجبات كراء السكن','مساعدة الأشخاص المؤهلين على اقتناء سكن رئيسي من خلال دعم مالي مباشر','تمويل بناء مساكن عمومية مخصصة للكراء','منح قروض بنكية بدون فوائد لبناء سكن'],'مساعدة الأشخاص المؤهلين على اقتناء سكن رئيسي من خلال دعم مالي مباشر'],
- ['understanding_2','2. أي حالة من الحالات التالية تجعل الشخص غير مؤهل للاستفادة من البرنامج؟',['العمل في القطاع الخاص','عدم الزواج','الإقامة خارج المغرب','سبق الاستفادة من دعم أو امتياز من الدولة في مجال السكن'],'سبق الاستفادة من دعم أو امتياز من الدولة في مجال السكن'],
+ ['understanding_2','2. أي من الشروط التالية يجب أن يتوفر في الشخص للاستفادة من برنامج الدعم المباشر للسكن؟',['أن يكون حاملاً للجنسية المغربية، وألا يكون قد سبق له الاستفادة من إعانة أو امتياز ممنوح من طرف الدولة في مجال السكن.','أن يكون حاملاً للجنسية المغربية، وأن يكون مقيماً بصفة دائمة داخل المغرب عند تقديم طلب الاستفادة.','أن يكون حاملاً للجنسية المغربية، وأن يتراوح عمره عند تقديم الطلب بين 18 و45 سنة.','أن يكون حاملاً للجنسية المغربية، وأن يكون مسجلاً في السجل الاجتماعي الموحد ضمن عتبة الاستفادة المحددة.'],'أن يكون حاملاً للجنسية المغربية، وألا يكون قد سبق له الاستفادة من إعانة أو امتياز ممنوح من طرف الدولة في مجال السكن.'],
  ['understanding_3','3. أين يُقدَّم طلب الاستفادة، وكيف تُتابع مراحل معالجة الملف؟',['مباشرة لدى مصالح الوزارة، مع تتبع الملف عبر البريد الإلكتروني','لدى الوكالة البنكية، مع تتبع الملف عبر تطبيقها الإلكتروني','عبر منصة «دعم سكن»، مع تتبع مراحل معالجة الملف من خلالها','لدى مصالح الجماعة الترابية، مع تتبع الملف بواسطة وصل الإيداع'],'عبر منصة «دعم سكن»، مع تتبع مراحل معالجة الملف من خلالها'],
  ['understanding_4','4. ما قيمة الدعم حسب ثمن بيع السكن مع احتساب الرسوم؟',['100.000 درهم إذا لم يتجاوز الثمن 300.000 درهم، و70.000 درهم إذا فاق 300.000 درهم ولم يتجاوز 700.000 درهم','70.000 درهم إذا لم يتجاوز الثمن 300.000 درهم، و100.000 درهم إذا فاق 300.000 درهم ولم يتجاوز 700.000 درهم','70.000 درهم لجميع المساكن التي لا يتجاوز ثمنها 700.000 درهم','100.000 درهم لجميع المساكن التي لا يتجاوز ثمنها 700.000 درهم'],'100.000 درهم إذا لم يتجاوز الثمن 300.000 درهم، و70.000 درهم إذا فاق 300.000 درهم ولم يتجاوز 700.000 درهم'],
  ['understanding_5','5. ما شروط السكن المؤهل للاستفادة من الدعم؟',['أن يتكون من غرفة واحدة على الأقل، وأن يكون موضوع بيع أول، وأن تكون رخصة السكن صادرة ابتداءً من فاتح يناير 2023','أن يتكون من غرفتين على الأقل، وأن يكون موضوع بيع أول، وأن تكون رخصة السكن صادرة ابتداءً من فاتح يناير 2023','أن يتكون من غرفتين على الأقل، وأن يكون موضوع بيع ثانٍ، وأن تكون رخصة السكن صادرة ابتداءً من فاتح يناير 2023','أن يتكون من غرفتين على الأقل، وأن يكون موضوع بيع أول، وأن تكون رخصة السكن صادرة قبل فاتح يناير 2023'],'أن يتكون من غرفتين على الأقل، وأن يكون موضوع بيع أول، وأن تكون رخصة السكن صادرة ابتداءً من فاتح يناير 2023'],
- ['understanding_6','6. بعد الموافقة الأولية، عن طريق من تُستكمل إجراءات الدعم، وما المدة التي يجب أن يبقى خلالها السكن مخصصًا للسكن الرئيسي ابتداءً من تاريخ عقد البيع النهائي؟',['عن طريق الوكالة البنكية، لمدة خمس سنوات','عن طريق الموثق، لمدة ثلاث سنوات','عن طريق الموثق، لمدة خمس سنوات','عن طريق مصالح الوزارة، لمدة خمس سنوات'],'عن طريق الموثق، لمدة خمس سنوات']
+ ['understanding_6','6. ما المدة التي يجب أن يبقى خلالها السكن مخصصًا للسكن الرئيسي ابتداءً من تاريخ إبرام عقد البيع النهائي؟',['ثلاث (3) سنوات','أربع (4) سنوات','خمس (5) سنوات','سبع (7) سنوات'],'خمس (5) سنوات']
 ];
 const G={
  information:[
@@ -294,6 +294,24 @@ function likertComposite(dimensions){
  const score=values.every(value=>value!==null)?values.reduce((sum,value)=>sum+value,0)/values.length:null;
  return{...likertResult(score,dimensions.reduce((sum,d)=>sum+d.item_count,0)),dimension_count:dimensions.length,positive_dimension_count:score===null?null:dimensions.filter(d=>d.score>3).length};
 }
+function comprehensionScoring(){
+ const namedScores={};
+ const rawAnswers={};
+ quiz.forEach(([id,,,correct],index)=>{
+  const answer=val(id);
+  rawAnswers[id]=answer||null;
+  namedScores[`Compréhension_Q${index+1}_correct`]=answer===''?null:(answer===correct?1:0);
+ });
+ const values=Object.values(namedScores);
+ const complete=route()!=='g1'&&values.every(value=>value===0||value===1);
+ const score=complete?values.reduce((sum,value)=>sum+value,0):null;
+ return{
+  raw_answers:rawAnswers,
+  correct_by_question:namedScores,
+  Score_Compréhension_0_6:score,
+  Pourcentage_Compréhension_0_100:score===null?null:Math.round(score/6*1000)/10
+ };
+}
 function scores(){
  const official=route()==='official';
  const dimensions={
@@ -321,12 +339,15 @@ function scores(){
   trust_general:likertDimension(G.trustGeneral[0][1].map(r=>r[0]),route()!=='g1')
  };
  const rawAnswers=Object.fromEntries([...new Set(Object.values(G).flatMap(groups=>groups.flatMap(([,rows])=>rows.map(([id])=>id))))].map(id=>[id,val(id)||null]));
+ const comprehension=comprehensionScoring();
  return{
   raw_answers:rawAnswers,
   dimensions,
   global_scores:{transparency,interactivity,programme_success:programmeSuccess},
   single_items:singleItems,
-  understanding:route()==='g1'?null:quiz.reduce((sum,[id,,,correct])=>sum+(val(id)===correct?1:0),0)
+  understanding:comprehension.Score_Compréhension_0_6,
+  understanding_correct:comprehension.correct_by_question,
+  understanding_percentage:comprehension.Pourcentage_Compréhension_0_100
  };
 }
 function authConfigured(){return /^https:\/\/script\.google\.com\/macros\/s\/[^/]+\/exec$/.test(AUTH_BRIDGE_URL);}
@@ -504,6 +525,11 @@ async function submit(){
   if(val('canal_dernier_contact')===OTHER_CONTACT_CHANNEL)supplemental.contact_channel_other_detail=String(val('contact_channel_other_detail')).trim();
   addKey('reponse_recue',val('reponse_recue'));
   quiz.forEach(([id])=>addKey(id,val(id)));
+  const comprehension=comprehensionScoring();
+  Object.assign(supplemental,comprehension.correct_by_question,{
+   Score_Compréhension_0_6:comprehension.Score_Compréhension_0_6,
+   Pourcentage_Compréhension_0_100:comprehension.Pourcentage_Compréhension_0_100
+  });
   addKey('suggestion',val('suggestion'));
  }
  ['age','gender','education','housing','residence','region','country','professional'].forEach(k=>addCommon(k,val(k)));
