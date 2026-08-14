@@ -422,7 +422,8 @@ function callAuthBridge(action,idToken,extra={}){
   add('requestId',requestId);add('action',action);add('idToken',idToken);
   Object.entries(extra).forEach(([name,value])=>add(name,String(value??'')));
   const cleanup=()=>{form.remove();frame.remove();};
-  const timeoutMs=action==='check'?15000:120000;\n  const timer=setTimeout(()=>{authRequests.delete(requestId);cleanup();reject(new Error('request_timeout'));},timeoutMs);
+  const timeoutMs=action==='check'?15000:120000;
+  const timer=setTimeout(()=>{authRequests.delete(requestId);cleanup();reject(new Error('request_timeout'));},timeoutMs);
   authRequests.set(requestId,{resolve:result=>{clearTimeout(timer);cleanup();resolve(result);}});
   document.body.append(frame,form);
   form.submit();
