@@ -422,7 +422,7 @@ function callAuthBridge(action,idToken,extra={}){
   add('requestId',requestId);add('action',action);add('idToken',idToken);
   Object.entries(extra).forEach(([name,value])=>add(name,String(value??'')));
   const cleanup=()=>{form.remove();frame.remove();};
-  const timeoutMs=action==='check'?15000:120000;
+  const timeoutMs=action==='check'?60000:120000;
   const timer=setTimeout(()=>{authRequests.delete(requestId);cleanup();reject(new Error('request_timeout'));},timeoutMs);
   authRequests.set(requestId,{resolve:result=>{clearTimeout(timer);cleanup();resolve(result);}});
   document.body.append(frame,form);
@@ -430,7 +430,7 @@ function callAuthBridge(action,idToken,extra={}){
  });
 }
 window.addEventListener('message',event=>{
- const origineGoogleValide=event.origin==='https://script.google.com'||/^https:\/\/[-a-z0-9]+-script\.googleusercontent\.com$/.test(event.origin);
+ const origineGoogleValide=event.origin==='https://script.google.com'||event.origin==='https://script.googleusercontent.com'||/^https:\/\/[-a-z0-9]+-script\.googleusercontent\.com$/.test(event.origin)||/^https:\/\/[-a-z0-9]+\.script\.googleusercontent\.com$/.test(event.origin);
  if(!origineGoogleValide)return;
  const message=event.data||{};
  if(message.channel!==AUTH_CHANNEL)return;
