@@ -382,8 +382,68 @@ function parserReponsesSupplementaires_(texte) {
     if (!valeur || valeur.length > 500) throw new Error('INVALID_ANSWERS');
     resultat[cle] = valeur;
   });
-  if (!Object.keys(resultat).length) throw new Error('INVALID_ANSWERS');
   return resultat;
+}
+
+function obtenirItemIdDepuisEntryId_(correspondance, entryId) {
+  const descripteur = correspondance[String(entryId)];
+  return String(descripteur && typeof descripteur === 'object' ? descripteur.itemId || '' : descripteur || '');
+}
+
+function resoudreDescripteurPlaceholder_(formulaire, correspondance, placeholderId) {
+  const specs = {
+    '990000000000000001': { start:'237635013', end:'1845717094', type:FormApp.ItemType.MULTIPLE_CHOICE, title:'ما السبب الرئيسي الذي دفعكم إلى التواصل مع الوزارة بشأن البرنامج؟' },
+    '990000000000000002': { start:'237635013', end:'1845717094', type:FormApp.ItemType.MULTIPLE_CHOICE, title:'ما السبب الرئيسي لعدم تواصلكم مع الوزارة بشأن البرنامج؟' },
+    '990000000000000003': { start:'237635013', end:'1845717094', type:FormApp.ItemType.GRID, title:'الاستفسارات وطلب التوضيحات', rowIndex:0 },
+    '990000000000000004': { start:'237635013', end:'1845717094', type:FormApp.ItemType.GRID, title:'الملاحظات والمقترحات', rowIndex:0 },
+    '990000000000000005': { start:'237635013', end:'1845717094', type:FormApp.ItemType.GRID, title:'الشكايات المتعلقة بالبرنامج', rowIndex:0 },
+    '990000000000000011': { start:'328033588', end:'1374327145', type:FormApp.ItemType.MULTIPLE_CHOICE, title:'ما السبب الرئيسي الذي دفعكم إلى التواصل مع الوزارة بشأن البرنامج؟' },
+    '990000000000000012': { start:'328033588', end:'1374327145', type:FormApp.ItemType.MULTIPLE_CHOICE, title:'ما السبب الرئيسي لعدم تواصلكم مع الوزارة بشأن البرنامج؟' },
+    '990000000000000013': { start:'328033588', end:'1374327145', type:FormApp.ItemType.GRID, title:'الاستفسارات وطلب التوضيحات', rowIndex:0 },
+    '990000000000000014': { start:'328033588', end:'1374327145', type:FormApp.ItemType.GRID, title:'الملاحظات والمقترحات', rowIndex:0 },
+    '990000000000000015': { start:'328033588', end:'1374327145', type:FormApp.ItemType.GRID, title:'الشكايات المتعلقة بالبرنامج', rowIndex:0 },
+    '990000000000000021': { start:'1807617813', end:'366290689', type:FormApp.ItemType.MULTIPLE_CHOICE, title:'ما السبب الرئيسي الذي دفعكم إلى التواصل مع الوزارة بشأن البرنامج؟' },
+    '990000000000000022': { start:'1807617813', end:'366290689', type:FormApp.ItemType.MULTIPLE_CHOICE, title:'ما السبب الرئيسي لعدم تواصلكم مع الوزارة بشأن البرنامج؟' },
+    '990000000000000023': { start:'1807617813', end:'366290689', type:FormApp.ItemType.GRID, title:'الاستفسارات وطلب التوضيحات', rowIndex:0 },
+    '990000000000000024': { start:'1807617813', end:'366290689', type:FormApp.ItemType.GRID, title:'الملاحظات والمقترحات', rowIndex:0 },
+    '990000000000000025': { start:'1807617813', end:'366290689', type:FormApp.ItemType.GRID, title:'الشكايات المتعلقة بالبرنامج', rowIndex:0 },
+    '990000000000000031': { start:'1924533978', end:'850668692', type:FormApp.ItemType.MULTIPLE_CHOICE, title:'ما السبب الرئيسي الذي دفعكم إلى التواصل مع الوزارة بشأن البرنامج؟' },
+    '990000000000000032': { start:'1924533978', end:'850668692', type:FormApp.ItemType.MULTIPLE_CHOICE, title:'ما السبب الرئيسي لعدم تواصلكم مع الوزارة بشأن البرنامج؟' },
+    '990000000000000033': { start:'1924533978', end:'850668692', type:FormApp.ItemType.GRID, title:'الاستفسارات وطلب التوضيحات', rowIndex:0 },
+    '990000000000000034': { start:'1924533978', end:'850668692', type:FormApp.ItemType.GRID, title:'الملاحظات والمقترحات', rowIndex:0 },
+    '990000000000000035': { start:'1924533978', end:'850668692', type:FormApp.ItemType.GRID, title:'الشكايات المتعلقة بالبرنامج', rowIndex:0 },
+    '990000000000000041': { start:'882397137', end:'1486461560', type:FormApp.ItemType.GRID, title:'آراؤكم حول تدبير الوزارة للبرنامج', rowIndex:0 },
+    '990000000000000042': { start:'882397137', end:'1486461560', type:FormApp.ItemType.GRID, title:'آراؤكم حول تدبير الوزارة للبرنامج', rowIndex:1 },
+    '990000000000000043': { start:'882397137', end:'1486461560', type:FormApp.ItemType.GRID, title:'آراؤكم حول تدبير الوزارة للبرنامج', rowIndex:2 },
+    '990000000000000044': { start:'882397137', end:'1486461560', type:FormApp.ItemType.GRID, title:'آراؤكم حول تدبير الوزارة للبرنامج', rowIndex:3 },
+    '990000000000000045': { start:'882397137', end:'1486461560', type:FormApp.ItemType.GRID, title:'آراؤكم حول تدبير الوزارة للبرنامج', rowIndex:4 },
+    '990000000000000051': { start:'1729249596', end:'1677021184', type:FormApp.ItemType.GRID, title:'آراؤكم حول تدبير الوزارة للبرنامج', rowIndex:0 },
+    '990000000000000052': { start:'1729249596', end:'1677021184', type:FormApp.ItemType.GRID, title:'آراؤكم حول تدبير الوزارة للبرنامج', rowIndex:1 },
+    '990000000000000053': { start:'1729249596', end:'1677021184', type:FormApp.ItemType.GRID, title:'آراؤكم حول تدبير الوزارة للبرنامج', rowIndex:2 },
+    '990000000000000054': { start:'1729249596', end:'1677021184', type:FormApp.ItemType.GRID, title:'آراؤكم حول تدبير الوزارة للبرنامج', rowIndex:3 },
+    '990000000000000055': { start:'1729249596', end:'1677021184', type:FormApp.ItemType.GRID, title:'آراؤكم حول تدبير الوزارة للبرنامج', rowIndex:4 },
+  };
+  const spec = specs[String(placeholderId)];
+  if (!spec) return null;
+  const items = formulaire.getItems();
+  const startItemId = obtenirItemIdDepuisEntryId_(correspondance, spec.start);
+  const endItemId = obtenirItemIdDepuisEntryId_(correspondance, spec.end);
+  if (!startItemId || !endItemId) throw new Error('CONFIGURATION_MISSING');
+  const startIndex = items.findIndex(item => String(item.getId()) === startItemId);
+  const endIndex = items.findIndex(item => String(item.getId()) === endItemId);
+  if (startIndex < 0 || endIndex < 0 || endIndex <= startIndex) throw new Error('CONFIGURATION_MISSING');
+  const candidats = [];
+  for (let index = startIndex + 1; index < endIndex; index++) {
+    const item = items[index];
+    if (item.getType() !== spec.type || String(item.getTitle() || '').trim() !== spec.title) continue;
+    if (spec.type === FormApp.ItemType.GRID) {
+      const rowIndex = Number(spec.rowIndex);
+      if (!Number.isInteger(rowIndex) || rowIndex < 0 || rowIndex >= item.asGridItem().getRows().length) continue;
+      candidats.push({itemId:String(item.getId()), rowIndex});
+    } else candidats.push({itemId:String(item.getId())});
+  }
+  if (!candidats.length) throw new Error('CONFIGURATION_MISSING');
+  return candidats[candidats.length - 1];
 }
 
 function creerReponseDepuisCharge_(formulaire, questionReference, submissionId, charge, supplementaires) {
@@ -402,7 +462,9 @@ function creerReponseDepuisCharge_(formulaire, questionReference, submissionId, 
     creerReferenceTechniqueSignee_(submissionId);
 
   Object.keys(chargeComplete).forEach(function (entryId) {
-    const descripteurBrut = correspondance[entryId];
+    const descripteurBrut =
+      correspondance[entryId] ||
+      resoudreDescripteurPlaceholder_(formulaire, correspondance, entryId);
     const descripteur =
       descripteurBrut && typeof descripteurBrut === 'object'
         ? descripteurBrut
@@ -708,89 +770,20 @@ function ajouterReponsesSupplementaires_(reponse, formulaire, donnees) {
   const detailOfficiel = String(donnees.official_source_other_detail || '');
   const detailExterne = String(donnees.external_source_other_detail || '');
   const detailContact = String(donnees.contact_channel_other_detail || '');
-  if (preference && (raison || confiance || detailOfficiel || detailExterne || detailContact)) {
-    throw new Error('INVALID_ANSWERS');
-  }
-  if (raison && !confiance) throw new Error('INVALID_ANSWERS');
-  if (!preference && !confiance) throw new Error('INVALID_ANSWERS');
-  if (detailOfficiel && raison) throw new Error('INVALID_ANSWERS');
-  if (detailExterne && !raison) throw new Error('INVALID_ANSWERS');
-
-  const questions = {
-    preferred_public_channel: trouverQuestionUniqueParTitre_(
-      formulaire,
-      FormApp.ItemType.MULTIPLE_CHOICE,
-      MISE_A_JOUR_QUESTIONNAIRE.PREFERRED_CHANNEL_TITLE
-    ),
-    no_official_reason: trouverQuestionUniqueParTitre_(
-      formulaire,
-      FormApp.ItemType.MULTIPLE_CHOICE,
-      MISE_A_JOUR_QUESTIONNAIRE.NO_OFFICIAL_REASON_TITLE
-    ),
-    trust_general_common: trouverQuestionUniqueParTitre_(
-      formulaire,
-      FormApp.ItemType.GRID,
-      MISE_A_JOUR_QUESTIONNAIRE.TRUST_COMMON_TITLE
-    ),
-    official_source_other_detail: trouverQuestionUniqueParTitre_(
-      formulaire,
-      FormApp.ItemType.TEXT,
-      MISE_A_JOUR_QUESTIONNAIRE.OFFICIAL_SOURCE_OTHER_DETAIL_TITLE
-    ),
-    external_source_other_detail: trouverQuestionUniqueParTitre_(
-      formulaire,
-      FormApp.ItemType.TEXT,
-      MISE_A_JOUR_QUESTIONNAIRE.EXTERNAL_SOURCE_OTHER_DETAIL_TITLE
-    ),
-    contact_channel_other_detail: trouverQuestionUniqueParTitre_(
-      formulaire,
-      FormApp.ItemType.TEXT,
-      MISE_A_JOUR_QUESTIONNAIRE.CONTACT_CHANNEL_OTHER_DETAIL_TITLE
-    ),
+  const resolve = (type, title) => {
+    const q = trouverQuestionUniqueParTitre_(formulaire, type, title);
+    if (!q) throw new Error('CONFIGURATION_MISSING');
+    return q;
   };
-  if (
-    !questions.preferred_public_channel ||
-    !questions.no_official_reason ||
-    !questions.trust_general_common ||
-    !questions.official_source_other_detail ||
-    !questions.external_source_other_detail ||
-    !questions.contact_channel_other_detail
-  ) {
-    throw new Error('CONFIGURATION_MISSING');
-  }
-  if (preference) {
-    reponse.withItemResponse(
-      questions.preferred_public_channel.createResponse(preference)
-    );
-  }
-  if (raison) {
-    reponse.withItemResponse(
-      questions.no_official_reason.createResponse(raison)
-    );
-  }
+  if (preference) reponse.withItemResponse(resolve(FormApp.ItemType.MULTIPLE_CHOICE, MISE_A_JOUR_QUESTIONNAIRE.PREFERRED_CHANNEL_TITLE).createResponse(preference));
+  if (raison) reponse.withItemResponse(resolve(FormApp.ItemType.MULTIPLE_CHOICE, MISE_A_JOUR_QUESTIONNAIRE.NO_OFFICIAL_REASON_TITLE).createResponse(raison));
   if (confiance) {
-    if (MISE_A_JOUR_QUESTIONNAIRE.LIKERT_COLUMNS.indexOf(confiance) === -1) {
-      throw new Error('INVALID_ANSWERS');
-    }
-    reponse.withItemResponse(
-      questions.trust_general_common.createResponse([confiance])
-    );
+    if (MISE_A_JOUR_QUESTIONNAIRE.LIKERT_COLUMNS.indexOf(confiance) === -1) throw new Error('INVALID_ANSWERS');
+    reponse.withItemResponse(resolve(FormApp.ItemType.GRID, MISE_A_JOUR_QUESTIONNAIRE.TRUST_COMMON_TITLE).createResponse([confiance]));
   }
-  if (detailOfficiel) {
-    reponse.withItemResponse(
-      questions.official_source_other_detail.createResponse(detailOfficiel)
-    );
-  }
-  if (detailExterne) {
-    reponse.withItemResponse(
-      questions.external_source_other_detail.createResponse(detailExterne)
-    );
-  }
-  if (detailContact) {
-    reponse.withItemResponse(
-      questions.contact_channel_other_detail.createResponse(detailContact)
-    );
-  }
+  if (detailOfficiel) reponse.withItemResponse(resolve(FormApp.ItemType.TEXT, MISE_A_JOUR_QUESTIONNAIRE.OFFICIAL_SOURCE_OTHER_DETAIL_TITLE).createResponse(detailOfficiel));
+  if (detailExterne) reponse.withItemResponse(resolve(FormApp.ItemType.TEXT, MISE_A_JOUR_QUESTIONNAIRE.EXTERNAL_SOURCE_OTHER_DETAIL_TITLE).createResponse(detailExterne));
+  if (detailContact) reponse.withItemResponse(resolve(FormApp.ItemType.TEXT, MISE_A_JOUR_QUESTIONNAIRE.CONTACT_CHANNEL_OTHER_DETAIL_TITLE).createResponse(detailContact));
 }
 
 function obtenirCorrespondanceFormulaire_(formulaire) {
