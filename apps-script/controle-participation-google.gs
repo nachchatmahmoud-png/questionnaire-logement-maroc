@@ -213,19 +213,31 @@ function verifierParticipationGoogle(requete) {
     }
 
     const compteTestExempte = estCompteTestExempte_(identite);
+
+    // Le compte de test exempté reçoit une réponse immédiatement après la
+    // validation Google : aucune ouverture de Google Sheets ni de Google Forms.
+    if (action === 'check' && compteTestExempte) {
+      return {
+        ok: true,
+        allowed: true,
+        exempt: true,
+        reason: 'test_account_exempt',
+        submissionEntryId: '1955032181',
+      };
+    }
+
     const empreinte = creerEmpreinteCompte_(identite.sub);
     const feuille = obtenirFeuilleControle_();
     const participation = lireParticipation_(feuille, empreinte);
 
-    // Vérification de connexion volontairement légère : aucune lecture ou migration
-    // du Google Form avant de répondre au navigateur. L'identifiant technique est
-    // stable et a été confirmé lors de l'installation.
+    // Pour les autres comptes, le check consulte uniquement la feuille technique.
+    // Aucune lecture ni migration du Google Form n'est faite avant la réponse.
     if (action === 'check') {
       return {
         ok: true,
-        allowed: compteTestExempte || !participation,
-        exempt: compteTestExempte,
-        reason: compteTestExempte ? 'test_account_exempt' : participation ? 'already_submitted' : 'eligible',
+        allowed: !participation,
+        exempt: false,
+        reason: participation ? 'already_submitted' : 'eligible',
         submissionEntryId: '1955032181',
       };
     }
