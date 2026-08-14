@@ -213,29 +213,32 @@ function verifierParticipationGoogle(requete) {
     }
 
     const compteTestExempte = estCompteTestExempte_(identite);
-
-    const formulaire = obtenirFormulaire_();
-    garantirMiseAJourQuestionnaire_(formulaire, true);
-    const questionReference = obtenirQuestionReferenceTechnique_(formulaire, false);
-    if (!questionReference) {
-      return resultatRefus_('configuration_error');
-    }
-
     const empreinte = creerEmpreinteCompte_(identite.sub);
     const feuille = obtenirFeuilleControle_();
     const participation = lireParticipation_(feuille, empreinte);
-    const correspondance = obtenirCorrespondanceFormulaire_(formulaire);
-    const submissionEntryId = obtenirEntryIdQuestion_(correspondance, questionReference);
 
+    // Vérification de connexion volontairement légère : aucune lecture ou migration
+    // du Google Form avant de répondre au navigateur. L'identifiant technique est
+    // stable et a été confirmé lors de l'installation.
     if (action === 'check') {
       return {
         ok: true,
         allowed: compteTestExempte || !participation,
         exempt: compteTestExempte,
         reason: compteTestExempte ? 'test_account_exempt' : participation ? 'already_submitted' : 'eligible',
-        submissionEntryId: submissionEntryId,
+        submissionEntryId: '1955032181',
       };
     }
+
+    // Les opérations Google Forms plus coûteuses ne sont exécutées qu'au moment
+    // de l'envoi effectif de la réponse.
+    const formulaire = obtenirFormulaire_();
+    const questionReference = obtenirQuestionReferenceTechnique_(formulaire, false);
+    if (!questionReference) {
+      return resultatRefus_('configuration_error');
+    }
+    const correspondance = obtenirCorrespondanceFormulaire_(formulaire);
+    const submissionEntryId = obtenirEntryIdQuestion_(correspondance, questionReference);
 
     const submissionId = String((requete && requete.submissionId) || '');
     if (!/^[A-Za-z0-9_-]{16,128}$/.test(submissionId)) {
