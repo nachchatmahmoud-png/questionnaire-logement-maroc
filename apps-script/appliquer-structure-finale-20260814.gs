@@ -3,13 +3,13 @@
  * acceptabilité, satisfaction/impact personnel et impact général.
  *
  * À exécuter UNE FOIS dans le projet Apps Script lié au Google Form :
- *   appliquerStructureFinale20260814()
+ *   appliquerStructureFinale20260814V2()
  *
  * Le script est idempotent. Il crée de nouveaux items au lieu de réétiqueter
  * les anciens, afin de conserver sans ambiguïté les réponses historiques.
  * Il ne modifie ni la compréhension, ni la transparence, ni l'interaction.
  */
-function appliquerStructureFinale20260814() {
+function appliquerStructureFinale20260814V2() {
   const FORM_ID = '1Q5pRbUvCAIlI556txfiM_z1qInuVQ4854IjOdVMUnLo';
   const SHEET_ID = '1VcNjC6_eF-9GiKALC7lVvgE1q_F3RM6CJUcs4RKyt-Q';
   const STATE_KEY = 'STRUCTURE_FINALE_20260814_V1';
@@ -121,28 +121,28 @@ function appliquerStructureFinale20260814() {
 
   const form = FormApp.openById(FORM_ID);
   const props = PropertiesService.getScriptProperties();
-  const state = lireJsonFinal_(props.getProperty(STATE_KEY));
+  const state = lireJsonFinalV2_(props.getProperty(STATE_KEY));
   const avant = form.getItems().length;
 
   ROUTES.forEach(function (route) {
     const routeState = state[route.key] || {};
-    const trustPage = exigerPageFinal_(form, route.trustPage).setTitle(T.trust);
-    const legitimacyPage = exigerPageFinal_(form, route.legitimacyPage).setTitle(T.legitimacy);
-    const evaluationPage = exigerPageFinal_(form, route.evaluationPage).setTitle(T.accept);
+    const trustPage = exigerPageFinalV2_(form, route.trustPage).setTitle(T.trust);
+    const legitimacyPage = exigerPageFinalV2_(form, route.legitimacyPage).setTitle(T.legitimacy);
+    const evaluationPage = exigerPageFinalV2_(form, route.evaluationPage).setTitle(T.accept);
 
-    const trust = obtenirGrilleFinale_(form, routeState.trust, T.trust, R.trust, LIKERT);
-    const legitimacy = obtenirGrilleFinale_(form, routeState.legitimacy, T.legitimacy, R.legitimacy, LIKERT);
-    const ease = obtenirGrilleFinale_(form, routeState.ease, T.ease, R.ease, LIKERT);
-    const accept = obtenirGrilleFinale_(form, routeState.accept, T.accept, R.accept, LIKERT);
+    const trust = obtenirGrilleFinaleV2_(form, routeState.trust, T.trust, R.trust, LIKERT);
+    const legitimacy = obtenirGrilleFinaleV2_(form, routeState.legitimacy, T.legitimacy, R.legitimacy, LIKERT);
+    const ease = obtenirGrilleFinaleV2_(form, routeState.ease, T.ease, R.ease, LIKERT);
+    const accept = obtenirGrilleFinaleV2_(form, routeState.accept, T.accept, R.accept, LIKERT);
     const outcome = route.beneficiary
-      ? obtenirGrilleFinale_(form, routeState.outcome, T.beneficiary, R.beneficiary, LIKERT)
-      : obtenirGrilleFinale_(form, routeState.outcome, T.generalImpact, R.generalImpact, LIKERT);
+      ? obtenirGrilleFinaleV2_(form, routeState.outcome, T.beneficiary, R.beneficiary, LIKERT)
+      : obtenirGrilleFinaleV2_(form, routeState.outcome, T.generalImpact, R.generalImpact, LIKERT);
 
-    placerApresFinal_(form, trust, trustPage);
-    placerApresFinal_(form, legitimacy, legitimacyPage);
-    placerApresFinal_(form, ease, evaluationPage);
-    placerApresFinal_(form, accept, ease);
-    placerApresFinal_(form, outcome, accept);
+    placerApresFinalV2_(form, trust, trustPage);
+    placerApresFinalV2_(form, legitimacy, legitimacyPage);
+    placerApresFinalV2_(form, ease, evaluationPage);
+    placerApresFinalV2_(form, accept, ease);
+    placerApresFinalV2_(form, outcome, accept);
 
     state[route.key] = {
       trust: trust.getId(), legitimacy: legitimacy.getId(),
@@ -152,11 +152,11 @@ function appliquerStructureFinale20260814() {
   });
 
   ROUTES.forEach(function (route) {
-    route.old.forEach(function (id) { supprimerSiPresentFinal_(form, id); });
+    route.old.forEach(function (id) { supprimerSiPresentFinalV2_(form, id); });
   });
-  supprimerItemsGenerauxRestantsFinal_(form);
+  supprimerItemsGenerauxRestantsFinalV2_(form);
 
-  let entryMap = lireJsonFinal_(props.getProperty(ENTRY_MAP_KEY));
+  let entryMap = lireJsonFinalV2_(props.getProperty(ENTRY_MAP_KEY));
   if (!Object.keys(entryMap).length && typeof actualiserCorrespondanceFormulaire_ === 'function') {
     entryMap = actualiserCorrespondanceFormulaire_(form) || {};
   }
@@ -165,18 +165,18 @@ function appliquerStructureFinale20260814() {
   }
   ROUTES.forEach(function (route) {
     const s = state[route.key];
-    associerLignesFinal_(entryMap, route.keys.trust, s.trust);
-    associerLignesFinal_(entryMap, route.keys.legitimacy, s.legitimacy);
-    associerLignesFinal_(entryMap, route.keys.ease, s.ease);
-    associerLignesFinal_(entryMap, route.keys.accept, s.accept);
-    associerLignesFinal_(entryMap, route.beneficiary ? route.keys.beneficiary : route.keys.generalImpact, s.outcome);
+    associerLignesFinalV2_(entryMap, route.keys.trust, s.trust);
+    associerLignesFinalV2_(entryMap, route.keys.legitimacy, s.legitimacy);
+    associerLignesFinalV2_(entryMap, route.keys.ease, s.ease);
+    associerLignesFinalV2_(entryMap, route.keys.accept, s.accept);
+    associerLignesFinalV2_(entryMap, route.beneficiary ? route.keys.beneficiary : route.keys.generalImpact, s.outcome);
   });
   props.setProperty(ENTRY_MAP_KEY, JSON.stringify(entryMap));
 
   SpreadsheetApp.flush();
   Utilities.sleep(2500);
-  actualiserAnalyseFinale_(SHEET_ID, T, R);
-  verifierStructureFinale_(form, ROUTES, state, T, R);
+  actualiserAnalyseFinaleV2_(SHEET_ID, T, R);
+  verifierStructureFinaleV2_(form, ROUTES, state, T, R);
 
   console.log('STRUCTURE_FINALE_APPLIQUEE: oui');
   console.log('NOMBRE_ITEMS_AVANT_APRES: ' + avant + ' / ' + form.getItems().length);
@@ -194,7 +194,7 @@ function appliquerStructureFinale20260814() {
   console.log('AUTRES_SECTIONS_INCHANGEES: oui');
 }
 
-function obtenirGrilleFinale_(form, id, title, rows, columns) {
+function obtenirGrilleFinaleV2_(form, id, title, rows, columns) {
   let item = id ? form.getItemById(Number(id)) : null;
   if (item && item.getType() !== FormApp.ItemType.GRID) item = null;
   const grid = item ? item.asGridItem() : form.addGridItem();
@@ -202,23 +202,23 @@ function obtenirGrilleFinale_(form, id, title, rows, columns) {
   return grid;
 }
 
-function exigerPageFinal_(form, id) {
+function exigerPageFinalV2_(form, id) {
   const item = form.getItemById(Number(id));
   if (!item || item.getType() !== FormApp.ItemType.PAGE_BREAK) throw new Error('Page introuvable: ' + id);
   return item.asPageBreakItem();
 }
 
-function placerApresFinal_(form, item, previous) {
+function placerApresFinalV2_(form, item, previous) {
   const destination = previous.getIndex() + 1;
   if (item.getIndex() !== destination) form.moveItem(item.getIndex(), destination);
 }
 
-function supprimerSiPresentFinal_(form, id) {
+function supprimerSiPresentFinalV2_(form, id) {
   const item = form.getItemById(Number(id));
   if (item) form.deleteItem(item.getIndex());
 }
 
-function supprimerItemsGenerauxRestantsFinal_(form) {
+function supprimerItemsGenerauxRestantsFinalV2_(form) {
   const motifs = [
     'بصفة عامة، أثق في الوزارة فيما يتعلق بتدبير',
     'بصفة عامة، أثق في قدرة الوزارة على تدبير',
@@ -234,18 +234,18 @@ function supprimerItemsGenerauxRestantsFinal_(form) {
   });
 }
 
-function associerLignesFinal_(map, keys, itemId) {
+function associerLignesFinalV2_(map, keys, itemId) {
   (keys || []).forEach(function (key, index) {
     map[String(key)] = { itemId: String(itemId), rowIndex: index };
   });
 }
 
-function lireJsonFinal_(raw) {
+function lireJsonFinalV2_(raw) {
   if (!raw) return {};
   try { return JSON.parse(raw) || {}; } catch (_) { return {}; }
 }
 
-function actualiserAnalyseFinale_(spreadsheetId, titles, rows) {
+function actualiserAnalyseFinaleV2_(spreadsheetId, titles, rows) {
   const ss = SpreadsheetApp.openById(spreadsheetId);
   const raw = ss.getSheetByName('Réponses au formulaire');
   const items = ss.getSheetByName('ITEMS_LIKERT');
@@ -282,7 +282,7 @@ function actualiserAnalyseFinale_(spreadsheetId, titles, rows) {
   ];
 
   const attendusManquants = function () {
-    return specs.filter(function (spec) { return !colonnesEntetesFinales_(headers, spec[1], spec[2]).length; });
+    return specs.filter(function (spec) { return !colonnesEntetesFinalesV2_(headers, spec[1], spec[2]).length; });
   };
   for (let tentative = 0; tentative < 3 && attendusManquants().length; tentative++) {
     SpreadsheetApp.flush();
@@ -291,10 +291,10 @@ function actualiserAnalyseFinale_(spreadsheetId, titles, rows) {
   }
   specs.forEach(function (spec) {
     const key = spec[0], title = spec[1], row = spec[2], col = spec[3];
-    const indexes = colonnesEntetesFinales_(headers, title, row);
+    const indexes = colonnesEntetesFinalesV2_(headers, title, row);
     if (!indexes.length) throw new Error('Colonne brute introuvable après mise à jour: ' + key);
     items.getRange(1, col).setValue(key);
-    items.getRange(2, col).setFormula(formuleLikertFinale_(indexes));
+    items.getRange(2, col).setFormula(formuleLikertFinaleV2_(indexes));
   });
   items.getRange('AP1').setValue('HIST_impact_general_3_exclu');
   items.getRange('AV1').setValue('HIST_impact_personal_3_exclu');
@@ -323,34 +323,34 @@ function actualiserAnalyseFinale_(spreadsheetId, titles, rows) {
   Object.keys(names).forEach(function (a1) { scoring.getRange(a1).setValue(names[a1]); });
   Object.keys(formulas).forEach(function (a1) { scoring.getRange(a1).setFormula(formulas[a1]); });
 
-  actualiserCodebookFinal_(codebook, titles, rows);
-  actualiserCorrespondanceFinale_(correspondence, titles, rows);
+  actualiserCodebookFinalV2_(codebook, titles, rows);
+  actualiserCorrespondanceFinaleV2_(correspondence, titles, rows);
   SpreadsheetApp.flush();
 }
 
-function colonnesEntetesFinales_(headers, title, row) {
+function colonnesEntetesFinalesV2_(headers, title, row) {
   const exact = title + ' [' + row + ']';
   const result = [];
   headers.forEach(function (header, index) { if (String(header).trim() === exact) result.push(index + 1); });
   return result;
 }
 
-function formuleLikertFinale_(columnIndexes) {
+function formuleLikertFinaleV2_(columnIndexes) {
   let source = '""';
   columnIndexes.slice().reverse().forEach(function (index) {
-    const col = lettreColonneFinale_(index);
+    const col = lettreColonneFinaleV2_(index);
     source = 'IF(\'Réponses au formulaire\'!' + col + '2:' + col + '<>"";\'Réponses au formulaire\'!' + col + '2:' + col + ';' + source + ')';
   });
   return '=ARRAYFORMULA(IF(\'Réponses au formulaire\'!A2:A="";"";LET(V;' + source + ';IF(V="";"";IFERROR(VALUE(REGEXEXTRACT(V;"^[1-5]"));SWITCH(V;"لا أوافق إطلاقًا";1;"لا أوافق";2;"لا أوافق ولا أعارض";3;"أوافق";4;"أوافق تمامًا";5;""))))))';
 }
 
-function lettreColonneFinale_(n) {
+function lettreColonneFinaleV2_(n) {
   let s = '';
   while (n > 0) { const r = (n - 1) % 26; s = String.fromCharCode(65 + r) + s; n = Math.floor((n - 1) / 26); }
   return s;
 }
 
-function actualiserCodebookFinal_(sheet, titles, rows) {
+function actualiserCodebookFinalV2_(sheet, titles, rows) {
   const likert = 'لا أوافق إطلاقًا=1; لا أوافق=2; لا أوافق ولا أعارض=3; أوافق=4; أوافق تمامًا=5; vide=NA';
   const records = [];
   function pushItems(prefix, title, itemRows, dimension, usage, population) {
@@ -378,7 +378,7 @@ function actualiserCodebookFinal_(sheet, titles, rows) {
   });
 }
 
-function actualiserCorrespondanceFinale_(sheet, titles, rows) {
+function actualiserCorrespondanceFinaleV2_(sheet, titles, rows) {
   const data = [['Variable analytique','Titre visible','Item / formule','Population','Échelle / codage','Rôle / applicabilité','Visible au répondant']];
   function add(variable, title, itemRows, population, role, visible) {
     itemRows.forEach(function (row) { data.push([variable,title,row,population,'Likert 1–5; moyenne; NA=vide',role,visible]); });
@@ -417,7 +417,7 @@ function actualiserCorrespondanceFinale_(sheet, titles, rows) {
   sheet.autoResizeColumns(1, data[0].length);
 }
 
-function verifierStructureFinale_(form, routes, state, titles, rows) {
+function verifierStructureFinaleV2_(form, routes, state, titles, rows) {
   routes.forEach(function (route) {
     const s = state[route.key];
     const expected = [
