@@ -1,0 +1,43 @@
+name: Restore auth timeout 15s
+
+on:
+  push:
+    paths:
+      - '.github/workflows/restore-auth-timeout-15s.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore 15 second auth check timeout
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          js = Path('assets/questionnaire.js')
+          text = js.read_text(encoding='utf-8')
+          old = "const timeoutMs=action==='check'?60000:120000;"
+          new = "const timeoutMs=action==='check'?15000:120000;"
+          if old not in text:
+              if new in text:
+                  print('Timeout already at 15 seconds')
+              else:
+                  raise SystemExit('Expected timeout line not found')
+          else:
+              text = text.replace(old, new, 1)
+              js.write_text(text, encoding='utf-8')
+          PY
+      - name: Commit restore
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add assets/questionnaire.js
+          if git diff --cached --quiet; then
+            echo 'No timeout change needed'
+          else
+            git commit -m 'Restore 15 second auth verification timeout'
+            git push
+          fi
