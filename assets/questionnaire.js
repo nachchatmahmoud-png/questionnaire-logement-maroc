@@ -449,10 +449,31 @@ function handleSubmissionRefusal(resultat){
  if(resultat?.reason==='reauthentication_required'){
   auth.allowed=false;auth.idToken='';auth.submissionEntryId='';auth.blocked=false;auth.error='انتهت جلسة تسجيل الدخول. يرجى تسجيل الدخول مجددًا، وستبقى إجاباتكم محفوظة في هذه الصفحة.';render();return;
  }
- state.error=state.pendingSubmissionId
-  ?'لم يؤكد Google Forms تسجيل الإجابات بعد. لم نعرض رسالة نجاح. اضغطوا على زر التحقق مرة أخرى، وستبقى إجاباتكم محفوظة.'
-  :'تعذر تأكيد صلاحية الحساب. لم تُرسل إجاباتكم، ويمكنكم إعادة المحاولة.';
+ state.error=resultat?.reason==='invalid_answers'
+  ?'تعذر إرسال الإجابات بسبب تعارض تقني في بنية الاستبيان. لم تُسجّل مشاركة ناقصة، وبقيت إجاباتكم محفوظة في الصفحة.'
+  :'تعذر إرسال الإجابات إلى Google Forms بعد محاولة التأكيد التلقائي. بقيت إجاباتكم محفوظة في الصفحة ولم تُعرض رسالة نجاح.';
  render();
+}
+function shouldRetrySubmission(resultat){
+ return !resultat||['server_error','token_service_unavailable','submission_not_found','network_error'].includes(resultat.reason);
+}
+async function confirmSubmissionAutomatically(submissionId,payload,supplemental){
+ let resultat=null;
+ for(let tentative=0;tentative<2;tentative++){
+  if(tentative)await new Promise(resolve=>setTimeout(resolve,1200));
+  try{
+   resultat=await callAuthBridge('submit',auth.idToken,{
+    submissionId,
+    payload:JSON.stringify(payload),
+    supplemental:JSON.stringify(supplemental),
+    schemaVersion:SCHEMA_VERSION
+   });
+  }catch(_){
+   resultat={allowed:false,reason:'network_error'};
+  }
+  if(resultat?.allowed||!shouldRetrySubmission(resultat))return resultat;
+ }
+ return resultat||{allowed:false,reason:'server_error'};
 }
 async function submit(){
  if(!valid())return render();
@@ -514,22 +535,17 @@ async function submit(){
   if(val('canal_dernier_contact')===OTHER_CONTACT_CHANNEL)supplemental.contact_channel_other_detail=String(val('contact_channel_other_detail')).trim();
   addKey('reponse_recue',val('reponse_recue'));
   quiz.forEach(([id])=>addKey(id,val(id)));
-  const comprehension=comprehensionScoring();
-  Object.assign(supplemental,comprehension.correct_by_question,{
-   Score_Compréhension_0_6:comprehension.Score_Compréhension_0_6,
-   Pourcentage_Compréhension_0_100:comprehension.Pourcentage_Compréhension_0_100
-  });
   addKey('suggestion',val('suggestion'));
  }
  ['age','gender','education','housing','residence','region','country','professional'].forEach(k=>addCommon(k,val(k)));
  add(auth.submissionEntryId,submissionId);
  try{
-  const confirmation=await callAuthBridge('submit',auth.idToken,{submissionId,payload:JSON.stringify(payload),supplemental:JSON.stringify(supplemental),schemaVersion:SCHEMA_VERSION});
+  const confirmation=await confirmSubmissionAutomatically(submissionId,payload,supplemental);
   if(confirmation?.allowed){state.pendingSubmissionId='';state.done=true;state.sending=false;state.error='';render();return;}
   handleSubmissionRefusal(confirmation);
- }catch(_){state.sending=false;state.error='تعذر الاتصال بخدمة التأكيد. لم نعرض رسالة نجاح، ويمكنكم التحقق مجددًا دون فقدان إجاباتكم.';render();}
+ }catch(_){handleSubmissionRefusal({allowed:false,reason:'server_error'});}
 }
-function nav(){let ss=steps(),i=ss.indexOf(state.step),label=state.sending?'جارٍ التحقق من تسجيل الإجابات…':state.pendingSubmissionId?'التحقق من تسجيل الإجابات':'إرسال الإجابات';return `<nav class="form-actions">${i>0?'<button class="secondary-button" id="prev" type="button">السابق</button>':'<span></span>'}${i<ss.length-1?'<button class="primary-button" id="next" type="button">التالي</button>':`<button class="primary-button submit-button" id="submit" type="button" ${state.sending?'disabled':''}>${label}</button>`}</nav>`;}
+function nav(){let ss=steps(),i=ss.indexOf(state.step),label=state.sending?'جارٍ إرسال الإجابات…':'إرسال الإجابات';return `<nav class="form-actions">${i>0?'<button class="secondary-button" id="prev" type="button">السابق</button>':'<span></span>'}${i<ss.length-1?'<button class="primary-button" id="next" type="button">التالي</button>':`<button class="primary-button submit-button" id="submit" type="button" ${state.sending?'disabled':''}>${label}</button>`}</nav>`;}
 function render(){if(!auth.allowed){renderAuthGate();return;}if(state.done){$('#root').innerHTML=`<main class="site-shell" dir="rtl"><section class="success-card"><div class="success-icon">✓</div><p class="eyebrow">نهاية الاستبيان</p><h1>شكرًا جزيلًا على مشاركتكم</h1><p>تم تسجيل إجاباتكم بنجاح، ولن تُستعمل إلا لأغراض البحث العلمي.</p></section></main>`;return;}let ss=steps(),i=Math.max(ss.indexOf(state.step),0),pct=(i+1)/ss.length*100,title=currentStepTitle(state.step);$('#root').innerHTML=`<main class="site-shell" dir="rtl"><header class="hero"><div class="hero-accent"></div><p class="eyebrow">بحث أكاديمي بسلك الدكتوراه</p><h1>استبيان حول التواصل العمومي المرتبط ببرنامج الدعم المباشر للسكن</h1><p class="hero-lead"><span class="hero-lead-desktop">في إطار إعداد بحث أكاديمي بسلك الدكتوراه، أضع بين أيديكم هذا الاستبيان، الذي يندرج ضمن دراسة حول التواصل العمومي المرتبط ببرنامج الدعم المباشر للسكن.</span><span class="hero-lead-mobile">ندعوكم للمشاركة في هذا الاستبيان الأكاديمي حول التواصل العمومي المرتبط ببرنامج الدعم المباشر للسكن.</span></p><div class="privacy-note"><span>◉</span><p>جميع الأجوبة سرية، ولن تُستعمل إلا لأغراض البحث العلمي.</p></div><button class="intro-toggle" id="intro-toggle" type="button">${state.intro?'إخفاء مقدمة الاستبيان':'عرض مقدمة الاستبيان'} <span>${state.intro?'−':'+'}</span></button>${state.intro?`<div class="intro-copy"><p>وتكتسي مشاركتكم أهمية كبيرة، لما ستوفره من معطيات أساسية تسهم في إغناء هذا البحث وتعزيز نتائجه من الناحية العلمية. لذلك، نرجو منكم الإجابة عن الأسئلة بكل موضوعية ودقة.</p><details><summary>توضيحات</summary><div class="definition-list"><p><strong>الوزارة:</strong> وزارة إعداد التراب الوطني والتعمير والإسكان وسياسة المدينة.</p><p><strong>وسائل التواصل الرسمية للوزارة:</strong> يقصد بها مجموع القنوات والوسائط التي تعتمدها الوزارة رسمياً للتواصل العمومي بشأن برنامج الدعم المباشر للسكن، سواء لنشر المعلومات المتعلقة بأهدافه وشروط الاستفادة منه وإجراءاته ومستجداته، أو لتيسير الولوج إلى المعطيات والخدمات المرتبطة به. وتشمل، على الخصوص، الموقع الإلكتروني للوزارة، ومنصة «دعم سكن» وتطبيقها، والحسابات الرسمية على شبكات التواصل الاجتماعي، والبلاغات والمنشورات الرسمية. ولا تفترض هذه الوسائل، بالضرورة، إتاحة تواصل مباشر بين المواطن والوزارة.</p><p><strong>وسائل التواصل الرسمية التي تتيح التفاعل:</strong> يقصد بها القنوات الرسمية التي تمكّن المواطنين من التواصل مع الوزارة بشأن برنامج الدعم المباشر للسكن، من خلال توجيه الاستفسارات وطلب التوضيحات وتقديم الملاحظات أو المقترحات أو الشكايات، مع إمكانية تلقي جواب أو تتبع مآل الطلبات والشكايات المقدمة. وتشمل، على الخصوص، خدمات التواصل والمساعدة عبر منصة «دعم سكن» وتطبيقها، والبريد الإلكتروني ورقم المساعدة المخصصين للبرنامج، والبوابة الوطنية للشكايات، وخدمات المراسلة عبر الحسابات الرسمية للوزارة على شبكات التواصل الاجتماعي.</p></div></details></div>`:''}</header><section class="progress-panel"><div class="progress-copy"><span>المرحلة ${i+1}</span><strong>${esc(title)}</strong><span dir="ltr">${i+1} / ${ss.length}</span></div><div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div></section><section id="questionnaire-form" class="form-section"><div class="section-heading"><p>الاستبيان</p><h2>${esc(title)}</h2></div>${state.error?`<div class="error-message" role="alert">${esc(state.error)}</div>`:''}${section()}${nav()}</section><footer><p>شكرًا لتعاونكم ومساهمتكم في هذا البحث العلمي.</p></footer></main>`;bind();}
 function bind(){document.querySelectorAll('input[type=radio][data-id]').forEach(x=>x.onchange=()=>{let id=x.dataset.id;set(id,x.value);if(id==='q1'){if(x.value!=='نعم')del('q2','status','q3_detail','sourcePrincipale','no_official_reason','no_official_reason_other','official_other_detail','external_other_detail','contact_reel','contact_reason','noninteraction_reason','canal_dernier_contact','contact_channel_other_detail','reponse_recue',...interactionPerceptionIds(),...G.response[0][1].map(r=>r[0]),...officialSources.map(z=>z[0]),...externalSources.map(z=>z[0]));else del('preferred_public_channel','preferred_public_channel_other');}if(id==='q2'){del('status','q3_detail','sourcePrincipale');if(x.value==='نعم')del('no_official_reason','no_official_reason_other','external_other_detail',...externalSources.map(z=>z[0]));else del('official_other_detail',...interactionPerceptionIds(),...officialSources.map(z=>z[0]));}if(id==='preferred_public_channel'&&x.value!==PUBLIC_CHANNEL_OTHER)del('preferred_public_channel_other');if(id==='no_official_reason'&&x.value!==NO_OFFICIAL_REASON_OTHER)del('no_official_reason_other');if(id==='canal_dernier_contact'&&x.value!==OTHER_CONTACT_CHANNEL)del('contact_channel_other_detail');if(id==='status'){if(x.value!==COMBINED_BENEFICIARY)del('q3_detail');if(x.value!==COMBINED_BENEFICIARY)del(...G.satisfaction[0][1].map(r=>r[0]));}if(id==='q3_detail'){if(beneficiary())del(...G.generalImpact[0][1].map(r=>r[0]));else del(...G.satisfaction[0][1].map(r=>r[0]));}if(id==='contact_reel')clearAbandonedInteractionBranch(x.value);if(id==='reponse_recue'&&x.value==='لا')del(...G.response[0][1].map(r=>r[0]));if(id==='residence'){if(x.value==='داخل المغرب')del('country');else del('region');}render();});document.querySelectorAll('input[type=checkbox][data-check]').forEach(x=>x.onchange=()=>{let id=x.dataset.check;set(id,x.checked?'1':'');if(!x.checked&&id===OFFICIAL_SOURCE_OTHER_ID)del('official_other_detail');if(!x.checked&&id===EXTERNAL_SOURCE_OTHER_ID)del('external_other_detail');if(officialSourceCodes[id])reconcileSourcePrincipale();render();});document.querySelectorAll('[data-text]').forEach(x=>x.oninput=()=>set(x.dataset.text,x.value));let s=$('#suggestion');if(s)s.oninput=()=>set('suggestion',s.value);let r=$('#region-select');if(r)r.onchange=()=>{set('region',r.value);render();};let c=$('#country-input');if(c)c.oninput=()=>set('country',c.value);let it=$('#intro-toggle');if(it)it.onclick=()=>{state.intro=!state.intro;render();};let n=$('#next');if(n)n.onclick=()=>{if(!valid())return render();let ss=steps(),i=ss.indexOf(state.step);state.step=ss[i+1];state.error='';render();scrollToForm();};let p=$('#prev');if(p)p.onclick=()=>{let ss=steps(),i=ss.indexOf(state.step);state.step=ss[i-1];state.error='';render();scrollToForm();};let sub=$('#submit');if(sub)sub.onclick=submit;}
 function scrollToForm(){requestAnimationFrame(()=>$('#questionnaire-form')?.scrollIntoView({behavior:'smooth',block:'start'}));}
