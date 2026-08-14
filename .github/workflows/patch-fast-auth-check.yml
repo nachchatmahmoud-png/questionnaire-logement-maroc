@@ -1,0 +1,35 @@
+name: Patch fast auth check
+
+on:
+  push:
+    paths:
+      - '.github/workflows/patch-fast-auth-check.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Make check path lightweight
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('apps-script/controle-participation-google.gs')
+          s = p.read_text(encoding='utf-8')
+          old = """    const compteTestExempte = estCompteTestExempte_(identite);\n\n    const formulaire = obtenirFormulaire_();\n    garantirMiseAJourQuestionnaire_(formulaire, true);\n    const questionReference = obtenirQuestionReferenceTechnique_(formulaire, false);\n    if (!questionReference) {\n      return resultatRefus_('configuration_error');\n    }\n\n    const empreinte = creerEmpreinteCompte_(identite.sub);\n    const feuille = obtenirFeuilleControle_();\n    const participation = lireParticipation_(feuille, empreinte);\n    const correspondance = obtenirCorrespondanceFormulaire_(formulaire);\n    const submissionEntryId = obtenirEntryIdQuestion_(correspondance, questionReference);\n\n    if (action === 'check') {\n      return {\n        ok: true,\n        allowed: compteTestExempte || !participation,\n        exempt: compteTestExempte,\n        reason: compteTestExempte ? 'test_account_exempt' : participation ? 'already_submitted' : 'eligible',\n        submissionEntryId: submissionEntryId,\n      };\n    }\n"""
+          new = """    const compteTestExempte = estCompteTestExempte_(identite);\n    const empreinte = creerEmpreinteCompte_(identite.sub);\n    const feuille = obtenirFeuilleControle_();\n    const participation = lireParticipation_(feuille, empreinte);\n\n    // Vérification de connexion volontairement légère : aucune lecture ou migration\n    // du Google Form avant de répondre au navigateur. L'identifiant technique est\n    // stable et a été confirmé lors de l'installation.\n    if (action === 'check') {\n      return {\n        ok: true,\n        allowed: compteTestExempte || !participation,\n        exempt: compteTestExempte,\n        reason: compteTestExempte ? 'test_account_exempt' : participation ? 'already_submitted' : 'eligible',\n        submissionEntryId: '1955032181',\n      };\n    }\n\n    // Les opérations Google Forms plus coûteuses ne sont exécutées qu'au moment\n    // de l'envoi effectif de la réponse.\n    const formulaire = obtenirFormulaire_();\n    const questionReference = obtenirQuestionReferenceTechnique_(formulaire, false);\n    if (!questionReference) {\n      return resultatRefus_('configuration_error');\n    }\n    const correspondance = obtenirCorrespondanceFormulaire_(formulaire);\n    const submissionEntryId = obtenirEntryIdQuestion_(correspondance, questionReference);\n"""
+          if old not in s:
+              raise SystemExit('Expected auth-check block not found')
+          s = s.replace(old, new, 1)
+          p.write_text(s, encoding='utf-8')
+          PY
+      - name: Commit patch
+        run: |
+          git config user.name 'nachchatmahmoud-png'
+          git config user.email 'nachchatmahmoud@gmail.com'
+          git add apps-script/controle-participation-google.gs
+          git commit -m 'Make Google account check lightweight'
+          git push
