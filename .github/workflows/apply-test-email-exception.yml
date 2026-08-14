@@ -17,106 +17,35 @@ jobs:
           fetch-depth: 0
 
       - name: Patch Apps Script participation control
-        shell: python
+        shell: bash
         run: |
+          python - <<'PY'
           from pathlib import Path
-
           path = Path('apps-script/controle-participation-google.gs')
           text = path.read_text(encoding='utf-8')
           original = text
-
-          text = text.replace(
-              "  CLIENT_ID: '285878510024-7dhdojiucp6ff20m2snuro018t70c6s5.apps.googleusercontent.com',\n",
-              "  CLIENT_ID: '285878510024-7dhdojiucp6ff20m2snuro018t70c6s5.apps.googleusercontent.com',\n  TEST_EXEMPT_EMAIL: 'nachchatmahmoud@gmail.com',\n",
-              1,
-          )
-
-          text = text.replace(
-              "    const formulaire = obtenirFormulaire_();\n",
-              "    const compteTestExempte = estCompteTestExempte_(identite);\n\n    const formulaire = obtenirFormulaire_();\n",
-              1,
-          )
-
-          old_check = """    if (action === 'check') {
-      return {
-        ok: true,
-        allowed: !participation,
-        exempt: false,
-        reason: participation ? 'already_submitted' : 'eligible',
-        submissionEntryId: submissionEntryId,
-      };
-    }
-"""
-          new_check = """    if (action === 'check') {
-      return {
-        ok: true,
-        allowed: compteTestExempte || !participation,
-        exempt: compteTestExempte,
-        reason: compteTestExempte
-          ? 'test_account_exempt'
-          : participation
-            ? 'already_submitted'
-            : 'eligible',
-        submissionEntryId: submissionEntryId,
-      };
-    }
-"""
+          text = text.replace("  CLIENT_ID: '285878510024-7dhdojiucp6ff20m2snuro018t70c6s5.apps.googleusercontent.com',\n", "  CLIENT_ID: '285878510024-7dhdojiucp6ff20m2snuro018t70c6s5.apps.googleusercontent.com',\n  TEST_EXEMPT_EMAIL: 'nachchatmahmoud@gmail.com',\n", 1)
+          text = text.replace("    const formulaire = obtenirFormulaire_();\n", "    const compteTestExempte = estCompteTestExempte_(identite);\n\n    const formulaire = obtenirFormulaire_();\n", 1)
+          old_check = "    if (action === 'check') {\n      return {\n        ok: true,\n        allowed: !participation,\n        exempt: false,\n        reason: participation ? 'already_submitted' : 'eligible',\n        submissionEntryId: submissionEntryId,\n      };\n    }\n"
+          new_check = "    if (action === 'check') {\n      return {\n        ok: true,\n        allowed: compteTestExempte || !participation,\n        exempt: compteTestExempte,\n        reason: compteTestExempte ? 'test_account_exempt' : participation ? 'already_submitted' : 'eligible',\n        submissionEntryId: submissionEntryId,\n      };\n    }\n"
           text = text.replace(old_check, new_check, 1)
-
-          text = text.replace(
-              "      if (participationVerrouillee) {\n",
-              "      if (!compteTestExempte && participationVerrouillee) {\n",
-              1,
-          )
-
-          old_write = """      feuille.appendRow([empreinte, new Date(), submissionId, String(reponse.getId() || '')]);
-      SpreadsheetApp.flush();
-      return {
-        ok: true,
-        allowed: true,
-        exempt: false,
-        reason: action === 'submit' ? 'submitted' : 'confirmed',
-      };
-"""
-          new_write = """      if (!compteTestExempte) {
-        feuille.appendRow([empreinte, new Date(), submissionId, String(reponse.getId() || '')]);
-        SpreadsheetApp.flush();
-      }
-      return {
-        ok: true,
-        allowed: true,
-        exempt: compteTestExempte,
-        reason: compteTestExempte
-          ? 'test_account_exempt'
-          : action === 'submit'
-            ? 'submitted'
-            : 'confirmed',
-      };
-"""
+          text = text.replace("      if (participationVerrouillee) {\n", "      if (!compteTestExempte && participationVerrouillee) {\n", 1)
+          old_write = "      feuille.appendRow([empreinte, new Date(), submissionId, String(reponse.getId() || '')]);\n      SpreadsheetApp.flush();\n      return {\n        ok: true,\n        allowed: true,\n        exempt: false,\n        reason: action === 'submit' ? 'submitted' : 'confirmed',\n      };\n"
+          new_write = "      if (!compteTestExempte) {\n        feuille.appendRow([empreinte, new Date(), submissionId, String(reponse.getId() || '')]);\n        SpreadsheetApp.flush();\n      }\n      return {\n        ok: true,\n        allowed: true,\n        exempt: compteTestExempte,\n        reason: compteTestExempte ? 'test_account_exempt' : action === 'submit' ? 'submitted' : 'confirmed',\n      };\n"
           text = text.replace(old_write, new_write, 1)
-
-          text = text.replace(
-              "  return { sub: String(donnees.sub) };\n}\n\nfunction creerEmpreinteCompte_(sub) {\n",
-              "  return {\n    sub: String(donnees.sub),\n    email: String(donnees.email || '').trim().toLowerCase(),\n  };\n}\n\nfunction estCompteTestExempte_(identite) {\n  return Boolean(\n    identite &&\n    identite.email &&\n    identite.email === String(CONTROLE_PARTICIPATION.TEST_EXEMPT_EMAIL || '').trim().toLowerCase()\n  );\n}\n\nfunction creerEmpreinteCompte_(sub) {\n",
-              1,
-          )
-
-          required = [
-              "TEST_EXEMPT_EMAIL: 'nachchatmahmoud@gmail.com'",
-              "const compteTestExempte = estCompteTestExempte_(identite);",
-              "allowed: compteTestExempte || !participation",
-              "if (!compteTestExempte && participationVerrouillee)",
-              "function estCompteTestExempte_(identite)",
-          ]
+          old_identity = "  return { sub: String(donnees.sub) };\n}\n\nfunction creerEmpreinteCompte_(sub) {\n"
+          new_identity = "  return {\n    sub: String(donnees.sub),\n    email: String(donnees.email || '').trim().toLowerCase(),\n  };\n}\n\nfunction estCompteTestExempte_(identite) {\n  return Boolean(\n    identite &&\n    identite.email &&\n    identite.email === String(CONTROLE_PARTICIPATION.TEST_EXEMPT_EMAIL || '').trim().toLowerCase()\n  );\n}\n\nfunction creerEmpreinteCompte_(sub) {\n"
+          text = text.replace(old_identity, new_identity, 1)
+          required = ["TEST_EXEMPT_EMAIL: 'nachchatmahmoud@gmail.com'", "const compteTestExempte = estCompteTestExempte_(identite);", "allowed: compteTestExempte || !participation", "if (!compteTestExempte && participationVerrouillee)", "function estCompteTestExempte_(identite)"]
           missing = [item for item in required if item not in text]
           if missing:
               raise SystemExit('Patch incomplet: ' + ', '.join(missing))
-
-          if text == original:
-              print('Exception déjà appliquée.')
-          else:
+          if text != original:
               path.write_text(text, encoding='utf-8')
               print('Exception appliquée à nachchatmahmoud@gmail.com.')
+          else:
+              print('Exception déjà appliquée.')
+          PY
 
       - name: Commit patch
         shell: bash
