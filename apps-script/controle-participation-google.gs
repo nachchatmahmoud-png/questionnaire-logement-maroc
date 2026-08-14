@@ -76,7 +76,8 @@ const MISE_A_JOUR_QUESTIONNAIRE = Object.freeze({
 /**
  * À exécuter manuellement une seule fois par le propriétaire du projet.
  * Crée la feuille technique, le sel privé et la question de confirmation,
- * puis active la limite native d'une réponse par compte Google.
+ * puis désactive la limite native Google Forms. La règle une réponse par compte
+ * est appliquée par le contrôle backend, avec exception explicite pour le compte de test.
  */
 function installerControleParticipationGoogle() {
   const proprietes = PropertiesService.getScriptProperties();
@@ -101,7 +102,7 @@ function installerControleParticipationGoogle() {
   const questionReference = obtenirQuestionReferenceTechnique_(formulaire, true);
   garantirMiseAJourQuestionnaire_(formulaire, true);
   const correspondance = actualiserCorrespondanceFormulaire_(formulaire);
-  formulaire.setLimitOneResponsePerUser(true);
+  formulaire.setLimitOneResponsePerUser(false);
   formulaire.setShowLinkToRespondAgain(false);
   installerDeclencheurProvenance_(formulaire);
 
@@ -216,7 +217,7 @@ function verifierParticipationGoogle(requete) {
     const formulaire = obtenirFormulaire_();
     garantirMiseAJourQuestionnaire_(formulaire, true);
     const questionReference = obtenirQuestionReferenceTechnique_(formulaire, false);
-    if (!questionReference || !formulaire.hasLimitOneResponsePerUser()) {
+    if (!questionReference) {
       return resultatRefus_('configuration_error');
     }
 
