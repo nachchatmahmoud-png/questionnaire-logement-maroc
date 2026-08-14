@@ -1,5 +1,5 @@
 const GOOGLE_CLIENT_ID='285878510024-7dhdojiucp6ff20m2snuro018t70c6s5.apps.googleusercontent.com';
-const AUTH_BRIDGE_URL='https://script.google.com/macros/s/AKfycby5-bGRNYY7W3Qe5-Gv5UyIevcJtxtBtBRcjFJ5mQERf0h5w8WC0e0hoJmpKrdCX-nacQ/exec';
+const AUTH_BRIDGE_URL='https://script.google.com/macros/s/AKfycbxmwpYfo8bhwBmPPsKrIsqIfW4DQUxOxrwYavWgojHvLzR0e-TDK-DQj7t3LNeODRSv/exec';
 const AUTH_CHANNEL='questionnaire-logement-auth-v1';
 const SCHEMA_VERSION='2026-08-14-final-scales-v1';
 const ENTRY_COMMON={
