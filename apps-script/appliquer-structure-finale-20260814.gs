@@ -401,7 +401,7 @@ function actualiserCorrespondanceFinale_(sheet, titles, rows) {
     if (activeVariables.indexOf(variable) !== -1 && !validKeys[variable + '\n' + String(existing[r][2] || '')]) {
       sheet.getRange(r + 1, 1, 1, data[0].length).setValues([[
         variable, existing[r][1], '[HISTORIQUE — EXCLU] ' + String(existing[r][2] || ''),
-        existing[r][3], existing[r][4], 'Exclu des nouvelles formules',
+        existing[r][3], existing[r][4], 'Exclu des nouvelles formules', 'Non',
       ]]);
     }
   }
