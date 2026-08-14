@@ -14,6 +14,7 @@
 
 const CONTROLE_PARTICIPATION = Object.freeze({
   CLIENT_ID: '285878510024-7dhdojiucp6ff20m2snuro018t70c6s5.apps.googleusercontent.com',
+  TEST_EXEMPT_EMAIL: 'nachchatmahmoud@gmail.com',
   SPREADSHEET_ID: '1VcNjC6_eF-9GiKALC7lVvgE1q_F3RM6CJUcs4RKyt-Q',
   RESPONSE_SHEET_NAME: 'Réponses au formulaire',
   SHEET_NAME: 'Contrôle participations',
@@ -210,6 +211,8 @@ function verifierParticipationGoogle(requete) {
       return resultatRefus_('reauthentication_required');
     }
 
+    const compteTestExempte = estCompteTestExempte_(identite);
+
     const formulaire = obtenirFormulaire_();
     garantirMiseAJourQuestionnaire_(formulaire, true);
     const questionReference = obtenirQuestionReferenceTechnique_(formulaire, false);
@@ -226,9 +229,9 @@ function verifierParticipationGoogle(requete) {
     if (action === 'check') {
       return {
         ok: true,
-        allowed: !participation,
-        exempt: false,
-        reason: participation ? 'already_submitted' : 'eligible',
+        allowed: compteTestExempte || !participation,
+        exempt: compteTestExempte,
+        reason: compteTestExempte ? 'test_account_exempt' : participation ? 'already_submitted' : 'eligible',
         submissionEntryId: submissionEntryId,
       };
     }
@@ -242,7 +245,7 @@ function verifierParticipationGoogle(requete) {
     verrou.waitLock(20000);
     try {
       const participationVerrouillee = lireParticipation_(feuille, empreinte);
-      if (participationVerrouillee) {
+      if (!compteTestExempte && participationVerrouillee) {
         if (participationVerrouillee.submissionId === submissionId) {
           return {
             ok: true,
@@ -278,13 +281,15 @@ function verifierParticipationGoogle(requete) {
       }
       if (!reponse) return resultatRefus_('submission_not_found');
 
-      feuille.appendRow([empreinte, new Date(), submissionId, String(reponse.getId() || '')]);
-      SpreadsheetApp.flush();
+      if (!compteTestExempte) {
+        feuille.appendRow([empreinte, new Date(), submissionId, String(reponse.getId() || '')]);
+        SpreadsheetApp.flush();
+      }
       return {
         ok: true,
         allowed: true,
-        exempt: false,
-        reason: action === 'submit' ? 'submitted' : 'confirmed',
+        exempt: compteTestExempte,
+        reason: compteTestExempte ? 'test_account_exempt' : action === 'submit' ? 'submitted' : 'confirmed',
       };
     } finally {
       verrou.releaseLock();
@@ -919,7 +924,18 @@ function verifierJetonGoogle_(jeton) {
     return null;
   }
 
-  return { sub: String(donnees.sub) };
+  return {
+    sub: String(donnees.sub),
+    email: String(donnees.email || '').trim().toLowerCase(),
+  };
+}
+
+function estCompteTestExempte_(identite) {
+  return Boolean(
+    identite &&
+    identite.email &&
+    identite.email === String(CONTROLE_PARTICIPATION.TEST_EXEMPT_EMAIL || '').trim().toLowerCase()
+  );
 }
 
 function creerEmpreinteCompte_(sub) {
