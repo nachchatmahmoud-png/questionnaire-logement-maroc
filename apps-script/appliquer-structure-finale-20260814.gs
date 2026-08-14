@@ -251,9 +251,9 @@ function actualiserAnalyseFinale_(spreadsheetId, titles, rows) {
   const items = ss.getSheetByName('ITEMS_LIKERT');
   const scoring = ss.getSheetByName('SCORING');
   const codebook = ss.getSheetByName('CODEBOOK');
-  let correspondence = ss.getSheetByName('Correspondance');
+  let correspondence = ss.getSheetByName('Correspondance_Titres_Variables') || ss.getSheetByName('Correspondance');
   if (!raw || !items || !scoring || !codebook) throw new Error('Feuille analytique requise introuvable.');
-  if (!correspondence) correspondence = ss.insertSheet('Correspondance');
+  if (!correspondence) correspondence = ss.insertSheet('Correspondance_Titres_Variables');
 
   let headers = raw.getRange(1, 1, 1, raw.getLastColumn()).getDisplayValues()[0];
   const specs = [
@@ -379,18 +379,18 @@ function actualiserCodebookFinal_(sheet, titles, rows) {
 }
 
 function actualiserCorrespondanceFinale_(sheet, titles, rows) {
-  const data = [['Variable analytique','Titre visible','Item / formule','Population','Échelle / codage','Rôle / applicabilité']];
-  function add(variable, title, itemRows, population, role) {
-    itemRows.forEach(function (row) { data.push([variable,title,row,population,'Likert 1–5; moyenne; NA=vide',role]); });
+  const data = [['Variable analytique','Titre visible','Item / formule','Population','Échelle / codage','Rôle / applicabilité','Visible au répondant']];
+  function add(variable, title, itemRows, population, role, visible) {
+    itemRows.forEach(function (row) { data.push([variable,title,row,population,'Likert 1–5; moyenne; NA=vide',role,visible]); });
   }
-  add('Confiance institutionnelle / الثقة في الوزارة', titles.trust, rows.trust, 'Tous les répondants concernés', 'Médiatrice; exclue de Score_Réussite_Perçue');
-  add('Légitimité perçue / مشروعية البرنامج', titles.legitimacy, rows.legitimacy, 'Tous les répondants concernés', 'Médiatrice; exclue de Score_Réussite_Perçue');
-  add('Facilité d’accès', titles.ease, rows.ease, 'Bénéficiaires et non-bénéficiaires', 'Dimension de réussite');
-  add('Adhésion / acceptabilité', titles.accept, rows.accept, 'Bénéficiaires et non-bénéficiaires', 'Dimension de réussite');
-  add('Satisfaction', titles.beneficiary, rows.beneficiary.slice(0,3), 'Bénéficiaires personnels', 'Score_Satisfaction');
-  add('Impact personnel', titles.beneficiary, rows.beneficiary.slice(3), 'Bénéficiaires personnels', 'Score_Impact_Personnel');
-  add('Impact général', titles.generalImpact, rows.generalImpact, 'Non-bénéficiaires', 'Score_Impact_Général; pas de score complet');
-  data.push(['Score_Réussite_Perçue','—','(Score_Facilité_Accès + Score_Adhésion_Acceptabilité + Score_Satisfaction + Score_Impact_Personnel) / 4','Bénéficiaires personnels','Moyenne égale de 4 dimensions','Confiance et légitimité exclues']);
+  add('Confiance institutionnelle / الثقة في الوزارة', titles.trust, rows.trust, 'Tous les répondants concernés', 'Médiatrice; exclue de Score_Réussite_Perçue', 'Oui');
+  add('Légitimité perçue / مشروعية البرنامج', titles.legitimacy, rows.legitimacy, 'Tous les répondants concernés', 'Médiatrice; exclue de Score_Réussite_Perçue', 'Oui');
+  add('Facilité d’accès', titles.ease, rows.ease, 'Bénéficiaires et non-bénéficiaires', 'Dimension de réussite', 'Oui');
+  add('Adhésion / acceptabilité', titles.accept, rows.accept, 'Bénéficiaires et non-bénéficiaires', 'Dimension de réussite', 'Oui');
+  add('Satisfaction', titles.beneficiary, rows.beneficiary.slice(0,3), 'Bénéficiaires personnels', 'Score_Satisfaction', 'Oui — bénéficiaires personnels uniquement');
+  add('Impact personnel', titles.beneficiary, rows.beneficiary.slice(3), 'Bénéficiaires personnels', 'Score_Impact_Personnel', 'Oui — bénéficiaires personnels uniquement');
+  add('Impact général', titles.generalImpact, rows.generalImpact, 'Non-bénéficiaires', 'Score_Impact_Général; pas de score complet', 'Oui — non-bénéficiaires uniquement');
+  data.push(['Score_Réussite_Perçue','—','(Score_Facilité_Accès + Score_Adhésion_Acceptabilité + Score_Satisfaction + Score_Impact_Personnel) / 4','Bénéficiaires personnels','Moyenne égale de 4 dimensions','Confiance et légitimité exclues','Non']);
   if (!sheet.getRange('A1').getValue()) sheet.getRange(1, 1, 1, data[0].length).setValues([data[0]]);
   const existing = sheet.getDataRange().getValues();
   const activeVariables = data.slice(1).map(function (row) { return row[0]; });
