@@ -1,0 +1,59 @@
+name: Update auth bridge v6
+
+on:
+  push:
+    paths:
+      - '.github/workflows/update-auth-bridge-v6.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Update Apps Script deployment URL and cache bust
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+
+          js = Path('assets/questionnaire.js')
+          text = js.read_text(encoding='utf-8')
+          new_url = 'https://script.google.com/macros/s/AKfycbxmwpYfo8bhwBmPPsKrIsqIfW4DQUxOxrwYavWgojHvLzR0e-TDK-DQj7t3LNeODRSv/exec'
+          text2, n = re.subn(
+              r"const AUTH_BRIDGE_URL='https://script\.google\.com/macros/s/[^']+/exec';",
+              "const AUTH_BRIDGE_URL='" + new_url + "';",
+              text,
+              count=1,
+          )
+          if n != 1:
+              raise SystemExit('AUTH_BRIDGE_URL introuvable ou ambigu')
+          js.write_text(text2, encoding='utf-8')
+
+          index = Path('index.html')
+          html = index.read_text(encoding='utf-8')
+          html2, n2 = re.subn(
+              r'assets/questionnaire\.js\?v=[^"\']+',
+              'assets/questionnaire.js?v=20260814-auth-v6',
+              html,
+              count=1,
+          )
+          if n2 != 1:
+              raise SystemExit('Référence questionnaire.js introuvable ou ambiguë')
+          index.write_text(html2, encoding='utf-8')
+
+          print('AUTH_BRIDGE_URL mise à jour vers version 6')
+
+      - name: Commit update
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/questionnaire.js index.html
+          git commit -m "Point site to Apps Script deployment v6"
+          git push
