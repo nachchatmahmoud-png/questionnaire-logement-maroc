@@ -480,16 +480,13 @@ async function confirmSubmissionAutomatically(submissionId,payload,supplemental)
 async function submit(){
  if(!valid())return render();
  state.sending=true;render();
- let autorisation;
- if(state.pendingSubmissionId){
-  autorisation={allowed:true,submissionEntryId:auth.submissionEntryId};
- }else{
-  try{autorisation=await callAuthBridge('check',auth.idToken);}
-  catch(_){state.sending=false;state.error='تعذر التحقق من المشاركة قبل الإرسال. لم تُرسل إجاباتكم، ويمكنكم إعادة المحاولة.';render();return;}
+ if(!auth.allowed||!auth.idToken||!/^\d+$/.test(String(auth.submissionEntryId||''))){
+  state.sending=false;
+  auth.allowed=false;auth.idToken='';auth.submissionEntryId='';auth.blocked=false;
+  auth.error='انتهت جلسة تسجيل الدخول. يرجى تسجيل الدخول مجددًا، وستبقى إجاباتكم محفوظة في هذه الصفحة.';
+  render();
+  return;
  }
- const entryId=String(autorisation?.submissionEntryId||'');
- if(!autorisation?.allowed||!/^\d+$/.test(entryId)){handleSubmissionRefusal(autorisation);return;}
- auth.submissionEntryId=entryId;
  const submissionId=state.pendingSubmissionId||authRequestId().replace(/-/g,'');
  state.pendingSubmissionId=submissionId;
  const payload={};
