@@ -55,7 +55,7 @@ const SCALE=[['1','لا أوافق إطلاقًا'],['2','لا أوافق'],['3'
 const state={a:{},step:'filters',intro:true,error:'',sending:false,done:false,pendingSubmissionId:''};
 const auth={allowed:false,idToken:'',checking:false,blocked:false,error:'',gisReady:false,submissionEntryId:''};
 const authRequests=new Map();
-const $=s=>document.querySelector(s); const esc=(s='')=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
+const $=s=>document.querySelector(s); const esc=(s='')=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const val=id=>state.a[id]??''; const set=(id,v)=>{state.a[id]=v;state.error='';};
 const del=(...ids)=>ids.forEach(id=>delete state.a[id]);
 const PERSONAL_BENEFICIARY='استفدت شخصيًا من البرنامج';
