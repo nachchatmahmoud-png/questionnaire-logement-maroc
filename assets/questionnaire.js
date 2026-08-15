@@ -1,7 +1,7 @@
 const GOOGLE_CLIENT_ID='285878510024-7dhdojiucp6ff20m2snuro018t70c6s5.apps.googleusercontent.com';
 const AUTH_BRIDGE_URL='https://script.google.com/macros/s/AKfycbxmwpYfo8bhwBmPPsKrIsqIfW4DQUxOxrwYavWgojHvLzR0e-TDK-DQj7t3LNeODRSv/exec';
 const AUTH_CHANNEL='questionnaire-logement-auth-v1';
-const SCHEMA_VERSION='2026-08-14-final-scales-v1';
+const SCHEMA_VERSION='2026-08-15-interaction-fusion-v2';
 const ENTRY_COMMON={
  q1:'299895912',q2:'1225420672',age:'1577939573',gender:'2068308268',education:'1330802393',housing:'1373868444',residence:'865830704',professional:'1061681182',region:'861634292',country:'1099313147'
 };
@@ -172,8 +172,10 @@ const G={
  ],
  interactionPerceptions:[
   ['الاستفسارات وطلب التوضيحات',[['perception_info_clarification','تتيح القنوات الرسمية للمواطنين توجيه استفساراتهم وطلب توضيحات من الوزارة بشأن البرنامج.']]],
-  ['الملاحظات والمقترحات',[['perception_observations_proposals','تتيح القنوات الرسمية للمواطنين تقديم ملاحظاتهم ومقترحاتهم بشأن البرنامج.']]],
-  ['الشكايات المتعلقة بالبرنامج',[['perception_complaints','تتيح القنوات الرسمية للمواطنين تقديم الشكايات المرتبطة بالبرنامج.']]],
+  ['الملاحظات والمقترحات والشكايات المتعلقة بالبرنامج',[
+   ['perception_observations_proposals','تتيح القنوات الرسمية للمواطنين تقديم ملاحظاتهم ومقترحاتهم بشأن البرنامج.'],
+   ['perception_complaints','تتيح القنوات الرسمية للمواطنين تقديم الشكايات المرتبطة بالبرنامج.']
+  ]],
  ],
  response:[['حول الرد الذي توصلتم به',[['clarte_reponse','1. كان الرد الذي توصلت به واضحًا.'],['suffisance_reponse','2. تضمن الرد معلومات كافية بشأن الموضوع الذي تواصلت حوله.'],['delai_reponse','3. توصلت بالرد في أجل اعتبرته مناسبًا.']]]],
  trust:[['آراؤكم حول تدبير الوزارة للبرنامج',[['trust_1','1. المعلومات التي تنشرها الوزارة بشأن البرنامج دقيقة وموثوقة.'],['trust_2','2. لدى الوزارة القدرة على تدبير البرنامج بكفاءة.'],['trust_3','3. تُعالج طلبات الاستفادة وفق القواعد المعلنة.'],['trust_4','4. تطبق الوزارة معايير الاستفادة على جميع طالبي الدعم بصورة عادلة ودون تمييز.'],['trust_5','5. تفي الوزارة بالتزاماتها المعلنة بشأن البرنامج.']]]],
@@ -217,7 +219,7 @@ function filters(){
   }
   if(val('q2')==='لا'){
    h+=checks(externalSources,'س2-أ. من خلال أي من المصادر التالية اطلعتم على معلومات حول البرنامج؟');
-   if(val(EXTERNAL_SOURCE_OTHER_ID))h+=textField('external_other_detail','يرجى تحديد المصدر الآخر:','اكتبوا اسم المصدر الآخر');
+   if(val(EXTERNAL_SOURCE_OTHER_ID))h+=textField('external_other_detail','يرجى تحديد المصدر الآخر:','اكتبوا المصدر الآخر');
    h+=radio('no_official_reason','س2-ب. ما السبب الرئيسي لعدم اطلاعكم على معلومات حول البرنامج عبر القنوات الرسمية للوزارة؟',noOfficialReasons,true,'يرجى اختيار جواب واحد فقط.');
    if(val('no_official_reason')===NO_OFFICIAL_REASON_OTHER)h+=textField('no_official_reason_other','يرجى تحديد السبب الآخر:','اكتبوا السبب الآخر');
   }
@@ -315,8 +317,8 @@ function scores(){
   information_completeness:likertDimension(G.information[2][1].map(r=>r[0]),official),
   information_accuracy:likertDimension(G.information[3][1].map(r=>r[0]),official),
   interaction_information_clarifications:likertDimension(G.interactionPerceptions[0][1].map(r=>r[0]),official&&val('contact_reel')==='لا'),
-  interaction_observations_proposals:likertDimension(G.interactionPerceptions[1][1].map(r=>r[0]),official&&val('contact_reel')==='لا'),
-  interaction_complaints:likertDimension(G.interactionPerceptions[2][1].map(r=>r[0]),official&&val('contact_reel')==='لا'),
+  interaction_observations_proposals:likertDimension([G.interactionPerceptions[1][1][0][0]],official&&val('contact_reel')==='لا'),
+  interaction_complaints:likertDimension([G.interactionPerceptions[1][1][1][0]],official&&val('contact_reel')==='لا'),
   institutional_trust:likertDimension(G.trust[0][1].map(r=>r[0]),route()!=='g1'),
   programme_legitimacy:likertDimension(G.legitimacy[0][1].map(r=>r[0]),route()!=='g1'),
   access_ease:likertDimension(G.ease[0][1].map(r=>r[0]),route()!=='g1'),
