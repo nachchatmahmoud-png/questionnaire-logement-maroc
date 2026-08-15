@@ -25,8 +25,6 @@ function alignerInteractivitePercue20260815() {
   const TITRE_REACTIVITE = 'حول الرد الذي توصلتم به';
   const TITRE_CONTINUATION_INVISIBLE = '\u200B';
 
-  // Les perceptions ne sont affichées que dans les deux parcours ayant
-  // consulté les sources officielles.
   const ROUTES_OFFICIELLES = [
     {
       communicationId: 984260886,
@@ -42,15 +40,13 @@ function alignerInteractivitePercue20260815() {
     },
   ];
 
-  // La Réactivité institutionnelle existe aussi dans les deux parcours
-  // n'ayant pas consulté les sources officielles, lorsqu'une réponse a été reçue.
   const AUTRES_GRILLES_REACTIVITE = [191957779, 1132848145];
 
   ROUTES_OFFICIELLES.forEach(function(route) {
-    const communication = exigerGrille_(form, route.communicationId);
-    const observations = exigerGrille_(form, route.observationsPropositionsId);
-    const reclamations = exigerGrille_(form, route.reclamationsId);
-    const reactivite = exigerGrille_(form, route.responseQualityGridId);
+    const communication = exigerGrilleInteractivite20260815_(form, route.communicationId);
+    const observations = exigerGrilleInteractivite20260815_(form, route.observationsPropositionsId);
+    const reclamations = exigerGrilleInteractivite20260815_(form, route.reclamationsId);
+    const reactivite = exigerGrilleInteractivite20260815_(form, route.responseQualityGridId);
 
     communication.setTitle(TITRE_COMMUNICATION);
     observations.setTitle(TITRE_PARTICIPATION);
@@ -59,7 +55,7 @@ function alignerInteractivitePercue20260815() {
   });
 
   AUTRES_GRILLES_REACTIVITE.forEach(function(id) {
-    exigerGrille_(form, id).setTitle(TITRE_REACTIVITE);
+    exigerGrilleInteractivite20260815_(form, id).setTitle(TITRE_REACTIVITE);
   });
 
   console.log('INTERACTIVITE_PERCUE_ALIGNEE: oui');
@@ -68,7 +64,7 @@ function alignerInteractivitePercue20260815() {
   console.log('REACTIVITE_INSTITUTIONNELLE: ' + TITRE_REACTIVITE);
 }
 
-function exigerGrille_(form, id) {
+function exigerGrilleInteractivite20260815_(form, id) {
   const item = form.getItemById(Number(id));
   if (!item || item.getType() !== FormApp.ItemType.GRID) {
     throw new Error('Grille introuvable ou type incorrect : ' + id);
