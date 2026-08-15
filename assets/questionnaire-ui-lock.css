@@ -67,3 +67,31 @@ html body .instruction-card > strong:not(.instruction-text) + .instruction-text 
     margin: 6px 0 12px !important;
   }
 }
+
+/*
+ * Interaction perçue — regroupement visuel validé 2026-08-15.
+ * Les variables restent distinctes dans les données :
+ * - demandes d'informations / clarifications = communication bidirectionnelle ;
+ * - observations/propositions + réclamations = possibilité de participation.
+ * Les règles ci-dessous ne s'appliquent qu'à l'étape Interaction.
+ */
+html body #questionnaire-form:has(input[data-id="contact_reel"]) .instruction-card + .group-card + .group-card .group-heading h3 {
+  font-size: 0 !important;
+}
+
+html body #questionnaire-form:has(input[data-id="contact_reel"]) .instruction-card + .group-card + .group-card .group-heading h3::after {
+  content: "الملاحظات والمقترحات والشكايات المتعلقة بالبرنامج";
+  font-family: "Noto Sans Arabic", Tahoma, Arial, sans-serif !important;
+  font-size: 1rem !important;
+  font-weight: 800 !important;
+  line-height: 1.8 !important;
+  color: #172033 !important;
+}
+
+html body #questionnaire-form:has(input[data-id="contact_reel"]) .instruction-card + .group-card + .group-card + .group-card .group-heading {
+  display: none !important;
+}
+
+html body #questionnaire-form:has(input[data-id="contact_reel"]) .instruction-card + .group-card + .group-card + .group-card {
+  margin-top: 0 !important;
+}
