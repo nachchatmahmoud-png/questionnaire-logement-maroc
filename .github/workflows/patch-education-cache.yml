@@ -1,0 +1,56 @@
+name: Temporary education cache refresh
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/patch-education-cache.yml'
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  patch-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: true
+
+      - name: Refresh questionnaire script cache key
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          text = p.read_text(encoding='utf-8')
+          old = '/questionnaire-logement-maroc/assets/questionnaire.js?v=20260814-auth-v9'
+          new = '/questionnaire-logement-maroc/assets/questionnaire.js?v=20260816-education-v1'
+          assert old in text, 'questionnaire cache marker not found'
+          p.write_text(text.replace(old, new, 1), encoding='utf-8')
+          Path('.github/workflows/patch-education-cache.yml').unlink()
+          PY
+
+      - name: Commit cache refresh
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html .github/workflows/patch-education-cache.yml
+          git commit -m "Refresh questionnaire cache for education detail"
+          git push origin HEAD:main
+
+      - name: Dispatch Pages workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          curl --fail-with-body \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${GH_TOKEN}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            https://api.github.com/repos/${{ github.repository }}/actions/workflows/deploy-pages.yml/dispatches \
+            -d '{"ref":"main"}'
