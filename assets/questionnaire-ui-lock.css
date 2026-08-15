@@ -69,17 +69,20 @@ html body .instruction-card > strong:not(.instruction-text) + .instruction-text 
 }
 
 /*
- * Interaction perçue — regroupement visuel validé 2026-08-15.
- * Les variables restent distinctes dans les données :
- * - demandes d'informations / clarifications = communication bidirectionnelle ;
- * - observations/propositions + réclamations = possibilité de participation.
- * Les règles ci-dessous ne s'appliquent qu'à l'étape Interaction.
+ * Interaction perçue — fusion visuelle robuste validée 2026-08-15.
+ * Les variables restent distinctes :
+ * - perception_observations_proposals
+ * - perception_complaints
+ * Elles sont présentées au répondant sous un seul bloc :
+ * الملاحظات والمقترحات والشكايات المتعلقة بالبرنامج
  */
-html body #questionnaire-form:has(input[data-id="contact_reel"]) .instruction-card + .group-card + .group-card .group-heading h3 {
+
+/* Renommer le premier bloc de participation par son titre fusionné. */
+html body section.group-card:has(input[data-id="perception_observations_proposals"]) .group-heading h3 {
   font-size: 0 !important;
 }
 
-html body #questionnaire-form:has(input[data-id="contact_reel"]) .instruction-card + .group-card + .group-card .group-heading h3::after {
+html body section.group-card:has(input[data-id="perception_observations_proposals"]) .group-heading h3::after {
   content: "الملاحظات والمقترحات والشكايات المتعلقة بالبرنامج";
   font-family: "Noto Sans Arabic", Tahoma, Arial, sans-serif !important;
   font-size: 1rem !important;
@@ -88,10 +91,29 @@ html body #questionnaire-form:has(input[data-id="contact_reel"]) .instruction-ca
   color: #172033 !important;
 }
 
-html body #questionnaire-form:has(input[data-id="contact_reel"]) .instruction-card + .group-card + .group-card + .group-card .group-heading {
+/* Le bloc réclamations devient la continuation directe du même tableau visuel. */
+html body section.group-card:has(input[data-id="perception_complaints"]) .group-heading,
+html body section.group-card:has(input[data-id="perception_complaints"]) .likert-table thead {
   display: none !important;
 }
 
-html body #questionnaire-form:has(input[data-id="contact_reel"]) .instruction-card + .group-card + .group-card + .group-card {
+html body section.group-card:has(input[data-id="perception_complaints"]) {
+  margin-top: -1px !important;
+  padding-top: 0 !important;
+  border-top-left-radius: 0 !important;
+  border-top-right-radius: 0 !important;
+}
+
+html body section.group-card:has(input[data-id="perception_observations_proposals"]) {
+  margin-bottom: 0 !important;
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+}
+
+html body section.group-card:has(input[data-id="perception_observations_proposals"]) .likert-wrap {
+  margin-bottom: 0 !important;
+}
+
+html body section.group-card:has(input[data-id="perception_complaints"]) .likert-wrap {
   margin-top: 0 !important;
 }
