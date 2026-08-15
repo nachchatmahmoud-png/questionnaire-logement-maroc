@@ -1,0 +1,67 @@
+name: Temporary education detail patch
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/patch-education-detail.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: true
+
+      - name: Patch questionnaire education question
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('assets/questionnaire.js')
+          text = path.read_text(encoding='utf-8')
+
+          marker = "function demo(){"
+          addition = "const higherEducationLevels=['دبلوم سنتين بعد البكالوريا (Bac+2)','الإجازة أو ما يعادلها (Bac+3)','الماستر أو ما يعادله (Bac+5)','الدكتوراه'];\n"
+          if addition not in text:
+              assert marker in text, 'demo marker not found'
+              text = text.replace(marker, addition + marker, 1)
+
+          old_demo = "${radio('education','3. ما هو أعلى مستوى دراسي حصلتم عليه؟',demographics.education)}${radio('housing'"
+          new_demo = "${radio('education','3. ما هو أعلى مستوى دراسي حصلتم عليه؟',demographics.education)}${val('education')==='التعليم العالي'?radio('education_higher_detail','3-أ. يرجى تحديد أعلى شهادة أو مستوى حصلتم عليه في التعليم العالي:',higherEducationLevels):''}${radio('housing'"
+          assert old_demo in text, 'education render marker not found'
+          text = text.replace(old_demo, new_demo, 1)
+
+          old_required = "if(step==='demographics'){let ids=['age','gender','education','housing','residence','professional'];if(val('residence')==='داخل المغرب')ids.push('region');"
+          new_required = "if(step==='demographics'){let ids=['age','gender','education','housing','residence','professional'];if(val('education')==='التعليم العالي')ids.push('education_higher_detail');if(val('residence')==='داخل المغرب')ids.push('region');"
+          assert old_required in text, 'demographics required marker not found'
+          text = text.replace(old_required, new_required, 1)
+
+          old_bind = "if(id==='residence'){if(x.value==='داخل المغرب')del('country');else del('region');}"
+          new_bind = "if(id==='education'&&x.value!=='التعليم العالي')del('education_higher_detail');if(id==='residence'){if(x.value==='داخل المغرب')del('country');else del('region');}"
+          assert old_bind in text, 'education cleanup marker not found'
+          text = text.replace(old_bind, new_bind, 1)
+
+          old_submit = "['age','gender','education','housing','residence','region','country','professional'].forEach(k=>addCommon(k,val(k)));"
+          new_submit = "if(val('education')==='التعليم العالي'&&val('education_higher_detail'))supplemental.education_higher_detail=val('education_higher_detail');\n ['age','gender','education','housing','residence','region','country','professional'].forEach(k=>addCommon(k,val(k)));"
+          assert old_submit in text, 'demographics submit marker not found'
+          text = text.replace(old_submit, new_submit, 1)
+
+          path.write_text(text, encoding='utf-8')
+          Path('.github/workflows/patch-education-detail.yml').unlink()
+          PY
+
+      - name: Commit site change
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/questionnaire.js .github/workflows/patch-education-detail.yml
+          git commit -m "Add conditional higher-education detail"
+          git push origin HEAD:main
