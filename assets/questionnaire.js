@@ -55,7 +55,7 @@ const SCALE=[['1','لا أوافق إطلاقًا'],['2','لا أوافق'],['3'
 const state={a:{},step:'filters',intro:true,error:'',sending:false,done:false,pendingSubmissionId:''};
 const auth={allowed:false,idToken:'',checking:false,blocked:false,error:'',gisReady:false,submissionEntryId:''};
 const authRequests=new Map();
-const $=s=>document.querySelector(s); const esc=(s='')=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const $=s=>document.querySelector(s); const esc=(s='')=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
 const val=id=>state.a[id]??''; const set=(id,v)=>{state.a[id]=v;state.error='';};
 const del=(...ids)=>ids.forEach(id=>delete state.a[id]);
 const PERSONAL_BENEFICIARY='استفدت شخصيًا من البرنامج';
@@ -480,16 +480,11 @@ async function confirmSubmissionAutomatically(submissionId,payload,supplemental)
 async function submit(){
  if(!valid())return render();
  state.sending=true;render();
- let autorisation;
- if(state.pendingSubmissionId){
-  autorisation={allowed:true,submissionEntryId:auth.submissionEntryId};
- }else{
-  try{autorisation=await callAuthBridge('check',auth.idToken);}
-  catch(_){state.sending=false;state.error='تعذر التحقق من المشاركة قبل الإرسال. لم تُرسل إجاباتكم، ويمكنكم إعادة المحاولة.';render();return;}
+ const entryId=String(auth.submissionEntryId||'');
+ if(!auth.allowed||!auth.idToken||!/^\d+$/.test(entryId)){
+  handleSubmissionRefusal({allowed:false,reason:'reauthentication_required'});
+  return;
  }
- const entryId=String(autorisation?.submissionEntryId||'');
- if(!autorisation?.allowed||!/^\d+$/.test(entryId)){handleSubmissionRefusal(autorisation);return;}
- auth.submissionEntryId=entryId;
  const submissionId=state.pendingSubmissionId||authRequestId().replace(/-/g,'');
  state.pendingSubmissionId=submissionId;
  const payload={};
@@ -540,7 +535,7 @@ async function submit(){
   addKey('suggestion',val('suggestion'));
  }
  ['age','gender','education','housing','residence','region','country','professional'].forEach(k=>addCommon(k,val(k)));
- add(auth.submissionEntryId,submissionId);
+ add(entryId,submissionId);
  try{
   const confirmation=await confirmSubmissionAutomatically(submissionId,payload,supplemental);
   if(confirmation?.allowed){state.pendingSubmissionId='';state.done=true;state.sending=false;state.error='';render();return;}
