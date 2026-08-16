@@ -1,9 +1,9 @@
 const GOOGLE_CLIENT_ID='285878510024-7dhdojiucp6ff20m2snuro018t70c6s5.apps.googleusercontent.com';
 const AUTH_BRIDGE_URL='https://script.google.com/macros/s/AKfycbxmwpYfo8bhwBmPPsKrIsqIfW4DQUxOxrwYavWgojHvLzR0e-TDK-DQj7t3LNeODRSv/exec';
 const AUTH_CHANNEL='questionnaire-logement-auth-v1';
-const SCHEMA_VERSION='2026-08-15-interaction-fusion-v2';
+const SCHEMA_VERSION='2026-08-16-education-higher-entry-v1';
 const ENTRY_COMMON={
- q1:'299895912',q2:'1225420672',age:'1577939573',gender:'2068308268',education:'1330802393',housing:'1373868444',residence:'865830704',professional:'1061681182',region:'861634292',country:'1099313147'
+ q1:'299895912',q2:'1225420672',age:'1577939573',gender:'2068308268',education:'1330802393',education_higher_detail:'54285798',housing:'1373868444',residence:'865830704',professional:'1061681182',region:'861634292',country:'1099313147'
 };
 const ENTRY_G2_SHARED={external_sources:'1040032',status:'1268123456',q3_detail:'1819501263'};
 const ENTRY_OFFICIAL_SHARED={official_sources:'1856677935',source_principale:'1646951693',status:'739440927',q3_detail:'2025224647'};
@@ -538,8 +538,7 @@ async function submit(){
   quiz.forEach(([id])=>addKey(id,val(id)));
   addKey('suggestion',val('suggestion'));
  }
- if(val('education')==='التعليم العالي'&&val('education_higher_detail'))supplemental.education_higher_detail=val('education_higher_detail');
- ['age','gender','education','housing','residence','region','country','professional'].forEach(k=>addCommon(k,val(k)));
+  ['age','gender','education','education_higher_detail','housing','residence','region','country','professional'].forEach(k=>addCommon(k,val(k)));
  add(entryId,submissionId);
  try{
   const confirmation=await confirmSubmissionAutomatically(submissionId,payload,supplemental);
