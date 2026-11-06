@@ -36,6 +36,9 @@ un fichier correctif temporaire.
 
 ## Protection de la publication
 
+- Dans la question `ما السبب الرئيسي الذي دفعكم إلى التواصل مع الوزارة بشأن البرنامج؟`, le choix `سبب آخر، يرجى تحديده:` affiche une zone de précision obligatoire. Le texte saisi est conservé lors de la navigation, effacé si un autre motif ou une autre branche est sélectionné, puis envoyé dans le champ du motif correspondant au parcours actif.
+- Avant de publier ce champ, exécuter une fois `ACTIVER_SAISIE_AUTRE_MOTIF_CONTACT_20261106()` depuis `apps-script/activer-saisie-autre-motif-contact-20261106.gs` dans le projet de contrôle existant. Cette fonction active la réponse libre sur les questions du motif de contact et vérifie un brouillon sans soumettre de réponse. Le service d'envoi existant peut ensuite recevoir ces précisions sans redéploiement Apps Script.
+
 - GitHub Pages publie uniquement le contenu validé de la branche `main` et ne modifie pas les fichiers source.
 - Le déploiement attend obligatoirement la réussite de `scripts/verify-questionnaire.mjs`.
 - Si une mise à jour réintroduit une ancienne copie ou enfreint une règle protégée, le déploiement échoue et la dernière version publique valide reste en ligne.
@@ -51,3 +54,4 @@ node scripts/verify-questionnaire.mjs
 ```
 
 La même vérification est lancée automatiquement par GitHub Actions après chaque modification.
+

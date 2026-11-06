@@ -27,6 +27,8 @@ jobs:
           node-version: '20'
       - name: Vérifier le verrou mobile et ordinateur
         run: node scripts/verify-ui-lock.mjs
+      - name: Vérifier la saisie du motif de contact libre
+        run: node scripts/verify-contact-reason-other.mjs
 
   deploy:
     needs: validation
@@ -46,3 +48,4 @@ jobs:
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v4
+
