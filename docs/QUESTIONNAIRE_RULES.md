@@ -38,9 +38,14 @@ un fichier correctif temporaire.
 
 - Dans la question `ما السبب الرئيسي الذي دفعكم إلى التواصل مع الوزارة بشأن البرنامج؟`, le choix `سبب آخر، يرجى تحديده:` affiche une zone de précision obligatoire. Le texte saisi est conservé lors de la navigation, effacé si un autre motif ou une autre branche est sélectionné, puis envoyé dans le champ du motif correspondant au parcours actif.
 - Avant de publier ce champ, exécuter une fois `ACTIVER_SAISIE_AUTRE_MOTIF_CONTACT_20261106()` depuis `apps-script/activer-saisie-autre-motif-contact-20261106.gs` dans le projet de contrôle existant. Cette fonction active la réponse libre sur les questions du motif de contact et vérifie un brouillon sans soumettre de réponse. Le service d'envoi existant peut ensuite recevoir ces précisions sans redéploiement Apps Script.
+- Chaque choix « autre » affiche une zone de texte obligatoire et éditable, avec le curseur placé dans la zone après la sélection. Cette règle couvre huit précisions distinctes : canal public préféré, source officielle, source externe, motif de non-exposition à la communication officielle, motif de contact, motif de non-contact, canal de contact et situation de logement.
+- Le choix `مصدر رسمي آخر` comme source principale réutilise la précision de la source officielle cochée. Changer de source principale conserve cette précision tant que la source reste cochée.
+- Les huit précisions acceptent jusqu'à 500 caractères, conservent le texte pendant la navigation et refusent une réponse composée uniquement d'espaces. Choisir une réponse fixe ou abandonner la branche correspondante efface la précision devenue inapplicable.
+- Les motifs de contact et de non-contact ainsi que la situation de logement transmettent le texte libre dans leur champ Google Forms. Les sources et le canal de contact conservent leur modalité de classement et transmettent la précision dans le champ complémentaire associé. Le canal préféré et le motif de non-exposition transmettent directement la précision.
+- Avant de publier les huit saisies, exécuter `ACTIVER_ET_VERIFIER_TOUS_CHAMPS_AUTRES_20261106()` depuis `apps-script/verifier-tous-champs-autres-20261106.gs` dans le projet existant. Ce contrôle active la réponse libre sur les onze questions concernées, puis vérifie les huit catégories dans un brouillon préparé par le service d'envoi, sans soumettre de réponse. Aucun redéploiement Apps Script n'est nécessaire.
 
 - GitHub Pages publie uniquement le contenu validé de la branche `main` et ne modifie pas les fichiers source.
-- Le déploiement attend obligatoirement la réussite de `scripts/verify-questionnaire.mjs`.
+- Le déploiement attend obligatoirement la réussite de `scripts/verify-ui-lock.mjs`, `scripts/verify-contact-reason-other.mjs` et `scripts/verify-all-other-fields.mjs`.
 - Si une mise à jour réintroduit une ancienne copie ou enfreint une règle protégée, le déploiement échoue et la dernière version publique valide reste en ligne.
 - Une empreinte sémantique protège l’ensemble des titres, affirmations, choix et groupes du questionnaire, indépendamment des changements de mise en page.
 - Toute modification volontaire d’une règle protégée doit mettre à jour simultanément le questionnaire, le validateur et ce document.
@@ -50,7 +55,10 @@ un fichier correctif temporaire.
 Exécuter avant toute publication :
 
 ```bash
-node scripts/verify-questionnaire.mjs
+node --check assets/questionnaire.js
+node scripts/verify-ui-lock.mjs
+node scripts/verify-contact-reason-other.mjs
+node scripts/verify-all-other-fields.mjs
 ```
 
 La même vérification est lancée automatiquement par GitHub Actions après chaque modification.

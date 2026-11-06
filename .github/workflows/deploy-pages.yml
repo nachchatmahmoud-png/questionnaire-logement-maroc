@@ -29,6 +29,8 @@ jobs:
         run: node scripts/verify-ui-lock.mjs
       - name: Vérifier la saisie du motif de contact libre
         run: node scripts/verify-contact-reason-other.mjs
+      - name: Vérifier toutes les saisies libres « autre »
+        run: node scripts/verify-all-other-fields.mjs
 
   deploy:
     needs: validation
