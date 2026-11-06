@@ -104,7 +104,7 @@ for (const overrides of [
   app.clearInapplicableBeneficiaryAnswers();
   expect(personalIds.every(id => !Object.hasOwn(app.state.a, id)), 'Le nettoyage avant envoi doit écarter tout impact personnel non applicable.');
 }
-expect(index.includes('questionnaire.js?v=20261101-personal-impact-direct-only-v1'), 'Le cache du fichier principal doit être actualisé pour ce correctif.');
+expect(index.includes('questionnaire.js?v=20261106-contact-reason-other-v1'), 'Le cache du fichier principal doit être actualisé pour ce correctif.');
 
 if (failures.length) {
   console.error('\nVERROU UI REFUSE :');
